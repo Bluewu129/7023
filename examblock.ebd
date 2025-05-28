@@ -1,0 +1,895 @@
+Title: Exam Block
+Version: 1.2
+
+[Begin]
+
+[Subjects: 34]
+1. ACCOUNTING
+Accounting
+"The study of the management of financial resources of the public sector, businesses, and individuals."
+2. ANCIENT HISTORY
+Ancient History
+"The study of people, societies and civilisations of the Ancient World, from the development of the earliest human communities to the end of the Middle Ages."
+3. BIOLOGY
+Biology
+"The study of living systems."
+4. BUSINESS
+Business
+"Investigations of business situations, using a variety of analytical tools to comprehend, analyse and interpret business data and information; and to evaluate strategies using business criteria."
+5. CHEMISTRY
+Chemistry
+"The study of materials and their properties and structure."
+6. DESIGN
+Design
+"The application of design thinking to envisage creative products, services and environments."
+7. DIGITAL SOLUTIONS
+Digital Solutions
+"Students learn about algorithms, computer languages and user interfaces through generating digital solutions to problems."
+8. DRAMA
+Drama
+"Investigating, communicating and embodying stories, experiences, emotions and ideas that reflect the human experience."
+9. ECONOMICS
+Economics
+"Microeconomics being the study of individuals, households and businesses; and macroeconomics, the study of economy-wide phenomena."
+10. ENGINEERING
+Engineering
+"The practical application of science, technology, engineering and mathematics (STEM) knowledge to develop sustainable products, processes and services."
+11. ENGLISH
+English
+"The study of both literary texts and non-literary texts, developing students as independent, innovative and creative learners and thinkers who appreciate the aesthetic use of language, analyse perspectives and evidence, and challenge ideas and interpretations through the analysis and creation of varied texts."
+12. ESSENTIAL ENGLISH
+Essential English
+"Develops and refines students’ understanding of language, literature and literacy to enable them to interact confidently and effectively in everyday, community and social contexts."
+13. LITERATURE
+Literature
+"The study of literary texts, developing students as independent, innovative and creative learners and thinkers who appreciate the aesthetic use of language, analyse perspectives and evidence, and challenge ideas and interpretations through the analysis and creation of varied literary texts."
+14. ENGLISH AND LITERATURE EXTENSION
+English And Literature Extension
+"The English & Literature Extension course offers more challenge than other English courses and builds on the literature study students have already undertaken. In Year 12, students undertake Units 3 and 4 of English & Literature Extension concurrently with, or after, Units 3 and 4 of English and/or Units 3 and 4 of Literature."
+15. FOOD AND NUTRITION
+Food And Nutrition
+"The study of food in the context of food science, nutrition and food technologies."
+16. GEOGRAPHY
+Geography
+"The significance of ‘place’ and ‘space’ in understanding our world, with the concepts of environment, interconnection, sustainability, scale and change building on this foundation."
+17. GERMAN
+German
+"Communicating with people from German-speaking communities."
+18. INDUSTRIAL TECHNOLOGY SKILLS
+Industrial Technology Skills
+"Develop the knowledge, understanding and skills associated with traditional and contemporary tools and materials used by Australian manufacturing industries to produce products."
+19. JAPANESE
+Japanese
+"Communicating with people from Japanese-speaking communities."
+20. LEGAL STUDIES
+Legal Studies
+"The interaction between society and the discipline of law. This subject is a pre-requiste for LAW1001."
+21. ESSENTIAL MATHEMATICS
+Essential Mathematics
+"The major domains of mathematics in Essential Mathematics are Number, Data, Location and time, Measurement and Finance. Teaching and learning builds on the proficiency strands of the P–10 Australian Curriculum."
+22. GENERAL MATHEMATICS
+General Mathematics
+"General Mathematics is designed for students who want to extend their mathematical skills beyond Year 10 but whose future studies or employment pathways do not require calculus."
+23. MATHEMATICAL METHODS
+Mathematical Methods
+"The major domains of mathematics in Mathematical Methods are Algebra, Functions, relations and their graphs, Calculus and Statistics, with increasing levels of sophistication, complexity and connection."
+24. SPECIALIST MATHEMATICS
+Specialist Mathematics
+"The major domains of mathematical knowledge in Specialist Mathematics are Vectors and matrices, Real and complex numbers, Trigonometry, Statistics and Calculus."
+25. MODERN HISTORY
+Modern History
+"Examine traces of humanity’s recent past so students may form their own views about the Modern World since 1750."
+26. MUSIC
+Music
+"Music   is   a unique art form that uses sound and silence as a means of personal expression."
+27. PHILOSOPHY AND REASON
+Philosophy And Reason
+"Philosophy & Reason combines the discipline of philosophy with the associated methodology of critical reasoning and logic."
+28. PHYSICAL EDUCATION
+Physical Education
+"The knowledge, understanding and skills to explore and enhance health and physical activity in diverse and changing contexts."
+29. PHYSICS
+Physics
+"The inquiry into the nature of the universe."
+30. PSYCHOLOGY
+Psychology
+"Engage with concepts that explain behaviours and underlying cognitions."
+31. SPANISH
+Spanish
+"Communicating with people from Spanish-speaking communities."
+32. TRADE COURSE
+Trade Course
+"A trade course with no QCAA units or exams."
+33. ANOTHER TRADE COURSE
+Another Trade Course
+"Another trade course with no QCAA units or exams."
+34. VISUAL ART
+Visual Art
+"Construct knowledge and communicate personal interpretations by working as both artist and audience."
+
+[Units: 68]
+1. ACCOUNTING
+Accounting, Unit 3: Managing resources
+"Manage the resources of a sole trader business including cash, accounts receivable, non-current assets and technology."
+2. ACCOUNTING
+Accounting, Unit 4: Accounting — the big picture
+"The complete process of preparing fully classified financial statements for a sole trader business, and an analysis and evaluation of the Statement of Profit or Loss, Statement of Financial Position and Statement of Cash Flows."
+3. ANCIENT HISTORY
+Ancient History, Unit 3: Reconstructing the Ancient World
+"Investigate significant historical periods through an analysis of relevant archaeological and written sources."
+4. ANCIENT HISTORY
+Ancient History, Unit 4: People, power and authority
+"Investigate an important historical period, with a particular emphasis on the nature and exercise of power and authority."
+5. BIOLOGY
+Biology, Unit 3: Biodiversity and the interconnectedness of life
+"Biodiversity within ecosystems; biotic and abiotic; species interactions; adaptations of organisms population dynamics; and classification systems."
+6. BIOLOGY
+Biology, Unit 4: Heredity and continuity of life
+"The cellular processes and mechanisms that ensure the continuity of life."
+7. BUSINESS
+Business, Unit 3: Business diversification
+"Businesses in the maturity stage of the business life cycle, investigating diversification strategies, with a specific focus on expansion into global markets and emerging strategies providing a competitive advantage."
+8. BUSINESS
+Business, Unit 4: Business evolution
+"Challenges for businesses in the post-maturity stage of the business life cycle and explore the leadership and management required when repositioning or transforming a business using financial, human resources, marketing and operational management strategies."
+9. CHEMISTRY
+Chemistry, Unit 3: Equilibrium, acids and redox reactions
+"The reversibility of reactions in a variety of chemical systems at different scales; acid-base equilibrium systems and their applications; the principles of oxidation and reduction reactions; and the production of electricity from electrochemical cells."
+10. CHEMISTRY
+Chemistry, Unit 4: Structure, synthesis and design
+"The ways in which models and theories relate to chemical synthesis, structure and design, and associated applications; the current and future uses of  resources, focussing on chemical synthesis, particularly in organic chemistry, and consider where and how functional groups can be incorporated into already existing carbon compounds in order to generate new substances; and future applications of chemistry to synthesise new substances, such as pharmaceuticals, fuels, polymers and nanomaterials."
+11. DESIGN
+Design, Unit 3: Human-centred design
+"Use designing with empathy as an approach to define problems by understanding and experiencing the needs and wants of a stakeholder."
+12. DESIGN
+Design, Unit 4: Sustainable design influences
+"How designers identify design opportunities without working from needs and wants provided by stakeholders. This unit explores how stakeholders are encouraged to accept a designed solution they did not realise they needed. Students identify and explore opportunities to design products, services or environments to improve their sustainability."
+13. DIGITAL SOLUTIONS
+Digital Solutions, Unit 3: Digital innovation
+"Analyse end-user needs, determine data, programming and user experience requirements, using available resources to generate components and prototyped digital solutions."
+14. DIGITAL SOLUTIONS
+Digital Solutions, Unit 4: Digital impacts
+"how digital solutions are required to exchange data securely and efficiently; elements of cybersecurity; the conditions, environment and methods for enabling data to flow between different digital systems; analyse data privacy and data integrity risks associated with transferring data and evaluate the personal, social and economic impacts associated with the use and availability of both public and private data."
+15. DRAMA
+Drama, Unit 3: Challenge
+"Investigate dramatic styles that are united by social commentary, and that question their world and advocate change."
+16. DRAMA
+Drama, Unit 4: Transform
+"Manipulating and shaping the dramatic languages to reframe text, purpose, context and meaning, drawing on stylistic characteristics and philosophies of contemporary performance."
+17. ECONOMICS
+Economics, Unit 3: International economics
+"The complex ideas and relationships underlying the international economy and the impact that these have on Australia’s domestic economy and decision-making."
+18. ECONOMICS
+Economics, Unit 4: Contemporary macroeconomics
+"The practical application of the Australian Government’s domestic macroeconomic objectives."
+19. ENGINEERING
+Engineering, Unit 3: Civil structures
+"Individual and collaborative group activities, material and process testing, analysis of the forces on structures; engineering solutions for environmental extremes, including intense cold and heat, storms, drought or flood."
+20. ENGINEERING
+Engineering, Unit 4: Machines and mechanisms
+"Understanding dynamics through machines and mechanisms, including the uniformly accelerated motion of objects in one dimension, apparent weight, and motion on an inclined plane."
+21. ENGLISH
+English, Unit 3: Textual connections
+"Explore connections between texts by examining representations of the same concepts and issues in different texts."
+22. ENGLISH
+English, Unit 4: Close study of literary texts
+"Explore the world and human experience by engaging with literary texts from diverse times and places."
+23. ESSENTIAL ENGLISH
+Essential English, Unit 3: Language that influences
+"Explore community, local and/or global issues and ideas presented in a range of texts that invite an audience to take up positions."
+24. ESSENTIAL ENGLISH
+Essential English, Unit 4: Representations and popular culture texts
+"Explore how the text structures, language features and language of contemporary popular culture texts shape meaning."
+25. LITERATURE
+Literature, Unit 3: Literature and identity
+"Develop knowledge and understanding of the relationship between language, culture and identity in literary texts."
+26. LITERATURE
+Literature, Unit 4: Independent explorations
+"Demonstrate increasing independence in exploring, interpreting, analysing and appreciating the aesthetic appeal of literary texts and the insights they offer."
+27. ENGLISH AND LITERATURE EXTENSION
+English And Literature Extension, Unit 3: Ways of reading
+"Engage with various interpretive practices generated from a range of theoretical understandings about how meaning is made."
+28. ENGLISH AND LITERATURE EXTENSION
+English And Literature Extension, Unit 4: Exploration and evaluation
+"Consists of two areas of study: Extended academic research paper and theorised exploration of texts."
+29. FOOD AND NUTRITION
+Food And Nutrition, Unit 3: Food science of carbohydrate and fat
+"Study the fundamentals of food science through practical investigation of the nutritional, scientific and sensory properties of carbohydrate- and fat-based food products."
+30. FOOD AND NUTRITION
+Food And Nutrition, Unit 4: Food solution development for nutrition consumer markets
+"Use the problem-solving process to solve food and nutrition problems to improve safety, nutrition, convenience, transparency and accessibility for nutrition consumer markets."
+31. GEOGRAPHY
+Geography, Unit 3: Responding to land cover transformations
+"Develop an understanding of changes to the biophysical environment over time, with a particular focus on land cover transformation and climate change."
+32. GEOGRAPHY
+Geography, Unit 4: Managing population change
+"Develop an understanding of population change, movement and distribution over space and time, and how governments, organisations and individuals respond to the challenges posed by demographic change."
+33. GERMAN
+German, Unit 3: Unsere Gesellschaft; Kultur und Identität — Our society; culture and identity
+"Groups in the community and how identity is linked or challenged by membership of these groups; also explore the role of the arts as a contributor to the formation of culture and identity, and how sporting and leisure activities both reflect and shape our lifestyle."
+34. GERMAN
+German, Unit 4: Meine Gegenwart; meine Zukunft — My present; my future
+"Opportunities to use complex German and to explore perspectives on issues relevant to their futures and to the futures of their peers, and to consider the role of German in their future lives."
+35. INDUSTRIAL TECHNOLOGY SKILLS
+Industrial Technology Skills, Unit A: Site preparation and foundations (Building & Construction Skills)
+"Information and subject matter in the Building & Construction Skills 2024 Applied senior syllabus."
+36. INDUSTRIAL TECHNOLOGY SKILLS
+Industrial Technology Skills, Unit B: Framing and cladding (Building & Construction Skills)
+"Information and subject matter in the Building & Construction Skills 2024 Applied senior syllabus."
+37. INDUSTRIAL TECHNOLOGY SKILLS
+Industrial Technology Skills, Unit C: Fixing and finishing (Building & Construction Skills)
+"Information and subject matter in the Building & Construction Skills 2024 Applied senior syllabus."
+38. INDUSTRIAL TECHNOLOGY SKILLS
+Industrial Technology Skills, Unit D: Construction in the domestic building industry (Building & Construction Skills)
+"Information and subject matter in the Building & Construction Skills 2024 Applied senior syllabus."
+39. JAPANESE
+Japanese, Unit 3: Our society; culture and identity
+"Groups in the community and how identity is linked or challenged by membership of these groups; also explore the role of the arts as a contributor to the formation of culture and identity, and how sporting and leisure activities both reflect and shape our lifestyle."
+40. JAPANESE
+Japanese, Unit 4: My present; my future
+"Opportunities to use complex Japanese and to explore perspectives on issues relevant to their futures and to the futures of their peers, and to consider the role of Japanese in their future lives."
+41. LEGAL STUDIES
+Legal Studies, Unit 3: Law, governance and change
+"The complexities of the Australian legal system and its capacity to deal with the diversity of competing needs; the role of legal institutions and law-making bodies in creating laws that reflect the views of society; the range of forces that create catalysts for change and reform, and how laws are changed or reformed to reflect shifting societal demands."
+42. LEGAL STUDIES
+Legal Studies, Unit 4: Human rights in legal contexts
+"How human rights create challenges in national and international contexts, including for minority groups, and examine Australia’s legal response to international law and human rights."
+43. ESSENTIAL MATHEMATICS
+Essential Mathematics, Unit 3: Measurement, scales and chance
+"Develop the mathematical understandings and skills to solve problems relating to: Calculations, Measurement, Scales, plans and models, and Probability and relative frequencies."
+44. ESSENTIAL MATHEMATICS
+Essential Mathematics, Unit 4: Graphs, data and loans
+"Develop the mathematical understandings and skills to solve problems relating to: Calculations, Bivariate graphs, Summarising and comparing data, and Loans and compound interest."
+45. GENERAL MATHEMATICS
+General Mathematics, Unit 3: Bivariate data and time series analysis, sequences and Earth geometry
+"Develop the mathematical understandings and skills to solve problems relating to: Bivariate data analysis 1, Bivariate data analysis 2, Time series analysis, Growth and decay in sequences, and Earth geometry and time zones."
+46. GENERAL MATHEMATICS
+General Mathematics, Unit 4: Investing and networking
+"Develop the mathematical understandings and skills to solve problems relating to: Loans, investments and annuities 1, Loans, investments and annuities 2, Graphs and networks, Networks and decision mathematics 1, Networks and decision mathematics 2."
+47. MATHEMATICAL METHODS
+Mathematical Methods, Unit 3: Further calculus and introduction to statistics
+"Develop the mathematical understandings and skills to solve problems relating to: Differentiation of exponential and logarithmic functions, Differentiation of trigonometric functions and differentiation rules, Further applications of differentiation, Introduction to integration, and Discrete random variables."
+48. MATHEMATICAL METHODS
+Mathematical Methods, Unit 4: Further calculus, trigonometry and statistics
+"Develop the mathematical understandings and skills to solve problems relating to: Further integration, Trigonometry, Continuous random variables and the normal distribution, Sampling and proportions, and Interval estimates for proportions."
+49. SPECIALIST MATHEMATICS
+Specialist Mathematics, Unit 3: Further complex numbers, proof, vectors and matrices
+"Develop the mathematical understandings and skills to solve problems relating to:  Further complex numbers, Mathematical induction and trigonometric proofs, Vectors in two and three dimensions, Vector calculus, and Further matrices."
+50. SPECIALIST MATHEMATICS
+Specialist Mathematics, Unit 4: Further calculus and statistical inference
+"Develop the mathematical understandings and skills to solve problems relating to: Integration techniques, Applications of integral calculus, Rates of change and differential equations, Modelling motion, and Statistical inference."
+51. MODERN HISTORY
+Modern History, Unit 3: National experiences in the Modern World
+"Develop knowledge and understanding about national experiences that have emerged in the Modern World."
+52. MODERN HISTORY
+Modern History, Unit 4: International experiences in the Modern World
+"Develop knowledge and understanding about international experiences that have emerged in the Modern World."
+53. MUSIC
+Music, Unit 3: Innovations
+"Make and respond to music that demonstrates innovative use of music elements and concepts, and compositional devices, and learn about how these ideas are used to communicate new meanings."
+54. MUSIC
+Music, Unit 4: Narratives
+"Students focus on their emerging voice and style through making and responding to music."
+55. PHILOSOPHY AND REASON
+Philosophy And Reason, Unit 3: Moral philosophy and schools of thought
+"Investigate how moral issues can be understood and engaged with through a rational framework."
+56. PHILOSOPHY AND REASON
+Philosophy And Reason, Unit 4: Social and political philosophy
+"The nature of rights, including the potential source and scope of particular rights’ claims."
+57. PHYSICAL EDUCATION
+Physical Education, Unit 3: Tactical awareness and ethics in physical activity
+"Recognise and explain the concepts and principles about dynamic systems of motor learning and tactical awareness through purposeful and authentic learning about and in selected physical activity; and recognise and explain the concepts and principles about ethics and integrity in physical activity"
+58. PHYSICAL EDUCATION
+Physical Education, Unit 4: Energy, fitness and training in physical activity
+"Engage with concepts, principles and strategies about energy, fitness, training and physical activity."
+59. PHYSICS
+Physics, Unit 3: Gravity and electromagnetism
+"Understanding motion and its causes by using Newton’s laws of motion and the gravitational field model to analyse motion on inclined planes, and the motion of projectiles and satellites."
+60. PHYSICS
+Physics, Unit 4: Revolutions in modern physics
+"Observations of relative motion, light and matter that could not be explained by classical physics theories, and investigate how the shortcomings of existing theories led to the development of the special theory of relativity and the quantum theory of light and matter."
+61. PSYCHOLOGY
+Psychology, Unit 3: Individual thinking
+"Explore the ways psychology is used to describe and explain the role of the human nervous system in individual thinking, and the cognitive processes involved in perception, memory, and learning."
+62. PSYCHOLOGY
+Psychology, Unit 4: The influence of others
+"Explore the ways Psychology is used to describe and explain how others influence our development, behaviour and thinking."
+63. SPANISH
+Spanish, Unit 3: Nuestra sociedad; cultura e identidad — Our society; culture and identity
+"Groups in the community and how identity is linked or challenged by membership of these groups; also explore the role of the arts as a contributor to the formation of culture and identity, and how sporting and leisure activities both reflect and shape our lifestyle."
+64. SPANISH
+Spanish, Unit 4: Mi presente; mi futuro — My present; my future
+"Opportunities to use complex Spanish and to explore perspectives on issues relevant to their futures and to the futures of their peers, and to consider the role of Spanish in their future lives."
+65. TRADE COURSE
+Trade Course, Unit X: Trade Course
+"A trade course with no QCAA units or exams."
+66. ANOTHER TRADE COURSE
+Another Trade Course, Unit X: Another Trade Course
+"Another trade course with no QCAA units or exams."
+67. VISUAL ART
+Visual Art, Unit 3: Art as knowledge
+"Build knowledge about art, artist and audience to generate a personal focus and commence a body of work and employ new knowledge inspired by their personal interests, beliefs and bservations of the world."
+68. VISUAL ART
+Visual Art, Unit 4: Art as alternate
+"Refine expression and personal aesthetic by applying skills associated with creative thinking and resolve their body of work as they imagine, generate and apply new ideas and links."
+
+[Students: 150]
+1. LIAM ALEXANDER SMITH
+LUI: 9999365663, Family Name: Smith, Given Name(s): Liam Alexander, Date of Birth: 2007-12-08, House: Blue, AARA: false
+Subjects: Essential English, Essential Mathematics, Ancient History, Industrial Technology Skills, Trade Course, Another Trade Course
+2. NOAH JAMES BROWN
+LUI: 9999440022, Family Name: Brown, Given Name(s): Noah James, Date of Birth: 2007-07-27, House: Green, AARA: false
+Subjects: Essential English, Essential Mathematics, Ancient History, Industrial Technology Skills, Trade Course, Another Trade Course
+3. OLIVER HENRY JOHNSON
+LUI: 9999063966, Family Name: Johnson, Given Name(s): Oliver Henry, Date of Birth: 2007-07-11, House: Red, AARA: false
+Subjects: Essential English, Essential Mathematics, Ancient History, Industrial Technology Skills, Trade Course, Another Trade Course
+4. JACK THOMAS WILLIAMS
+LUI: 9999313004, Family Name: Williams, Given Name(s): Jack Thomas, Date of Birth: 2007-09-17, House: White, AARA: false
+Subjects: Essential English, Essential Mathematics, Modern History, Industrial Technology Skills, Trade Course, Another Trade Course
+5. HENRY WILLIAM TAYLOR
+LUI: 9999521703, Family Name: Taylor, Given Name(s): Henry William, Date of Birth: 2008-04-04, House: Yellow, AARA: false
+Subjects: Essential English, Essential Mathematics, Modern History, Industrial Technology Skills, Trade Course, Another Trade Course
+6. LEO HUNTER WHITE
+LUI: 9999191361, Family Name: White, Given Name(s): Leo Hunter, Date of Birth: 2007-10-06, House: Blue, AARA: false
+Subjects: Essential English, Essential Mathematics, Modern History, Industrial Technology Skills, Trade Course, Another Trade Course
+7. LUCAS ETHAN HARRIS
+LUI: 9999986913, Family Name: Harris, Given Name(s): Lucas Ethan, Date of Birth: 2007-10-22, House: Green, AARA: false
+Subjects: Essential English, Essential Mathematics, Psychology, Industrial Technology Skills, Trade Course, Another Trade Course
+8. JOHN MICHAEL HALL
+LUI: 9999572152, Family Name: Hall, Given Name(s): John Michael, Date of Birth: 2008-05-25, House: Red, AARA: false
+Subjects: English, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+9. HUNTER RILEY DAVIS
+LUI: 9999147144, Family Name: Davis, Given Name(s): Hunter Riley, Date of Birth: 2008-01-01, House: White, AARA: false
+Subjects: Essential English, Essential Mathematics, Psychology, Industrial Technology Skills, Trade Course, Another Trade Course
+10. MASON ELIJAH DOUGLAS-WALKER
+LUI: 9999345181, Family Name: Douglas-Walker, Given Name(s): Mason Elijah, Date of Birth: 2008-02-22, House: Yellow, AARA: false
+Subjects: English, Essential Mathematics, Ancient History, Business, Accounting, Economics
+11. JAMES MATTHEW ALLEN
+LUI: 9999752965, Family Name: Allen, Given Name(s): James Matthew, Date of Birth: 2008-02-14, House: Blue, AARA: false
+Subjects: English, Essential Mathematics, Food And Nutrition, Modern History, Physical Education, Philosophy And Reason
+12. AIDEN SAMUEL YOUNG
+LUI: 9999949072, Family Name: Young, Given Name(s): Aiden Samuel, Date of Birth: 2008-05-09, House: Green, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Philosophy And Reason
+13. ALEXANDER JOSHUA KING
+LUI: 9999615678, Family Name: King, Given Name(s): Alexander Joshua, Date of Birth: 2007-07-11, House: Red, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Philosophy And Reason
+14. THOMAS JASON RYAN WRIGHT
+LUI: 9999787134, Family Name: Wright, Given Name(s): Thomas Jason Ryan, Date of Birth: 2007-07-23, House: White, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Geography
+15. WILLIAM LOGAN ADAMS
+LUI: 9999230108, Family Name: Adams, Given Name(s): William Logan, Date of Birth: 2007-09-01, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Geography
+16. SAMUEL DYLAN SCOTT
+LUI: 9999708026, Family Name: Scott, Given Name(s): Samuel Dylan, Date of Birth: 2008-03-15, House: Blue, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Business, Physical Education, Modern History
+17. CHARLIE BENJAMIN MORRIS
+LUI: 9999714498, Family Name: Morris, Given Name(s): Charlie Benjamin, Date of Birth: 2007-07-19, House: Green, AARA: false
+Subjects: English, General Mathematics, Spanish, Business, Modern History, Geography
+18. RYAN OLIVER HUGHES
+LUI: 9999311950, Family Name: Hughes, Given Name(s): Ryan Oliver, Date of Birth: 2007-11-27, House: Red, AARA: false
+Subjects: English, General Mathematics, Psychology, Business, Modern History, Geography
+19. ISAAC AUSTIN CAMPBELL
+LUI: 9999975011, Family Name: Campbell, Given Name(s): Isaac Austin, Date of Birth: 2007-12-20, House: White, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Business, Accounting, Modern History
+20. DYLAN JACOB TURNER
+LUI: 9999570523, Family Name: Turner, Given Name(s): Dylan Jacob, Date of Birth: 2007-08-20, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Business, Accounting, Modern History
+21. BENJAMIN LEE
+LUI: 9999069787, Family Name: Lee, Given Name(s): Benjamin, Date of Birth: 2007-08-08, House: Blue, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Biology, Psychology, German
+22. LOGAN CALEB ROBINSON
+LUI: 9999540711, Family Name: Robinson, Given Name(s): Logan Caleb, Date of Birth: 2008-04-28, House: Green, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Biology, Psychology, German
+23. OWEN JAXON WOOD
+LUI: 9999198880, Family Name: Wood, Given Name(s): Owen Jaxon, Date of Birth: 2008-05-21, House: Red, AARA: false
+Subjects: English, General Mathematics, Modern History, Biology, Ancient History, German
+24. MAX THEODORE MITCHELL
+LUI: 9999305484, Family Name: Mitchell, Given Name(s): Max Theodore, Date of Birth: 2008-01-01, House: White, AARA: false
+Subjects: English, General Mathematics, Modern History, Biology, Ancient History, Drama
+25. CALEB ALEXANDER WARD
+LUI: 9999076847, Family Name: Ward, Given Name(s): Caleb Alexander, Date of Birth: 2007-12-12, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Modern History, Biology, Ancient History, Drama
+26. HARRY NATHAN KELLY
+LUI: 9999091495, Family Name: Kelly, Given Name(s): Harry Nathan, Date of Birth: 2007-08-16, House: Blue, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Ancient History, Drama
+27. AUSTIN SPENCER PRICE
+LUI: 9999405537, Family Name: Price, Given Name(s): Austin Spencer, Date of Birth: 2007-10-10, House: Green, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Ancient History, Drama
+28. FLYNN PATRICK BENNETT
+LUI: 9999300154, Family Name: Bennett, Given Name(s): Flynn Patrick, Date of Birth: 2007-11-19, House: Red, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Biology, Drama
+29. JAXON XAVIER STEWART
+LUI: 9999165781, Family Name: Stewart, Given Name(s): Jaxon Xavier, Date of Birth: 2008-02-18, House: White, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Biology, Drama
+30. JAMES ELIJAH COOK
+LUI: 9999826988, Family Name: Cook, Given Name(s): James Elijah, Date of Birth: 2007-09-05, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Biology, Drama
+31. RANMA SAOTOME
+LUI: 9999506179, Family Name: Saotome, Given Name(s): Ranma, Date of Birth: 2007-08-20, House: Blue, AARA: false
+Subjects: English, General Mathematics, Japanese, Music, Biology, Drama
+32. FINN LEVI CARTER
+LUI: 9999141650, Family Name: Carter, Given Name(s): Finn Levi, Date of Birth: 2008-03-23, House: Green, AARA: false
+Subjects: English, General Mathematics, Psychology, Biology, Ancient History, Modern History
+33. TYLER SEBASTIAN ROGERS
+LUI: 9999241493, Family Name: Rogers, Given Name(s): Tyler Sebastian, Date of Birth: 2008-06-18, House: Red, AARA: false
+Subjects: English, General Mathematics, Psychology, Biology, Ancient History, Modern History
+34. KAI ASHTON EDWARDS
+LUI: 9999214667, Family Name: Edwards, Given Name(s): Kai Ashton, Date of Birth: 2007-12-16, House: White, AARA: false
+Subjects: English, General Mathematics, Engineering, Biology, Ancient History, Design
+35. ARCHIE BLAKE HUGHES
+LUI: 9999124963, Family Name: Hughes, Given Name(s): Archie Blake, Date of Birth: 2007-08-24, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Engineering, Biology, Ancient History, Design
+36. MATTHEW HARRISON MURPHY
+LUI: 9999672024, Family Name: Murphy, Given Name(s): Matthew Harrison, Date of Birth: 2008-01-21, House: Blue, AARA: false
+Subjects: English, General Mathematics, Ancient History, Business, Accounting, Economics
+37. SEBASTIAN ADAM LUKE BUTLER
+LUI: 9999872137, Family Name: Butler, Given Name(s): Sebastian Adam Luke, Date of Birth: 2008-02-18, House: Green, AARA: false
+Subjects: English, General Mathematics, Ancient History, Business, Accounting, Economics
+38. BLAKE MITCHELL PERRY
+LUI: 9999129059, Family Name: Perry, Given Name(s): Blake Mitchell, Date of Birth: 2007-12-04, House: Red, AARA: false
+Subjects: English, General Mathematics, Engineering, Physics, Modern History, Economics
+39. NATHAN FELIX RUSSELL
+LUI: 9999626008, Family Name: Russell, Given Name(s): Nathan Felix, Date of Birth: 2008-05-09, House: White, AARA: false
+Subjects: English, General Mathematics, Engineering, Physics, Biology, Digital Solutions
+40. ASHTON CONNOR COOPER
+LUI: 9999878184, Family Name: Cooper, Given Name(s): Ashton Connor, Date of Birth: 2008-01-17, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Business, Biology, Digital Solutions
+41. SPENCER LUKE FISHER
+LUI: 9999646984, Family Name: Fisher, Given Name(s): Spencer Luke, Date of Birth: 2008-05-13, House: Blue, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Business, Biology, Digital Solutions
+42. FELIX ANGUS HOWARD
+LUI: 9999406335, Family Name: Howard, Given Name(s): Felix Angus, Date of Birth: 2008-04-24, House: Green, AARA: true
+Subjects: Essential English, Essential Mathematics, Philosophy And Reason, Industrial Technology Skills, Trade Course, Another Trade Course
+43. CONNOR BYRON BAILEY
+LUI: 9999494320, Family Name: Bailey, Given Name(s): Connor Byron, Date of Birth: 2008-05-05, House: Red, AARA: true
+Subjects: English, Mathematical Methods, Biology, Modern History, Geography, Physics
+44. JOHN MICHAEL HALL
+LUI: 9999827127, Family Name: Hall, Given Name(s): John Michael, Date of Birth: 2008-04-04, House: White, AARA: true
+Subjects: English, Mathematical Methods, Modern History, Chemistry, Biology, Physics
+45. JOSHUA EZRA BROOKS
+LUI: 9999761122, Family Name: Brooks, Given Name(s): Joshua Ezra, Date of Birth: 2007-11-23, House: Yellow, AARA: true
+Subjects: English, Mathematical Methods, Biology, Physics, Psychology, Economics
+46. ZACHARY JACOB REID
+LUI: 9999113425, Family Name: Reid, Given Name(s): Zachary Jacob, Date of Birth: 2008-02-22, House: Blue, AARA: true
+Subjects: English, General Mathematics, Ancient History, Business, Legal Studies, Economics
+47. AARON RILEY FOSTER
+LUI: 9999346945, Family Name: Foster, Given Name(s): Aaron Riley, Date of Birth: 2008-02-22, House: Green, AARA: true
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Geography
+48. JACOB HARVEY HENDERSON
+LUI: 9999479827, Family Name: Henderson, Given Name(s): Jacob Harvey, Date of Birth: 2007-08-16, House: Red, AARA: true
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Geography
+49. RILEY JONAH SANDERS
+LUI: 9999211367, Family Name: Sanders, Given Name(s): Riley Jonah, Date of Birth: 2007-12-20, House: White, AARA: true
+Subjects: English, General Mathematics, Biology, Physics, Chemistry, Geography
+50. ADAM DECLAN KNIGHT
+LUI: 9999758853, Family Name: Knight, Given Name(s): Adam Declan, Date of Birth: 2007-10-22, House: Yellow, AARA: true
+Subjects: English, General Mathematics, Biology, Physics, Chemistry, Geography
+51. ELI MICAH COX
+LUI: 9999681086, Family Name: Cox, Given Name(s): Eli Micah, Date of Birth: 2008-03-11, House: Blue, AARA: true
+Subjects: English, General Mathematics, Psychology, Biology, Chemistry, Geography
+52. ANGUS MARCUS MITCHELL
+LUI: 9999647413, Family Name: Mitchell, Given Name(s): Angus Marcus, Date of Birth: 2008-02-22, House: Green, AARA: true
+Subjects: English, General Mathematics, Visual Art, Music, Psychology, Drama
+53. LUKE THEODORE WEBB
+LUI: 9999805691, Family Name: Webb, Given Name(s): Luke Theodore, Date of Birth: 2007-12-16, House: Red, AARA: true
+Subjects: English, General Mathematics, Visual Art, Music, Psychology, Drama
+54. BYRON MITCHELL STONE
+LUI: 9999079955, Family Name: Stone, Given Name(s): Byron Mitchell, Date of Birth: 2007-12-12, House: White, AARA: true
+Subjects: English, General Mathematics, Visual Art, Music, Psychology, Design
+55. CAMERON LEVI PORTER
+LUI: 9999837962, Family Name: Porter, Given Name(s): Cameron Levi, Date of Birth: 2008-03-03, House: Yellow, AARA: true
+Subjects: English, General Mathematics, Visual Art, Music, Psychology, Design
+56. JONAH MARCUS SHARP
+LUI: 9999706965, Family Name: Sharp, Given Name(s): Jonah Marcus, Date of Birth: 2007-10-18, House: Blue, AARA: true
+Subjects: English, General Mathematics, Ancient History, Physics, Geography, Digital Solutions
+57. CHEN AARON WANG
+LUI: 9999865763, Family Name: Wang, Given Name(s): Chen Aaron, Date of Birth: 2007-12-28, House: Green, AARA: true
+Subjects: Literature, General Mathematics, Ancient History, Physics, Geography, Digital Solutions
+58. OMAR JACOB HASSAN
+LUI: 9999248162, Family Name: Hassan, Given Name(s): Omar Jacob, Date of Birth: 2008-03-23, House: Red, AARA: true
+Subjects: Literature, General Mathematics, Biology, Physics, Geography, Digital Solutions
+59. HARRISON JAYDEN GIBSON
+LUI: 9999913083, Family Name: Gibson, Given Name(s): Harrison Jayden, Date of Birth: 2008-04-28, House: White, AARA: true
+Subjects: Literature, Mathematical Methods, Engineering, Physics, Geography, Digital Solutions
+60. THEODORE DECLAN ELLIS
+LUI: 9999559970, Family Name: Ellis, Given Name(s): Theodore Declan, Date of Birth: 2008-03-23, House: Yellow, AARA: true
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Specialist Mathematics, Physics
+61. MUHAMMAD ABDULLAH KHALID
+LUI: 9999148941, Family Name: Khalid, Given Name(s): Muhammad Abdullah, Date of Birth: 0200-10-06, House: Blue, AARA: true
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Specialist Mathematics, Physics
+62. MITCHELL CAMERON BLACK
+LUI: 9999493906, Family Name: Black, Given Name(s): Mitchell Cameron, Date of Birth: 2007-11-11, House: Green, AARA: true
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Specialist Mathematics, English And Literature Extension
+63. HARVEY PATRICK FRASER
+LUI: 9999374704, Family Name: Fraser, Given Name(s): Harvey Patrick, Date of Birth: 2008-05-05, House: Red, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Ancient History, Biology, Physics
+64. CAMERON ELIJAH WALSH-BENNETT
+LUI: 9999831867, Family Name: Walsh-Bennett, Given Name(s): Cameron Elijah, Date of Birth: 2008-04-12, House: White, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+65. HIROSHI BENJAMIN TANAKA
+LUI: 9999896932, Family Name: Tanaka, Given Name(s): Hiroshi Benjamin, Date of Birth: 2008-05-05, House: Yellow, AARA: false
+Subjects: Literature, Mathematical Methods, Japanese, Chemistry, Biology, Physics
+66. TARIQ NATHAN AHMAD
+LUI: 9999831170, Family Name: Ahmad, Given Name(s): Tariq Nathan, Date of Birth: 2008-03-15, House: Blue, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, English And Literature Extension
+67. ELIJAH CARTER NEWMAN
+LUI: 9999605671, Family Name: Newman, Given Name(s): Elijah Carter, Date of Birth: 2007-08-28, House: Green, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+68. SEBASTIAN JAMES HART
+LUI: 9999209287, Family Name: Hart, Given Name(s): Sebastian James, Date of Birth: 2007-08-12, House: Red, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+69. ALEXANDER FLYNN WATSON
+LUI: 9999479243, Family Name: Watson, Given Name(s): Alexander Flynn, Date of Birth: 2007-12-20, House: White, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Physics, Specialist Mathematics, Chemistry
+70. JORDAN ISAAC LANE
+LUI: 9999144365, Family Name: Lane, Given Name(s): Jordan Isaac, Date of Birth: 2008-06-22, House: Yellow, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Physics, Specialist Mathematics, Chemistry
+71. CALEB ASHTON GREEN
+LUI: 9999419471, Family Name: Green, Given Name(s): Caleb Ashton, Date of Birth: 2007-12-28, House: Blue, AARA: false
+Subjects: Literature, Mathematical Methods, Biology, Chemistry, Specialist Mathematics, Physics
+72. LUCA NATHANIEL WARD
+LUI: 9999880219, Family Name: Ward, Given Name(s): Luca Nathaniel, Date of Birth: 2007-08-08, House: Green, AARA: false
+Subjects: Literature, Mathematical Methods, Biology, Chemistry, Specialist Mathematics, Physics
+73. AIDEN PATRICK SNOW
+LUI: 9999672610, Family Name: Snow, Given Name(s): Aiden Patrick, Date of Birth: 2007-11-19, House: Red, AARA: false
+Subjects: Literature, Mathematical Methods, Biology, Chemistry, Specialist Mathematics, Physics
+74. NOAH ELIJAH CARPENTER
+LUI: 9999257005, Family Name: Carpenter, Given Name(s): Noah Elijah, Date of Birth: 2008-02-18, House: White, AARA: false
+Subjects: Literature, Mathematical Methods, Biology, Chemistry, Specialist Mathematics, Physics
+75. AKIO JACOB WATANABE
+LUI: 9999929778, Family Name: Watanabe, Given Name(s): Akio Jacob, Date of Birth: 2007-07-07, House: Yellow, AARA: false
+Subjects: Literature, Mathematical Methods, Japanese, Chemistry, Specialist Mathematics, Digital Solutions
+76. OLIVIA GRACE SMITH
+LUI: 9999280542, Family Name: Smith, Given Name(s): Olivia Grace, Date of Birth: 2007-07-07, House: Blue, AARA: false
+Subjects: Essential English, Essential Mathematics, Ancient History, Industrial Technology Skills, Trade Course, Another Trade Course
+77. CHARLOTTE AVA BROWN
+LUI: 9999072292, Family Name: Brown, Given Name(s): Charlotte Ava, Date of Birth: 2008-05-21, House: Green, AARA: false
+Subjects: Essential English, Essential Mathematics, Ancient History, Industrial Technology Skills, Trade Course, Another Trade Course
+78. AMELIA ROSE JOHNSON
+LUI: 9999106094, Family Name: Johnson, Given Name(s): Amelia Rose, Date of Birth: 2008-03-27, House: Red, AARA: false
+Subjects: Essential English, Essential Mathematics, Ancient History, Industrial Technology Skills, Trade Course, Another Trade Course
+79. ISLA WILLIAMS
+LUI: 9999131191, Family Name: Williams, Given Name(s): Isla, Date of Birth: 2007-08-08, House: White, AARA: false
+Subjects: Essential English, Essential Mathematics, Modern History, Industrial Technology Skills, Trade Course, Another Trade Course
+80. AVA HARPER TAYLOR
+LUI: 9999955931, Family Name: Taylor, Given Name(s): Ava Harper, Date of Birth: 2007-12-08, House: Yellow, AARA: false
+Subjects: Essential English, Essential Mathematics, Modern History, Industrial Technology Skills, Trade Course, Another Trade Course
+81. MIA LILY WHITE
+LUI: 9999242025, Family Name: White, Given Name(s): Mia Lily, Date of Birth: 2007-10-18, House: Blue, AARA: false
+Subjects: Essential English, Essential Mathematics, Modern History, Industrial Technology Skills, Trade Course, Another Trade Course
+82. CHARLOTTE SOPHIE BROWN
+LUI: 9999619188, Family Name: Brown, Given Name(s): Charlotte Sophie, Date of Birth: 2008-01-21, House: Green, AARA: false
+Subjects: Essential English, Essential Mathematics, Psychology, Industrial Technology Skills, Trade Course, Another Trade Course
+83. LILY CHLOE HALL
+LUI: 9999543293, Family Name: Hall, Given Name(s): Lily Chloe, Date of Birth: 2008-06-06, House: Red, AARA: false
+Subjects: Essential English, Essential Mathematics, Psychology, Industrial Technology Skills, Trade Course, Another Trade Course
+84. ELLA GRACE DAVIS
+LUI: 9999042588, Family Name: Davis, Given Name(s): Ella Grace, Date of Birth: 2008-01-25, House: White, AARA: false
+Subjects: Essential English, Essential Mathematics, Psychology, Industrial Technology Skills, Trade Course, Another Trade Course
+85. GRACE SOPHIA WALKER
+LUI: 9999805786, Family Name: Walker, Given Name(s): Grace Sophia, Date of Birth: 2007-11-27, House: Yellow, AARA: false
+Subjects: English, Essential Mathematics, Ancient History, Business, Accounting, Economics
+86. CHLOE RUBY ALLEN
+LUI: 9999663040, Family Name: Allen, Given Name(s): Chloe Ruby, Date of Birth: 2008-05-25, House: Blue, AARA: false
+Subjects: English, Essential Mathematics, Food And Nutrition, Modern History, Physical Education, Philosophy And Reason
+87. ZOE SCARLETT YOUNG
+LUI: 9999312455, Family Name: Young, Given Name(s): Zoe Scarlett, Date of Birth: 2007-12-28, House: Green, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Philosophy And Reason
+88. EVIE SOPHIE KING
+LUI: 9999604407, Family Name: King, Given Name(s): Evie Sophie, Date of Birth: 2008-04-24, House: Red, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Philosophy And Reason
+89. EMILY ZOE WRIGHT
+LUI: 9999464397, Family Name: Wright, Given Name(s): Emily Zoe, Date of Birth: 2007-10-14, House: White, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Geography
+90. RUBY HANNAH ADAMS
+LUI: 9999193946, Family Name: Adams, Given Name(s): Ruby Hannah, Date of Birth: 2008-03-15, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Geography
+91. SCARLETT ISLA SCOTT
+LUI: 9999452147, Family Name: Scott, Given Name(s): Scarlett Isla, Date of Birth: 2007-12-28, House: Blue, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Business, Physical Education, Modern History
+92. SOPHIA DAISY MORRIS
+LUI: 9999443448, Family Name: Morris, Given Name(s): Sophia Daisy, Date of Birth: 2008-01-09, House: Green, AARA: false
+Subjects: English, General Mathematics, Spanish, Business, Modern History, Geography
+93. MADISON POPPY HUGHES
+LUI: 9999899616, Family Name: Hughes, Given Name(s): Madison Poppy, Date of Birth: 2008-01-01, House: Red, AARA: false
+Subjects: English, General Mathematics, Psychology, Business, Modern History, Geography
+94. HANNAH ARIA SOPHIA CAMPBELL
+LUI: 9999519908, Family Name: Campbell, Given Name(s): Hannah Aria Sophia, Date of Birth: 2007-09-01, House: White, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Business, Accounting, Modern History
+95. LILY CHLOE TURNER
+LUI: 9999087199, Family Name: Turner, Given Name(s): Lily Chloe, Date of Birth: 2007-08-04, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Business, Accounting, Modern History
+96. ZARA AUDREY LEE
+LUI: 9999829539, Family Name: Lee, Given Name(s): Zara Audrey, Date of Birth: 2008-04-08, House: Blue, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Biology, Psychology, German
+97. AUDREY IVY ROBINSON
+LUI: 9999140573, Family Name: Robinson, Given Name(s): Audrey Ivy, Date of Birth: 2008-06-10, House: Green, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Biology, Psychology, German
+98. IVY LUNA WOOD
+LUI: 9999014747, Family Name: Wood, Given Name(s): Ivy Luna, Date of Birth: 2007-12-16, House: Red, AARA: false
+Subjects: English, General Mathematics, Modern History, Biology, Ancient History, German
+99. LUNA ELLIE MITCHELL
+LUI: 9999860158, Family Name: Mitchell, Given Name(s): Luna Ellie, Date of Birth: 2007-11-23, House: White, AARA: false
+Subjects: English, General Mathematics, Modern History, Biology, Ancient History, Drama
+100. ELLIE  BELLA WARD
+LUI: 9999227476, Family Name: Ward, Given Name(s): Ellie  Bella, Date of Birth: 2008-05-01, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Modern History, Biology, Ancient History, Drama
+101. DAISY HAZEL KELLY
+LUI: 9999570468, Family Name: Kelly, Given Name(s): Daisy Hazel, Date of Birth: 2008-01-21, House: Blue, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Ancient History, Drama
+102. HAZEL MILA PRICE
+LUI: 9999944203, Family Name: Price, Given Name(s): Hazel Mila, Date of Birth: 2007-08-12, House: Green, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Ancient History, Drama
+103. BELLA ADDISON O'BENNETT
+LUI: 9999998356, Family Name: O'Bennett, Given Name(s): Bella Addison, Date of Birth: 2008-05-13, House: Red, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Biology, Drama
+104. MILA PENELOPE STEWART
+LUI: 9999477013, Family Name: Stewart, Given Name(s): Mila Penelope, Date of Birth: 2008-02-02, House: White, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Biology, Drama
+105. POPPY WILLOW COOK
+LUI: 9999439470, Family Name: Cook, Given Name(s): Poppy Willow, Date of Birth: 2007-07-07, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Biology, Drama
+106. SAVANNAH GEORGIA COX
+LUI: 9999432923, Family Name: Cox, Given Name(s): Savannah Georgia, Date of Birth: 2007-12-12, House: Blue, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Biology, Drama
+107. ADDISON AURORA CARTER
+LUI: 9999296227, Family Name: Carter, Given Name(s): Addison Aurora, Date of Birth: 2007-08-12, House: Green, AARA: false
+Subjects: English, General Mathematics, Psychology, Biology, Ancient History, Modern History
+108. ALICE AUTUMN ROGERS
+LUI: 9999852953, Family Name: Rogers, Given Name(s): Alice Autumn, Date of Birth: 2008-06-14, House: Red, AARA: false
+Subjects: English, General Mathematics, Psychology, Biology, Ancient History, Modern History
+109. PENELOPE ABIGAIL EDWARDS
+LUI: 9999491859, Family Name: Edwards, Given Name(s): Penelope Abigail, Date of Birth: 2008-04-08, House: White, AARA: false
+Subjects: English, General Mathematics, Engineering, Biology, Ancient History, Design
+110. WILLOW SIENNA HUGHES
+LUI: 9999053180, Family Name: Hughes, Given Name(s): Willow Sienna, Date of Birth: 2007-09-05, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Engineering, Biology, Ancient History, Design
+111. VIOLET STELLA MURPHY
+LUI: 9999144668, Family Name: Murphy, Given Name(s): Violet Stella, Date of Birth: 2007-09-17, House: Blue, AARA: false
+Subjects: English, General Mathematics, Ancient History, Business, Accounting, Economics
+112. AURORA FLORENCE BUTLER
+LUI: 9999360661, Family Name: Butler, Given Name(s): Aurora Florence, Date of Birth: 2008-02-18, House: Green, AARA: false
+Subjects: English, General Mathematics, Ancient History, Business, Accounting, Economics
+113. LAYLA EVELYN PERRY
+LUI: 9999597175, Family Name: Perry, Given Name(s): Layla Evelyn, Date of Birth: 2007-08-16, House: Red, AARA: false
+Subjects: English, General Mathematics, Engineering, Physics, Modern History, Economics
+114. AUTUMN MAEVE RUSSELL
+LUI: 9999728977, Family Name: Russell, Given Name(s): Autumn Maeve, Date of Birth: 2008-02-22, House: White, AARA: false
+Subjects: English, General Mathematics, Engineering, Physics, Biology, Digital Solutions
+115. ABIGAIL JASMINE COOPER
+LUI: 9999266740, Family Name: Cooper, Given Name(s): Abigail Jasmine, Date of Birth: 2008-05-09, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Business, Biology, Digital Solutions
+116. SIENNA CLARA FISHER
+LUI: 9999230891, Family Name: Fisher, Given Name(s): Sienna Clara, Date of Birth: 2007-12-28, House: Blue, AARA: false
+Subjects: English, General Mathematics, Philosophy And Reason, Business, Biology, Digital Solutions
+117. STELLA ELSIE HOWARD
+LUI: 9999857598, Family Name: Howard, Given Name(s): Stella Elsie, Date of Birth: 2007-07-11, House: Green, AARA: false
+Subjects: English, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+118. FLORENCE GEORGIA BAILEY
+LUI: 9999921901, Family Name: Bailey, Given Name(s): Florence Georgia, Date of Birth: 2008-02-26, House: Red, AARA: false
+Subjects: English, Mathematical Methods, Biology, Modern History, Geography, Physics
+119. EVELYN ELEANOR WATSON
+LUI: 9999603740, Family Name: Watson, Given Name(s): Evelyn Eleanor, Date of Birth: 2007-09-01, House: White, AARA: false
+Subjects: English, Mathematical Methods, Modern History, Chemistry, Biology, Physics
+120. MAEVE PIPER BROOKS
+LUI: 9999317903, Family Name: Brooks, Given Name(s): Maeve Piper, Date of Birth: 2007-12-16, House: Yellow, AARA: false
+Subjects: English, Mathematical Methods, Biology, Physics, Psychology, Economics
+121. AKARI JASMINE NAKAMURA
+LUI: 9999389377, Family Name: Nakamura, Given Name(s): Akari Jasmine, Date of Birth: 2008-02-06, House: Blue, AARA: false
+Subjects: English, General Mathematics, Japanese, Business, Legal Studies, Economics
+122. CLARA ROSIE FOSTER
+LUI: 9999364918, Family Name: Foster, Given Name(s): Clara Rosie, Date of Birth: 2007-11-19, House: Green, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Geography
+123. LILY QUINN HENDERSON
+LUI: 9999658761, Family Name: Henderson, Given Name(s): Lily Quinn, Date of Birth: 2007-10-02, House: Red, AARA: false
+Subjects: English, General Mathematics, Food And Nutrition, Modern History, Physical Education, Geography
+124. ELSIE FREYA SANDERS
+LUI: 9999581170, Family Name: Sanders, Given Name(s): Elsie Freya, Date of Birth: 2007-11-27, House: White, AARA: false
+Subjects: English, General Mathematics, Biology, Physics, Chemistry, Geography
+125. GEORGIA IMOGEN KNIGHT
+LUI: 9999647815, Family Name: Knight, Given Name(s): Georgia Imogen, Date of Birth: 2007-08-04, House: Yellow, AARA: false
+Subjects: English, General Mathematics, Biology, Physics, Chemistry, English And Literature Extension
+126. CLARA SADIE MITCHELL
+LUI: 9999414858, Family Name: Mitchell, Given Name(s): Clara Sadie, Date of Birth: 2007-07-07, House: Blue, AARA: false
+Subjects: English, General Mathematics, Psychology, Biology, Chemistry, Geography
+127. ELEANOR MATILDA WEBB
+LUI: 9999067551, Family Name: Webb, Given Name(s): Eleanor Matilda, Date of Birth: 2008-04-12, House: Green, AARA: false
+Subjects: English, General Mathematics, Visual Art, Music, Psychology, Drama
+128. PIPER BONNIE STONE
+LUI: 9999021692, Family Name: Stone, Given Name(s): Piper Bonnie, Date of Birth: 2007-09-17, House: Red, AARA: false
+Subjects: Literature, General Mathematics, Visual Art, Music, Psychology, Drama
+129. HARPER ADDISON PORTER
+LUI: 9999783558, Family Name: Porter, Given Name(s): Harper Addison, Date of Birth: 2007-07-03, House: White, AARA: false
+Subjects: Literature, General Mathematics, Visual Art, Music, Psychology, Design
+130. MATILDA PHOEBE SHARP
+LUI: 9999200725, Family Name: Sharp, Given Name(s): Matilda Phoebe, Date of Birth: 2008-02-18, House: Yellow, AARA: false
+Subjects: Literature, General Mathematics, Visual Art, Music, Psychology, Design
+131. PHOEBE MOLLY GIBSON
+LUI: 9999725839, Family Name: Gibson, Given Name(s): Phoebe Molly, Date of Birth: 2007-08-20, House: Blue, AARA: false
+Subjects: Literature, General Mathematics, Ancient History, Physics, Geography, Digital Solutions
+132. CHARLOTTE PAIGE ELLIS
+LUI: 9999415696, Family Name: Ellis, Given Name(s): Charlotte Paige, Date of Birth: 2008-05-05, House: Green, AARA: false
+Subjects: Literature, General Mathematics, Ancient History, Physics, Geography, Digital Solutions
+133. PAIGE ROSIE COLLINS
+LUI: 9999688978, Family Name: Collins, Given Name(s): Paige Rosie, Date of Birth: 2007-11-07, House: Red, AARA: false
+Subjects: Literature, General Mathematics, Biology, Physics, Geography, Digital Solutions
+134. MOLLY QUINN PEARCE
+LUI: 9999678029, Family Name: Pearce, Given Name(s): Molly Quinn, Date of Birth: 2008-06-06, House: White, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Physics, Geography, Digital Solutions
+135. ROSIE MAEVE WELLS
+LUI: 9999152357, Family Name: Wells, Given Name(s): Rosie Maeve, Date of Birth: 2008-06-06, House: Yellow, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Specialist Mathematics, English And Literature Extension
+136. AKANE ELEANOR TENDO
+LUI: 9999827434, Family Name: Tendo, Given Name(s): Akane Eleanor, Date of Birth: 2007-11-03, House: Blue, AARA: false
+Subjects: Literature, Mathematical Methods, Japanese, Chemistry, Specialist Mathematics, Physics
+137. MEI SOPHIA ZHANG
+LUI: 9999332370, Family Name: Zhang, Given Name(s): Mei Sophia, Date of Birth: 2007-07-07, House: Green, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Specialist Mathematics, Physics
+138. FREYA HARPER FRASER
+LUI: 9999555688, Family Name: Fraser, Given Name(s): Freya Harper, Date of Birth: 2008-05-25, House: Red, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Ancient History, Biology, Physics
+139. IVY MATILDA WALSH-SMITH
+LUI: 9999416656, Family Name: Walsh-Smith, Given Name(s): Ivy Matilda, Date of Birth: 2008-05-13, House: White, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+140. ZOFIA EMILIA GOLLSCHEWSKY
+LUI: 9999025092, Family Name: Gollschewsky, Given Name(s): Zofia Emilia, Date of Birth: 2008-01-01, House: Yellow, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+141. LING-LING CHEN
+LUI: 9999438575, Family Name: Chen, Given Name(s): Ling-Ling, Date of Birth: 2007-12-08, House: Blue, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+142. LUNA ISABELLE GRANT
+LUI: 9999621947, Family Name: Grant, Given Name(s): Luna Isabelle, Date of Birth: 2007-12-08, House: Green, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+143. AVA CHLOE RICHARDS
+LUI: 9999772660, Family Name: Richards, Given Name(s): Ava Chloe, Date of Birth: 2008-05-25, House: Red, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Chemistry, Biology, Physics
+144. SIENNA VIOLET HARPER
+LUI: 9999135972, Family Name: Harper, Given Name(s): Sienna Violet, Date of Birth: 2008-01-01, House: White, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Physics, Specialist Mathematics, Chemistry
+145. ALINA JASMINE REID
+LUI: 9999119404, Family Name: Reid, Given Name(s): Alina Jasmine, Date of Birth: 2008-05-09, House: Yellow, AARA: false
+Subjects: Literature, Mathematical Methods, Engineering, Physics, Specialist Mathematics, Chemistry
+146. ELIZA GEORGIA BLACK
+LUI: 9999353258, Family Name: Black, Given Name(s): Eliza Georgia, Date of Birth: 2008-03-07, House: Blue, AARA: false
+Subjects: Literature, Mathematical Methods, Biology, Chemistry, Specialist Mathematics, Physics
+147. HANA CHARLOTTE NAKAMURA
+LUI: 9999225349, Family Name: Nakamura, Given Name(s): Hana Charlotte, Date of Birth: 2008-02-02, House: Green, AARA: false
+Subjects: Literature, Mathematical Methods, Japanese, Chemistry, Specialist Mathematics, Physics
+148. LAYLA PAIGE STERLING
+LUI: 9999298457, Family Name: Sterling, Given Name(s): Layla Paige, Date of Birth: 2008-06-02, House: Red, AARA: false
+Subjects: Literature, Mathematical Methods, Biology, Chemistry, Specialist Mathematics, Physics
+149. ARIA WILLOW CLARKE
+LUI: 9999253083, Family Name: Clarke, Given Name(s): Aria Willow, Date of Birth: 2008-04-16, House: White, AARA: false
+Subjects: Literature, Mathematical Methods, Biology, Chemistry, Specialist Mathematics, Physics
+150. MAI CHENG
+LUI: 9999785722, Family Name: Cheng, Given Name(s): Mai, Date of Birth: 2007-11-11, House: Yellow, AARA: false
+Subjects: Literature, Mathematical Methods, Biology, Chemistry, Specialist Mathematics, Digital Solutions
+
+[Exams: 14]
+1. Year 12 Internal Assessment English
+Subject: English, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-10 08:30
+2. Year 12 Internal Assessment Literature
+Subject: Literature, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-10 12:30
+3. Year 12 Internal Assessment Essential English
+Subject: Essential English, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-10 12:30
+4. Year 12 Internal Assessment General Mathematics
+Subject: General Mathematics, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-11 08:30
+5. Year 12 Internal Assessment Mathematical Methods Paper 1
+Subject: Mathematical Methods, Exam Type: INTERNAL, Paper: 1, Subtitle: Technology Free, Unit: 3, Exam Date: 2025-03-11 12:30
+6. Year 12 Internal Assessment Mathematical Methods Paper 2
+Subject: Mathematical Methods, Exam Type: INTERNAL, Paper: 2, Subtitle: Technology Enabled, Unit: 3, Exam Date: 2025-03-12 08:30
+7. Year 12 Internal Assessment Specialist Mathematics Paper 1
+Subject: Specialist Mathematics, Exam Type: INTERNAL, Paper: 1, Subtitle: Technology Free, Unit: 3, Exam Date: 2025-03-12 12:30
+8. Year 12 Internal Assessment Specialist Mathematics Paper 2
+Subject: Specialist Mathematics, Exam Type: INTERNAL, Paper: 2, Subtitle: Technology Enabled, Unit: 3, Exam Date: 2025-03-13 08:30
+9. Year 12 Internal Assessment Physics
+Subject: Physics, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-13 12:30
+10. Year 12 Internal Assessment Chemistry
+Subject: Chemistry, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-14 08:30
+11. Year 12 Internal Assessment Biology
+Subject: Biology, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-14 12:30
+12. Year 12 Internal Assessment Visual Art
+Subject: Visual Art, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-13 12:30
+13. Year 12 Internal Assessment Business
+Subject: Business, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-14 08:30
+14. Year 12 Internal Assessment Accounting
+Subject: Accounting, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-14 12:30
+
+[Rooms: 5]
+1. R1
+2. R2
+3. R3
+4. S101
+5. S102
+
+[Venues: 7]
+1. V1 (25 Non-AARA desks)
+Room Count: 1, Rooms: R1, Rows: 5, Columns: 5, Desks: 25, AARA: false
+2. V2 (25 Non-AARA desks)
+Room Count: 1, Rooms: R2, Rows: 5, Columns: 5, Desks: 25, AARA: false
+3. V3 (25 Non-AARA desks)
+Room Count: 1, Rooms: R3, Rows: 5, Columns: 5, Desks: 25, AARA: false
+4. V1+V2+V3 (80 Non-AARA desks)
+Room Count: 3, Rooms: R1 R2 R3, Rows: 5, Columns: 16, Desks: 80, AARA: false
+5. W1 (5 AARA desks)
+Room Count: 1, Rooms: S101, Rows: 1, Columns: 5, Desks: 5, AARA: true
+6. W2 (10 AARA desks)
+Room Count: 1, Rooms: S102, Rows: 2, Columns: 5, Desks: 10, AARA: true
+7. W1+W2 (15 AARA desks)
+Room Count: 2, Rooms: S101 S102, Rows: 3, Columns: 5, Desks: 15, AARA: true
+
+[Sessions: 2]
+1. Venue: V1+V2+V3, Session Number: 1, Day: 2025-03-10, Start: 12:30, Exams: 2
+Year 12 Internal Assessment Literature
+    [Desks: 36]
+    Desk: 1, LUI: 9999831170, Name: Ahmad, Tariq N.
+    Desk: 2, LUI: 9999353258, Name: Black, Eliza G.
+    Desk: 3, LUI: 9999257005, Name: Carpenter, Noah E.
+    Desk: 4, LUI: 9999438575, Name: Chen, Ling-Ling
+    Desk: 5, LUI: 9999785722, Name: Cheng, Mai
+    Desk: 6, LUI: 9999253083, Name: Clarke, Aria W.
+    Desk: 7, LUI: 9999688978, Name: Collins, Paige R.
+    Desk: 8, LUI: 9999415696, Name: Ellis, Charlotte P.
+    Desk: 9, LUI: 9999374704, Name: Fraser, Harvey P.
+    Desk: 10, LUI: 9999555688, Name: Fraser, Freya H.
+    Desk: 11, LUI: 9999725839, Name: Gibson, Phoebe M.
+    Desk: 12, LUI: 9999025092, Name: Gollschewsky, Zofia E.
+    Desk: 13, LUI: 9999621947, Name: Grant, Luna I.
+    Desk: 14, LUI: 9999419471, Name: Green, Caleb A.
+    Desk: 15, LUI: 9999135972, Name: Harper, Sienna V.
+    Desk: 16, LUI: 9999209287, Name: Hart, Sebastian J.
+    Desk: 17, LUI: 9999144365, Name: Lane, Jordan I.
+    Desk: 18, LUI: 9999225349, Name: Nakamura, Hana C.
+    Desk: 19, LUI: 9999605671, Name: Newman, Elijah C.
+    Desk: 20, LUI: 9999678029, Name: Pearce, Molly Q.
+    Desk: 21, LUI: 9999783558, Name: Porter, Harper A.
+    Desk: 22, LUI: 9999119404, Name: Reid, Alina J.
+    Desk: 23, LUI: 9999772660, Name: Richards, Ava C.
+    Desk: 24, LUI: 9999200725, Name: Sharp, Matilda P.
+    Desk: 25, LUI: 9999672610, Name: Snow, Aiden P.
+    Desk: 26, LUI: 9999298457, Name: Sterling, Layla P.
+    Desk: 27, LUI: 9999021692, Name: Stone, Piper B.
+    Desk: 28, LUI: 9999896932, Name: Tanaka, Hiroshi B.
+    Desk: 29, LUI: 9999827434, Name: Tendo, Akane E.
+    Desk: 30, LUI: 9999831867, Name: Walsh-Bennett, Cameron E.
+    Desk: 31, LUI: 9999416656, Name: Walsh-Smith, Ivy M.
+    Desk: 32, LUI: 9999880219, Name: Ward, Luca N.
+    Desk: 33, LUI: 9999929778, Name: Watanabe, Akio J.
+    Desk: 34, LUI: 9999479243, Name: Watson, Alexander F.
+    Desk: 35, LUI: 9999152357, Name: Wells, Rosie M.
+    Desk: 36, LUI: 9999332370, Name: Zhang, Mei S.
+Year 12 Internal Assessment Essential English
+    [Desks: 17]
+    Desk: 64, LUI: 9999440022, Name: Brown, Noah J.
+    Desk: 65, LUI: 9999072292, Name: Brown, Charlotte A.
+    Desk: 66, LUI: 9999619188, Name: Brown, Charlotte S.
+    Desk: 67, LUI: 9999147144, Name: Davis, Hunter R.
+    Desk: 68, LUI: 9999042588, Name: Davis, Ella G.
+    Desk: 69, LUI: 9999543293, Name: Hall, Lily C.
+    Desk: 70, LUI: 9999986913, Name: Harris, Lucas E.
+    Desk: 71, LUI: 9999063966, Name: Johnson, Oliver H.
+    Desk: 72, LUI: 9999106094, Name: Johnson, Amelia R.
+    Desk: 73, LUI: 9999365663, Name: Smith, Liam A.
+    Desk: 74, LUI: 9999280542, Name: Smith, Olivia G.
+    Desk: 75, LUI: 9999521703, Name: Taylor, Henry W.
+    Desk: 76, LUI: 9999955931, Name: Taylor, Ava H.
+    Desk: 77, LUI: 9999191361, Name: White, Leo H.
+    Desk: 78, LUI: 9999242025, Name: White, Mia L.
+    Desk: 79, LUI: 9999313004, Name: Williams, Jack T.
+    Desk: 80, LUI: 9999131191, Name: Williams, Isla
+2. Venue: W1+W2, Session Number: 1, Day: 2025-03-10, Start: 12:30, Exams: 2
+Year 12 Internal Assessment Literature
+    [Desks: 6]
+    Desk: 1, LUI: 9999493906, Name: Black, Mitchell C.
+    Desk: 2, LUI: 9999559970, Name: Ellis, Theodore D.
+    Desk: 3, LUI: 9999913083, Name: Gibson, Harrison J.
+    Desk: 4, LUI: 9999248162, Name: Hassan, Omar J.
+    Desk: 5, LUI: 9999148941, Name: Khalid, Muhammad A.
+    Desk: 6, LUI: 9999865763, Name: Wang, Chen A.
+Year 12 Internal Assessment Essential English
+    [Desks: 1]
+    Desk: 15, LUI: 9999406335, Name: Howard, Felix A.
+
+
+[End]
+
