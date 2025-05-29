@@ -202,33 +202,69 @@ public class ExamBlockModel {
 
             // Read header information
             String line = CSSE7023.getLine(br);
-            if (line != null) {
+            if (line != null && line.startsWith("Title:")) {
                 String[] headerParts = CSSE7023.keyValuePair(line);
-                if (headerParts != null && headerParts[0].equals("Title")) {
+                if (headerParts != null) {
                     title = headerParts[1];
                 }
             }
 
             line = CSSE7023.getLine(br);
-            if (line != null) {
+            if (line != null && line.startsWith("Version:")) {
                 String[] versionParts = CSSE7023.keyValuePair(line);
-                if (versionParts != null && versionParts[0].equals("Version")) {
+                if (versionParts != null) {
                     version = CSSE7023.toDouble(versionParts[1], "Invalid version format");
                 }
             }
 
-            // Load each section - only call streamIn if the class actually implements it
-            // For now, skip streaming for classes that don't have it implemented yet
-            try {
-                if (subjects instanceof StreamManager) {
-                    ((StreamManager) subjects).streamIn(br, registry, 1);
-                }
-            } catch (Exception e) {
-                System.out.println("Skipping subjects loading: " + e.getMessage());
+            // Skip the [Begin] marker
+            line = CSSE7023.getLine(br);
+            if (line == null || !line.equals("[Begin]")) {
+                throw new RuntimeException("Expected [Begin] marker but found: " + line);
             }
 
-            // Skip other sections for now until streaming is properly implemented
-            System.out.println("Basic file structure loaded. Full streaming implementation pending.");
+            // Load each section
+            while ((line = CSSE7023.getLine(br, true)) != null) {
+                if (line.equals("[End]")) {
+                    // Read the actual line to consume it
+                    CSSE7023.getLine(br);
+                    break;
+                }
+
+                if (line.startsWith("[Subjects:")) {
+                    subjects.streamIn(br, registry, 1);
+                } else if (line.startsWith("[Units:")) {
+                    units.streamIn(br, registry, 1);
+                } else if (line.startsWith("[Students:")) {
+                   break;
+                } else if (line.startsWith("[Exams:")) {
+                    exams.streamIn(br, registry, 1);
+                } else if (line.startsWith("[Rooms:")) {
+                    rooms.streamIn(br, registry, 1);
+                } else if (line.startsWith("[Venues:")) {
+                    venues.streamIn(br, registry, 1);
+                } else if (line.startsWith("[Sessions:")) {
+                    // Sessions need special handling
+                    loadSessions(br);
+                } else {
+                    // Unknown section, skip the line
+                    CSSE7023.getLine(br);
+                }
+            }
+
+            // After loading, we need to establish relationships
+            establishRelationships();
+
+            if (Verbose.isVerbose()) {
+                System.out.println("File loaded successfully!");
+                System.out.println("Loaded " + subjects.size() + " subjects");
+                System.out.println("Loaded " + units.size() + " units");
+                System.out.println("Loaded " + students.size() + " students");
+                System.out.println("Loaded " + exams.size() + " exams");
+                System.out.println("Loaded " + rooms.size() + " rooms");
+                System.out.println("Loaded " + venues.size() + " venues");
+                System.out.println("Loaded " + sessions.all().size() + " sessions");
+            }
 
             notifyObservers("loaded");
             return true;
@@ -236,9 +272,191 @@ public class ExamBlockModel {
         } catch (IOException | RuntimeException e) {
             if (Verbose.isVerbose()) {
                 System.err.println("Error loading file: " + e.getMessage());
+                e.printStackTrace();
             }
             DialogUtils.showMessage("Error loading file: " + e.getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Loads sessions from the file.
+     * Sessions have a special format that needs custom parsing.
+     */
+    private void loadSessions(BufferedReader br) throws IOException {
+        String line = CSSE7023.getLine(br);
+        if (line == null || !line.startsWith("[Sessions:")) {
+            throw new RuntimeException("Expected [Sessions: N] but got: " + line);
+        }
+
+        // Parse session count
+        String[] parts = line.substring(1, line.length() - 1).split(": ");
+        int sessionCount = Integer.parseInt(parts[1]);
+
+        if (Verbose.isVerbose()) {
+            System.out.println("\nLoading " + sessionCount + " sessions...\n");
+        }
+
+        // Read each session
+        for (int i = 1; i <= sessionCount; i++) {
+            // Read session header: "1. Venue: V1+V2+V3, Session Number: 1, Day: 2025-03-10, Start: 12:30, Exams: 2"
+            String sessionHeader = CSSE7023.getLine(br);
+            if (sessionHeader == null) {
+                throw new RuntimeException("EOF reading Session #" + i);
+            }
+
+            // Parse the session header
+            String[] headerParts = sessionHeader.split("\\. ", 2);
+            if (headerParts.length != 2) {
+                throw new RuntimeException("Invalid session header format: " + sessionHeader);
+            }
+
+            // Parse session details
+            String details = headerParts[1];
+            String venueId = null;
+            int sessionNumber = 0;
+            String day = null;
+            String start = null;
+            int examCount = 0;
+
+            // Parse key-value pairs
+            String[] detailParts = details.split(", ");
+            for (String part : detailParts) {
+                String[] kv = part.split(": ");
+                if (kv.length == 2) {
+                    switch (kv[0]) {
+                        case "Venue":
+                            venueId = kv[1];
+                            break;
+                        case "Session Number":
+                            sessionNumber = Integer.parseInt(kv[1]);
+                            break;
+                        case "Day":
+                            day = kv[1];
+                            break;
+                        case "Start":
+                            start = kv[1];
+                            break;
+                        case "Exams":
+                            examCount = Integer.parseInt(kv[1]);
+                            break;
+                    }
+                }
+            }
+
+            // Create the session
+            Venue venue = venues.find(venueId);
+            if (venue == null) {
+                throw new RuntimeException("Venue not found for session: " + venueId);
+            }
+
+            Session session = new Session(venue, sessionNumber,
+                    CSSE7023.toLocalDate(day, "Invalid date format"),
+                    CSSE7023.toLocalTime(start, "Invalid time format"));
+
+            // Read exam allocations for this session
+            for (int j = 0; j < examCount; j++) {
+                String examLine = CSSE7023.getLine(br);
+                if (examLine != null && !examLine.trim().isEmpty()) {
+                    // Parse exam line to get subject
+                    // Format might be like "Literature (36 students)"
+                    String examSubject = examLine.trim();
+                    int studentCount = 0;
+
+                    if (examSubject.contains("(")) {
+                        // Extract student count
+                        int openParen = examSubject.indexOf("(");
+                        int closeParen = examSubject.indexOf("students)");
+                        if (closeParen > openParen) {
+                            String countStr = examSubject.substring(openParen + 1, closeParen).trim();
+                            try {
+                                studentCount = Integer.parseInt(countStr);
+                            } catch (NumberFormatException e) {
+                                // Ignore parsing errors
+                            }
+                        }
+                        examSubject = examSubject.substring(0, openParen).trim();
+                    }
+
+                    // Find the exam by subject
+                    Exam exam = null;
+                    for (Exam e : exams.all()) {
+                        if (e.getSubject().getTitle().equals(examSubject)) {
+                            exam = e;
+                            break;
+                        }
+                    }
+
+                    if (exam != null) {
+                        session.scheduleExam(exam, studentCount);
+                    } else if (Verbose.isVerbose()) {
+                        System.out.println("Warning: Exam not found for subject: " + examSubject);
+                    }
+                }
+            }
+
+            // Check if there are desk allocations
+            String nextLine = CSSE7023.getLine(br, true); // Peek at next line
+            if (nextLine != null && nextLine.startsWith("[Desks:")) {
+                // Consume the [Desks: N] line
+                CSSE7023.getLine(br);
+
+                // Extract desk count
+                int deskCount = 0;
+                try {
+                    String deskCountStr = nextLine.substring(7, nextLine.length() - 1).trim();
+                    deskCount = Integer.parseInt(deskCountStr);
+                } catch (Exception e) {
+                    // Ignore parsing errors
+                }
+
+                // Skip desk allocation details for now
+                // These would be lines like "Desk: 1, LUI: 9999493906, Name: Black, Mitchell C."
+                for (int k = 0; k < deskCount; k++) {
+                    String deskLine = CSSE7023.getLine(br);
+                    if (deskLine == null) {
+                        break;
+                    }
+                    // TODO: Parse desk allocations if needed
+                }
+            }
+
+            sessions.add(session);
+        }
+
+        if (Verbose.isVerbose()) {
+            System.out.println("Successfully loaded " + sessions.all().size() + " sessions");
+        }
+    }
+
+    /**
+     * Establishes relationships between loaded entities.
+     * For example, linking students to their subjects and exams.
+     */
+    private void establishRelationships() {
+        // Link students to their exams based on subjects
+        for (Student student : students.all()) {
+            // Clear any existing exams
+            student.getExams().clear();
+
+            // For each subject the student is enrolled in
+            for (Subject subject : student.getSubjects().all()) {
+                // Find all exams for this subject
+                for (Exam exam : exams.all()) {
+                    if (exam.getSubject().equals(subject)) {
+                        // Add this exam to the student's exam list
+                        student.getExams().add(exam);
+                    }
+                }
+            }
+        }
+
+        // Link units to subjects if needed
+        // The units are already linked to subjects during loading
+
+        if (Verbose.isVerbose()) {
+            System.out.println("Established relationships between entities");
+            System.out.println("Linked students to their exams based on enrolled subjects");
         }
     }
 
@@ -269,18 +487,37 @@ public class ExamBlockModel {
             bw.write("Title: " + this.title + System.lineSeparator());
             bw.write("Version: " + this.version + System.lineSeparator());
             bw.write(System.lineSeparator());
+            bw.write("[Begin]" + System.lineSeparator());
+            bw.write(System.lineSeparator());
 
-            // Write each section - only call streamOut if implemented
-            try {
-                if (subjects instanceof StreamManager) {
-                    ((StreamManager) subjects).streamOut(bw, 1);
+            // Write each section
+            subjects.streamOut(bw, 1);
+            units.streamOut(bw, 1);
+            students.streamOut(bw, 1);
+            exams.streamOut(bw, 1);
+            rooms.streamOut(bw, 1);
+            venues.streamOut(bw, 1);
+
+            // Write sessions (need special handling)
+            bw.write("[Sessions: " + sessions.all().size() + "]" + System.lineSeparator());
+            int sessionIndex = 1;
+            for (Session session : sessions.all()) {
+                bw.write(sessionIndex + ". Venue: " + session.getVenue().venueId() +
+                        ", Session Number: " + session.getSessionNumber() +
+                        ", Day: " + session.getDate() +
+                        ", Start: " + session.getTime() +
+                        ", Exams: " + session.getExams().size() + System.lineSeparator());
+
+                // Write exam details for this session
+                for (Exam exam : session.getExams()) {
+                    bw.write("    " + exam.getSubject().getTitle() +
+                            " (" + session.countStudents() + " students)" + System.lineSeparator());
                 }
-            } catch (Exception e) {
-                bw.write("# Subjects section skipped\n");
+                sessionIndex++;
             }
 
-            // Simple placeholder sections for now
-            bw.write("# Other sections not yet implemented\n");
+            bw.write(System.lineSeparator());
+            bw.write("[End]" + System.lineSeparator());
 
             if (Verbose.isVerbose()) {
                 System.out.println("File saved successfully to: " + filename);

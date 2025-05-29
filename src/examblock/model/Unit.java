@@ -13,13 +13,13 @@ import java.io.IOException;
 public class Unit implements StreamManager, ManageableListItem {
 
     /** This Unit's parent subject. */
-    private final Subject subject;
+    private Subject subject;
     /** The single-character identifier of this Unit. */
-    private final Character unitId;
+    private Character unitId;
     /** The title of this Unit. */
-    private final String title;
+    private String title;
     /** The description of the Unit. */
-    private final String description;
+    private String description;
     /** The registry for dependencies. */
     private Registry registry;
 
@@ -67,11 +67,7 @@ public class Unit implements StreamManager, ManageableListItem {
             throws IOException, RuntimeException {
         this.registry = registry;
 
-        String[] data = readUnitData(br, nthItem);
-        this.subject = registry.find(data[0], Subject.class);
-        this.unitId = data[1].charAt(0);
-        this.title = cleanTitle(data[2]);
-        this.description = data[3];
+        readUnitData(br, registry, nthItem);
 
         if (registry != null) {
             registry.add(this, Unit.class);
@@ -89,9 +85,9 @@ public class Unit implements StreamManager, ManageableListItem {
         return rawTitle.trim().replaceAll("\\s+", " ");
     }
 
-    private String[] readUnitData(BufferedReader br, int nthItem)
+    private void readUnitData(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
-        // Read header line: "1. Mathematics Methods: Unit 3: Calculus"
+        // Read header line: "1. ACCOUNTING"
         String headerLine = CSSE7023.getLine(br);
         if (headerLine == null) {
             throw new RuntimeException("EOF reading Unit #" + nthItem);
@@ -108,15 +104,38 @@ public class Unit implements StreamManager, ManageableListItem {
             throw new RuntimeException("Unit index out of sync!");
         }
 
-        // Parse "Mathematics Methods: Unit 3: Calculus"
-        String[] parts = headerParts[1].split(": ");
-        if (parts.length < 3) {
-            throw new RuntimeException("Invalid unit format: " + headerParts[1]);
+        // The subject name in uppercase
+        String subjectNameUpper = headerParts[1].trim();
+
+        // Read the actual unit line: "Accounting, Unit 3: Managing resources"
+        String unitLine = CSSE7023.getLine(br);
+        if (unitLine == null) {
+            throw new RuntimeException("EOF reading Unit #" + nthItem + " details");
         }
 
-        String subjectTitle = parts[0];
-        String unitIdPart = parts[1].replace("Unit ", "");
-        String unitTitle = parts[2];
+        // Parse "Accounting, Unit 3: Managing resources"
+        String[] parts = unitLine.split(", Unit ");
+        if (parts.length != 2) {
+            throw new RuntimeException("Invalid unit format: " + unitLine);
+        }
+
+        String subjectTitle = parts[0].trim();
+
+        // Parse "3: Managing resources"
+        String unitPart = parts[1];
+        String[] unitParts = unitPart.split(": ", 2);
+        if (unitParts.length != 2) {
+            throw new RuntimeException("Invalid unit details: " + unitPart);
+        }
+
+        this.unitId = unitParts[0].trim().charAt(0);
+        this.title = unitParts[1].trim();
+
+        // Find the subject
+        this.subject = registry.find(subjectTitle, Subject.class);
+        if (this.subject == null) {
+            throw new RuntimeException("Subject not found for unit: " + subjectTitle);
+        }
 
         // Read description line
         String descLine = CSSE7023.getLine(br);
@@ -124,17 +143,17 @@ public class Unit implements StreamManager, ManageableListItem {
             throw new RuntimeException("EOF reading Unit #" + nthItem + " description");
         }
 
-        String description = descLine;
-        if (description.startsWith("\"") && description.endsWith("\"")) {
-            description = description.substring(1, description.length() - 1);
+        // Remove quotes from description
+        this.description = descLine.trim();
+        if (this.description.startsWith("\"") && this.description.endsWith("\"")) {
+            this.description = this.description.substring(1, this.description.length() - 1);
         }
-
-        return new String[]{subjectTitle, unitIdPart, unitTitle, description};
     }
 
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
-        bw.write(nthItem + ". " + subject.getTitle() + ": Unit " + unitId + ": " + title + System.lineSeparator());
+        bw.write(nthItem + ". " + subject.getTitle().toUpperCase() + System.lineSeparator());
+        bw.write(subject.getTitle() + ", Unit " + unitId + ": " + title + System.lineSeparator());
         bw.write("\"" + description + "\"" + System.lineSeparator());
     }
 
@@ -163,6 +182,13 @@ public class Unit implements StreamManager, ManageableListItem {
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Gets the title of this unit.
+     */
+    public String getTitle() {
+        return title;
     }
 
     @Override

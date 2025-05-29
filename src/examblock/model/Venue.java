@@ -45,7 +45,7 @@ public class Venue extends Room {
         super(id, new RegistryImpl()); // Use the Room constructor that takes id and registry
         this.roomCount = roomCount;
 
-        
+
         this.rooms = new RoomList(rooms.getRegistry());
         int counter = 0;
         for (Room room : rooms.getItems()) {
@@ -90,10 +90,7 @@ public class Venue extends Room {
         this.rooms = new RoomList(registry);
         streamIn(br, registry, nthItem);
 
-        if (registry != null) {
-            registry.add(this, Venue.class);
-        }
-
+        // Don't register here - let streamIn handle it
         if (Verbose.isVerbose()) {
             System.out.println("Loaded Venue: " + venueId());
         }
@@ -175,35 +172,36 @@ public class Venue extends Room {
 
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
-        // Write venue data in format:
-        // 1. V1 2 R101,R102 10 8 80 false
-        StringBuilder sb = new StringBuilder();
-        sb.append(nthItem).append(". ");
-        sb.append(venueId()).append(" ");
-        sb.append(roomCount).append(" ");
+        // Write venue data in the expected format
+        bw.write(nthItem + ". " + venueId() + " (" + totalDesks + " ");
+        if (aara) {
+            bw.write("AARA ");
+        } else {
+            bw.write("Non-AARA ");
+        }
+        bw.write("desks)" + System.lineSeparator());
 
-        // Write room IDs
+        // Write details line
+        bw.write("Room Count: " + roomCount);
+        bw.write(", Rooms: ");
         boolean first = true;
         for (Room room : rooms.getItems()) {
-            if (!first) {
-                sb.append(",");
-            }
-            sb.append(room.roomId());
+            if (!first) bw.write(" ");
+            bw.write(room.roomId());
             first = false;
         }
-        sb.append(" ");
-        sb.append(rows).append(" ");
-        sb.append(columns).append(" ");
-        sb.append(totalDesks).append(" ");
-        sb.append(aara);
-
-        bw.write(sb.toString() + System.lineSeparator());
+        bw.write(", Rows: " + rows);
+        bw.write(", Columns: " + columns);
+        bw.write(", Desks: " + totalDesks);
+        bw.write(", AARA: " + aara);
+        bw.write(System.lineSeparator());
     }
 
     @Override
     public void streamIn(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
 
+        // Read header line: "1. V1 (25 Non-AARA desks)"
         String line = CSSE7023.getLine(br);
         if (line == null) {
             throw new RuntimeException("EOF reading Venue #" + nthItem);
@@ -211,7 +209,7 @@ public class Venue extends Room {
 
         String[] parts = line.split("\\. ", 2);
         if (parts.length != 2) {
-            throw new RuntimeException("Invalid venue format: " + line);
+            throw new RuntimeException("Invalid venue header format: " + line);
         }
 
         int index = CSSE7023.toInt(parts[0], "Number format exception parsing Venue " + nthItem);
@@ -219,27 +217,82 @@ public class Venue extends Room {
             throw new RuntimeException("Venue index out of sync!");
         }
 
-        // Parse: V1 2 R101,R102 10 8 80 false
-        String[] data = parts[1].split(" ");
-        if (data.length < 6) {
-            throw new RuntimeException("Invalid venue data format");
+        // Parse "V1 (25 Non-AARA desks)"
+        String venueInfo = parts[1];
+        String venueId = "";
+
+        // Extract venue ID (everything before the '(')
+        int parenIndex = venueInfo.indexOf('(');
+        if (parenIndex > 0) {
+            venueId = venueInfo.substring(0, parenIndex).trim();
         }
 
-        setId(data[0]); // Venue ID
-        roomCount = CSSE7023.toInt(data[1], "Invalid room count");
+        setId(venueId); // Set the venue ID
 
-        // Parse room IDs
-        String[] roomIds = data[2].split(",");
+        // Check if AARA venue
+        this.aara = venueInfo.contains("AARA desks)") && !venueInfo.contains("Non-AARA");
+
+        // Read details line: "Room Count: 1, Rooms: R1, Rows: 5, Columns: 5, Desks: 25, AARA: false"
+        String detailsLine = CSSE7023.getLine(br);
+        if (detailsLine == null) {
+            throw new RuntimeException("EOF reading Venue #" + nthItem + " details");
+        }
+
+        // Parse the key-value pairs
+        String[] details = detailsLine.split(", ");
+        String roomsList = "";
+
+        for (String detail : details) {
+            String[] kv = detail.split(": ");
+            if (kv.length == 2) {
+                String key = kv[0].trim();
+                String value = kv[1].trim();
+
+                switch (key) {
+                    case "Room Count":
+                        roomCount = CSSE7023.toInt(value, "Invalid room count");
+                        break;
+                    case "Rooms":
+                        roomsList = value;
+                        break;
+                    case "Rows":
+                        rows = CSSE7023.toInt(value, "Invalid rows");
+                        break;
+                    case "Columns":
+                        columns = CSSE7023.toInt(value, "Invalid columns");
+                        break;
+                    case "Desks":
+                        totalDesks = CSSE7023.toInt(value, "Invalid total desks");
+                        break;
+                    case "AARA":
+                        aara = CSSE7023.toBoolean(value, "Invalid AARA flag");
+                        break;
+                }
+            }
+        }
+
+        // Parse room IDs and create rooms
         this.rooms = new RoomList(registry);
-        for (String roomId : roomIds) {
-            Room room = new Room(roomId.trim(), registry);
-            this.rooms.add(room);
+        if (!roomsList.isEmpty()) {
+            String[] roomIds = roomsList.split(" ");
+            for (String roomId : roomIds) {
+                roomId = roomId.trim();
+                if (!roomId.isEmpty()) {
+                    // Check if room already exists in registry
+                    Room room = registry.find(roomId, Room.class);
+                    if (room == null) {
+                        // Create new room
+                        room = new Room(roomId, registry);
+                    }
+                    this.rooms.add(room);
+                }
+            }
         }
 
-        rows = CSSE7023.toInt(data[3], "Invalid rows");
-        columns = CSSE7023.toInt(data[4], "Invalid columns");
-        totalDesks = CSSE7023.toInt(data[5], "Invalid total desks");
-        aara = data.length > 6 ? CSSE7023.toBoolean(data[6], "Invalid AARA flag") : false;
+        // Register the venue after all data is loaded
+        if (registry != null) {
+            registry.add(this, Venue.class);
+        }
     }
 
     @Override

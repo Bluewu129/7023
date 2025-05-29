@@ -41,7 +41,9 @@ public class Room implements StreamManager, ManageableListItem {
         this.id = id;
         this.registry = registry;
 
-        registry.add(this, Room.class);
+        if (registry != null) {
+            registry.add(this, Room.class);
+        }
     }
 
     /**
@@ -55,10 +57,12 @@ public class Room implements StreamManager, ManageableListItem {
     public Room(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
 
-        streamIn(br, registry, nthItem);
         this.registry = registry;
+        streamIn(br, registry, nthItem);
 
-        registry.add(this, Room.class);
+        if (registry != null) {
+            registry.add(this, Room.class);
+        }
     }
 
     /**
@@ -79,7 +83,7 @@ public class Room implements StreamManager, ManageableListItem {
      */
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
-        bw.write(nthItem + ". " + this + System.lineSeparator());
+        bw.write(nthItem + ". " + id + System.lineSeparator());
     }
 
     /**
@@ -102,22 +106,24 @@ public class Room implements StreamManager, ManageableListItem {
                          int nthItem)
             throws IOException, RuntimeException {
 
-        //    1. R1
-
+        // Read line like "1. R1"
         String heading = CSSE7023.getLine(br);
         if (heading == null) {
             throw new RuntimeException("EOF reading Room #" + nthItem);
         }
 
-        var bits = heading.split("\\. ");
+        String[] bits = heading.split("\\. ", 2);
+        if (bits.length != 2) {
+            throw new RuntimeException("Invalid room format: " + heading);
+        }
+
         int index = CSSE7023.toInt(bits[0], "Number format exception parsing Room "
-                + nthItem
-                + " header");
+                + nthItem + " header");
         if (index != nthItem) {
             throw new RuntimeException("Room index out of sync!");
         }
 
-        id = bits[1];
+        id = bits[1].trim();
 
         if (Verbose.isVerbose()) {
             System.out.println("Loaded Room: " + id);

@@ -20,6 +20,15 @@ public class Subject implements StreamManager, ManageableListItem {
     private Registry registry;
 
     /**
+     * Default constructor for factory use.
+     */
+    public Subject() {
+        this.title = "";
+        this.description = "";
+        this.registry = null;
+    }
+
+    /**
      * Constructs a new Year 12 Subject object.
      *
      * @param title the string title of this subject
@@ -30,7 +39,6 @@ public class Subject implements StreamManager, ManageableListItem {
         this.description = description;
         this.registry = null;
     }
-
 
     /**
      * Constructs a Subject with registry.
@@ -67,8 +75,7 @@ public class Subject implements StreamManager, ManageableListItem {
         this.description = data[1];
 
         if (registry != null) {
-            registry.add
-                    (this, Subject.class);
+            registry.add(this, Subject.class);
         }
 
         if (Verbose.isVerbose()) {
@@ -101,7 +108,7 @@ public class Subject implements StreamManager, ManageableListItem {
      */
     private String[] readSubjectData(BufferedReader br, int nthItem)
             throws IOException, RuntimeException {
-        // Read header line: "1. Mathematics Methods"
+        // Read header line: "1. ACCOUNTING"
         String headerLine = CSSE7023.getLine(br);
         if (headerLine == null) {
             throw new RuntimeException("EOF reading Subject #" + nthItem);
@@ -119,26 +126,36 @@ public class Subject implements StreamManager, ManageableListItem {
                     " but got " + index);
         }
 
-        String title = headerParts[1];
+        String title = headerParts[1].trim();
 
-        // Read description line: "\"Advanced mathematics for Year 12 students.\""
+        // Read the second line with the actual subject name
+        String titleLine = CSSE7023.getLine(br);
+        if (titleLine == null) {
+            throw new RuntimeException("EOF reading Subject #" + nthItem + " title");
+        }
+
+        // The actual title is on this line
+        String actualTitle = titleLine.trim();
+
+        // Read description line: "The study of..."
         String descLine = CSSE7023.getLine(br);
         if (descLine == null) {
             throw new RuntimeException("EOF reading Subject #" + nthItem + " description");
         }
 
         // Remove quotes from description
-        String description = descLine;
+        String description = descLine.trim();
         if (description.startsWith("\"") && description.endsWith("\"")) {
             description = description.substring(1, description.length() - 1);
         }
 
-        return new String[]{title, description};
+        return new String[]{actualTitle, description};
     }
 
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
-        bw.write(nthItem + ". " + title + System.lineSeparator());
+        bw.write(nthItem + ". " + title.toUpperCase() + System.lineSeparator());
+        bw.write(title + System.lineSeparator());
         bw.write("\"" + description + "\"" + System.lineSeparator());
     }
 

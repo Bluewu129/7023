@@ -28,80 +28,12 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         view = new ExamBlockView(this);
         model.addObserver(this);
 
-        // Initialize with some default data or load from file
-        initializeDefaultData();
-
         view.setVisible(true);
-    }
 
-    /**
-     * Initializes the application with some default data.
-     */
-    private void initializeDefaultData() {
-        // Create some sample subjects - make sure they register themselves
-        Subject math = new Subject("Mathematics Methods", "Advanced mathematics for Year 12 students.", model.getRegistry());
-        Subject physics = new Subject("Physics", "Study of matter, energy, and their interactions.", model.getRegistry());
-        Subject chemistry = new Subject("Chemistry", "Study of matter and chemical reactions.", model.getRegistry());
-
-        // Now add them to the subject list (they are already registered)
-        model.getSubjects().addSubject(math);
-        model.getSubjects().addSubject(physics);
-        model.getSubjects().addSubject(chemistry);
-
-        // Create some sample exams - make sure they register themselves too
-        Exam mathExam = new Exam(math, Exam.ExamType.EXTERNAL, 15, 11, 2025, 9, 0, model.getRegistry());
-        Exam physicsExam = new Exam(physics, Exam.ExamType.EXTERNAL, 18, 11, 2025, 13, 30, model.getRegistry());
-
-        model.getExams().add(mathExam);
-        model.getExams().add(physicsExam);
-
-        // Create some sample rooms and venues
-        Room r1 = new Room("R1", model.getRegistry());
-        Room r2 = new Room("R2", model.getRegistry());
-
-        RoomList venueRooms = new RoomList(model.getRegistry());
-        venueRooms.add(r1);
-
-        Venue venue1 = new Venue("V1", 1, venueRooms, 10, 8, 80, false);
-        // Register the venue manually since constructor doesn't do it
-        model.getRegistry().add(venue1, Venue.class);
-        model.getVenues().addVenue(venue1);
-
-        model.notifyObservers("initialized");
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-
-        switch (command) {
-            case "New":
-                handleNew();
-                break;
-            case "Open":
-                handleOpen();
-                break;
-            case "Save":
-                handleSave();
-                break;
-            case "Exit":
-                handleExit();
-                break;
-            case "Schedule Exam":
-                handleScheduleExam();
-                break;
-            case "Finalise":
-                handleFinalise();
-                break;
-            case "About":
-                handleAbout();
-                break;
-            case "Verbose":
-                handleVerbose();
-                break;
-            default:
-                System.out.println("Unknown command: " + command);
-        }
+        // Show file open dialog on startup as per workflow
+        SwingUtilities.invokeLater(() -> {
+            handleOpen();
+        });
     }
 
     /**
@@ -116,7 +48,6 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         if (result == JOptionPane.YES_OPTION) {
             model = new ExamBlockModel();
             model.addObserver(this);
-            initializeDefaultData(); 
             view.updateView();
         }
     }
@@ -128,14 +59,44 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Open Exam Block Data");
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                "Exam Block Data Files (*.ebd)", "ebd"));
+                "Exam Block Files (*.ebd)", "ebd"));
+
+        // Set default directory to current directory
+        fileChooser.setCurrentDirectory(new File("."));
 
         int result = fileChooser.showOpenDialog(view);
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
-            if (model.loadFromFile(selectedFile.getAbsolutePath())) {
+
+            // Create new model for loading
+            ExamBlockModel newModel = new ExamBlockModel();
+
+            if (newModel.loadFromFile(selectedFile.getAbsolutePath())) {
+                // Successfully loaded, replace the model
+                if (model != null) {
+                    model.removeObserver(this);
+                }
+                model = newModel;
+                model.addObserver(this);
                 view.updateView();
-                DialogUtils.showMessage("File loaded successfully: " + selectedFile.getName());
+
+                // Update window title with loaded file
+                view.setTitle("ExamBlock - " + selectedFile.getName());
+
+                if (Verbose.isVerbose()) {
+                    DialogUtils.showMessage("File loaded successfully: " + selectedFile.getName());
+                }
+            } else {
+                // Load failed, keep existing model
+                DialogUtils.showError("Failed to load file: " + selectedFile.getName());
+            }
+        } else if (result == JFileChooser.CANCEL_OPTION) {
+            // User cancelled - if no data loaded, disable most UI elements
+            if (model.getSubjects().size() == 0 &&
+                    model.getExams().size() == 0 &&
+                    model.getVenues().size() == 0) {
+                // The view should handle enabling/disabling controls based on empty model
+                view.updateView();
             }
         }
     }
@@ -144,10 +105,49 @@ public class ExamBlockController implements ActionListener, ModelObserver {
      * Handles the Save menu action.
      */
     private void handleSave() {
-        double version = model.getVersionNumber();
-        if (!CSSE7023.isBadVersion(version)) {
-            model.setVersion(version);
-            if (model.saveToFile(model.getRegistry(), null, model.getTitle(), version)) {
+        // Get version number
+        double newVersion = model.getVersion() + 0.1; // Default increment
+
+        String versionInput = JOptionPane.showInputDialog(view,
+                "Enter new version number (current: " + model.getVersion() + "):",
+                "Save - Version Number",
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (versionInput != null && !versionInput.trim().isEmpty()) {
+            try {
+                newVersion = Double.parseDouble(versionInput.trim());
+                if (newVersion <= model.getVersion()) {
+                    DialogUtils.showWarning("Version must be greater than " + model.getVersion());
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                DialogUtils.showError("Invalid version number format");
+                return;
+            }
+        } else {
+            return; // User cancelled
+        }
+
+        model.setVersion(newVersion);
+
+        // Show save dialog
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save Exam Block Data");
+        fileChooser.setSelectedFile(new File(model.getTitle() + " (v" + newVersion + ").ebd"));
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "Exam Block Files (*.ebd)", "ebd"));
+
+        int result = fileChooser.showSaveDialog(view);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+
+            // Ensure .ebd extension
+            if (!file.getName().toLowerCase().endsWith(".ebd")) {
+                file = new File(file.getAbsolutePath() + ".ebd");
+            }
+
+            if (model.saveToFile(model.getRegistry(), file.getAbsolutePath(),
+                    model.getTitle(), newVersion)) {
                 DialogUtils.showMessage("File saved successfully!");
             }
         }
@@ -186,7 +186,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         }
 
         // Check if venue type matches requirements (AARA or regular)
-        boolean isAaraExam = DialogUtils.askQuestion("Is this an AARA exam?") == JOptionPane.YES_OPTION;
+        boolean isAaraExam = selectedVenue.isAara();
 
         if (!selectedVenue.checkVenueType(isAaraExam)) {
             return; // Message already displayed by checkVenueType
@@ -205,6 +205,27 @@ public class ExamBlockController implements ActionListener, ModelObserver {
      * Handles the Finalise action.
      */
     private void handleFinalise() {
+        // Check if all exams have been scheduled
+        boolean allScheduled = true;
+        for (Exam exam : model.getExams().all()) {
+            boolean found = false;
+            for (Session session : model.getSessions().all()) {
+                if (session.getExams().contains(exam)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                allScheduled = false;
+                break;
+            }
+        }
+
+        if (!allScheduled) {
+            DialogUtils.showWarning("Not all exams have been scheduled. Please schedule all exams before finalising.");
+            return;
+        }
+
         int result = JOptionPane.showConfirmDialog(view,
                 "Are you sure you want to finalise the exam block? This will allocate students to desks.",
                 "Finalise Exam Block",
@@ -234,6 +255,45 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         boolean currentVerbose = Verbose.isVerbose();
         Verbose.setVerbose(!currentVerbose);
         view.updateVerboseStatus(!currentVerbose);
+
+        String status = currentVerbose ? "disabled" : "enabled";
+        if (!currentVerbose) { // Now enabling verbose
+            DialogUtils.showMessage("Verbose output " + status);
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+
+        switch (command) {
+            case "New":
+                handleNew();
+                break;
+            case "Open":
+                handleOpen();
+                break;
+            case "Save":
+                handleSave();
+                break;
+            case "Exit":
+                handleExit();
+                break;
+            case "Schedule Exam":
+                handleScheduleExam();
+                break;
+            case "Finalise":
+                handleFinalise();
+                break;
+            case "About":
+                handleAbout();
+                break;
+            case "Verbose":
+                handleVerbose();
+                break;
+            default:
+                System.out.println("Unknown command: " + command);
+        }
     }
 
     @Override

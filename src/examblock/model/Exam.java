@@ -135,7 +135,7 @@ public class Exam implements StreamManager, ManageableListItem {
 
     private void readExamData(BufferedReader br, int nthItem)
             throws IOException, RuntimeException {
-        // Read header line: "1. MATHEMATICS METHODS"
+        // Read header line: "1. Year 12 Internal Assessment English"
         String headerLine = CSSE7023.getLine(br);
         if (headerLine == null) {
             throw new RuntimeException("EOF reading Exam #" + nthItem);
@@ -152,39 +152,86 @@ public class Exam implements StreamManager, ManageableListItem {
             throw new RuntimeException("Exam index out of sync!");
         }
 
-        String subjectTitle = headerParts[1];
-        this.subject = registry.find(subjectTitle, Subject.class);
-        if (this.subject == null) {
-            throw new RuntimeException("Subject not found: " + subjectTitle);
-        }
+        // Parse the exam details
+        String examDetails = headerParts[1];
 
-        // Read exam details line: "Year 12 External Assessment"
-        String examLine = CSSE7023.getLine(br);
-        if (examLine == null) {
-            throw new RuntimeException("EOF reading Exam #" + nthItem + " details");
-        }
-
-        // Parse exam type from line
-        if (examLine.contains("External")) {
+        // Extract exam type
+        if (examDetails.contains("External")) {
             this.examType = ExamType.EXTERNAL;
         } else {
             this.examType = ExamType.INTERNAL;
         }
 
-        // Set default values for optional fields
+        // Extract subject name (it's the last part after "Assessment")
+        String subjectName = "";
+        if (examDetails.contains("Assessment")) {
+            int idx = examDetails.indexOf("Assessment") + "Assessment".length();
+            subjectName = examDetails.substring(idx).trim();
+        }
+
+        // Look for paper info
         this.paper = '\0';
         this.subtitle = "";
-        this.unit = '\0';
+        if (subjectName.contains("Paper")) {
+            String[] parts = subjectName.split("Paper");
+            subjectName = parts[0].trim();
+            String paperInfo = parts[1].trim();
+            if (paperInfo.length() > 0) {
+                this.paper = paperInfo.charAt(0);
+                // Look for subtitle in remaining text
+                if (paperInfo.length() > 2) {
+                    this.subtitle = paperInfo.substring(2).trim();
+                }
+            }
+        }
 
-        // Set default date/time (would normally parse from file)
-        this.examDate = LocalDate.of(2025, 11, 15);
-        this.examTime = LocalTime.of(9, 0);
+        // Find the subject
+        this.subject = registry.find(subjectName, Subject.class);
+        if (this.subject == null) {
+            throw new RuntimeException("Subject not found: " + subjectName);
+        }
+
+        // Read additional exam info (date, time, etc.)
+        String examLine2 = CSSE7023.getLine(br);
+        if (examLine2 != null && !examLine2.isEmpty()) {
+            // Parse date and time from line like: "2025-03-10 08:30 14 76"
+            String[] parts = examLine2.split(" ");
+            if (parts.length >= 2) {
+                this.examDate = CSSE7023.toLocalDate(parts[0], "Invalid date format");
+                this.examTime = CSSE7023.toLocalTime(parts[1], "Invalid time format");
+            }
+        } else {
+            // Default date/time if not specified
+            this.examDate = LocalDate.of(2025, 3, 10);
+            this.examTime = LocalTime.of(9, 0);
+        }
+
+        this.unit = '\0'; // No unit info in the file format
     }
 
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
-        bw.write(nthItem + ". " + subject.getTitle().toUpperCase() + System.lineSeparator());
-        bw.write(getTitle());
+        bw.write(nthItem + ". Year 12 ");
+        if (examType == ExamType.EXTERNAL) {
+            bw.write("External ");
+        } else {
+            bw.write("Internal ");
+        }
+        bw.write("Assessment ");
+        bw.write(subject.getTitle());
+
+        if (paper != '\0') {
+            bw.write(" Paper " + paper);
+        }
+        if (subtitle != null && !subtitle.isEmpty()) {
+            bw.write(" " + subtitle);
+        }
+        bw.write(System.lineSeparator());
+
+        // Write date, time and additional info
+        bw.write(examDate.toString() + " " + examTime.toString());
+        bw.write(" 0 0"); // Placeholder for additional data
+        bw.write(System.lineSeparator());
     }
 
     @Override
@@ -216,7 +263,7 @@ public class Exam implements StreamManager, ManageableListItem {
         if (paper != '\0') {
             title.append(" Paper " + paper);
         }
-        if (subtitle != "") {
+        if (subtitle != null && !subtitle.isEmpty()) {
             title.append("\n" + subtitle);
         }
         title.append("\n");
@@ -256,6 +303,13 @@ public class Exam implements StreamManager, ManageableListItem {
         return examTime;
     }
 
+    /**
+     * Gets the exam type.
+     */
+    public ExamType getExamType() {
+        return examType;
+    }
+
     @Override
     public String getFullDetail() {
         return this.getSubject().toString().toUpperCase() + "\n" + this.getTitle();
@@ -263,7 +317,13 @@ public class Exam implements StreamManager, ManageableListItem {
 
     @Override
     public Object[] toTableRow() {
-        return new Object[]{subject.getTitle(), examType.toString(), examDate, examTime};
+        return new Object[]{
+                examType == ExamType.INTERNAL ? "✓" : "",
+                subject.getTitle(),
+                examDate,
+                examTime,
+                "" // AARA column - would need student info
+        };
     }
 
     @Override
@@ -275,7 +335,7 @@ public class Exam implements StreamManager, ManageableListItem {
 
     @Override
     public String getId() {
-        return subject.getTitle();
+        return subject.getTitle() + "_" + examType + "_" + examDate + "_" + examTime;
     }
 
     @Override
