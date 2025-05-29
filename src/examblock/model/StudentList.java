@@ -1,21 +1,41 @@
 package examblock.model;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A collection object for holding and managing {@link Student}s.
+ * Updated to extend ListManager for streaming support.
  */
-public class StudentList {
+public class StudentList extends ListManager<Student> {
 
-    /** This instance's list of students. */
-    private final List<Student> students;
+    /**
+     * Factory for creating Student instances.
+     */
+    private static class StudentFactory implements ItemFactory<Student> {
+        @Override
+        public Student createItem(BufferedReader br, Registry registry, int index) throws IOException {
+            return new Student(br, registry, index);
+        }
+    }
 
     /**
      * Constructs an empty list of {@link Student}s.
      */
     public StudentList() {
-        this.students = new ArrayList<>();
+        super(new StudentFactory(), new RegistryImpl(), Student.class);
+    }
+
+    /**
+     * Constructs a StudentList with a specific registry.
+     *
+     * @param registry the registry to use
+     */
+    public StudentList(Registry registry) {
+        super(new StudentFactory(), registry, Student.class);
     }
 
     /**
@@ -24,7 +44,7 @@ public class StudentList {
      * @param student - the student object being added to this list.
      */
     public void add(Student student) {
-        this.students.add(student);
+        super.add(student);
     }
 
     /**
@@ -37,23 +57,38 @@ public class StudentList {
      *         the executing state and the complete list of possible students.
      */
     public Student byLui(Long lui) throws IllegalStateException {
-        for (Student student : this.students) {
-            if (student.getLui() == lui) {
-                return student;
-            }
+        Student student = find(String.valueOf(lui));
+        if (student != null) {
+            return student;
         }
         throw new IllegalStateException("No such student!");
+    }
+
+    @Override
+    public Student find(String key) {
+        Optional<Student> student = super.all()
+                .stream()
+                .filter(s -> s.getId().equals(key))
+                .findFirst();
+
+        return student.orElse(null);
+    }
+
+    @Override
+    public Student get(String key) throws IllegalStateException {
+        Student student = find(key);
+        if (student != null) {
+            return student;
+        }
+        throw new IllegalStateException("Item with ID " + key + " not found for type Student");
     }
 
     /**
      * Creates a new {@code List} holding {@code references} to all the {@link Student}s
      * managed by this {@code StudentList} and returns it.
-     *
-     * @return a new {@code List} holding {@code references} to all the {@link Student}s
-     * managed by this {@code StudentList}.
      */
-    public List<Student> all() {
-        return new ArrayList<>(this.students);
+    public List<Student> getAllStudents() {
+        return super.all();
     }
 
     /**
@@ -65,10 +100,11 @@ public class StudentList {
      */
     public int countStudents(Subject subject, boolean aara) {
         int count = 0;
-        for (Student student : this.students) {
+        for (Student student : getItems()) {
             if (student.isAara() == aara) {
-                List<Subject> subjects = student.getSubjects().all();
-                for (Subject check : subjects) {
+                // Use the existing SubjectList's methods
+                SubjectList studentSubjects = student.getSubjects();
+                for (Subject check : studentSubjects.getItems()) {
                     if (check == subject) {
                         count++;
                     }
@@ -84,7 +120,6 @@ public class StudentList {
      * @return detailed string representations of the contents of this student list.
      */
     public String getFullDetail() {
-
         String topLine = """
                 /================================\\
                 |----------  STUDENTS  ----------|
@@ -93,7 +128,7 @@ public class StudentList {
                 """;
 
         StringBuilder studentStrings = new StringBuilder();
-        for (Student student : this.students) {
+        for (Student student : getItems()) {
             studentStrings.append(student.getFullDetail());
             studentStrings.append("\n");
         }
@@ -107,7 +142,6 @@ public class StudentList {
      */
     @Override
     public String toString() {
-
         String topLine = """
                 /================================\\
                 |----------  STUDENTS  ----------|
@@ -116,7 +150,7 @@ public class StudentList {
                 """;
 
         StringBuilder studentStrings = new StringBuilder();
-        for (Student student : this.students) {
+        for (Student student : getItems()) {
             studentStrings.append(student.toString());
         }
         return studentStrings.toString();

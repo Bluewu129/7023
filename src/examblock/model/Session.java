@@ -1,5 +1,7 @@
 package examblock.model;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -65,6 +67,37 @@ public class Session {
         desks = new Desk[rows][columns]; // Initialize 2D array
         initializeDesks();  // Fill matrix with Desk objects
     }
+
+    public Session(BufferedReader br, Registry registry, int nthItem) throws IOException {
+        String line = CSSE7023.getLine(br);
+        if (line == null) throw new RuntimeException("EOF reading Session #" + nthItem);
+        String[] idxAndRest = line.split("\\. ", 2);
+        if (idxAndRest.length != 2) throw new RuntimeException("Session header format error: " + line);
+        int idx = CSSE7023.toInt(idxAndRest[0], "Number format exception parsing Session " + nthItem + " header");
+        if (idx != nthItem) throw new RuntimeException("Session index out of sync!");
+
+        String[] parts = idxAndRest[1].split(": ");
+        if (parts.length < 4) throw new RuntimeException("Session data format error: " + idxAndRest[1]);
+        String venueId = parts[0];
+        int sessionNumber = Integer.parseInt(parts[1]);
+        LocalDate day = LocalDate.parse(parts[2]);
+        LocalTime start = LocalTime.parse(parts[3]);
+        Venue venue = registry.find(venueId, Venue.class);
+        if (venue == null) throw new RuntimeException("Venue not found: " + venueId);
+
+        this.venue = venue;
+        this.sessionNumber = sessionNumber;
+        this.day = day;
+        this.start = start;
+        this.exams = new ExamList();
+        rows = venue.getRows();
+        columns = venue.getColumns();
+        totalDesks = venue.deskCount();
+        desks = new Desk[rows][columns];
+        initializeDesks();
+        studentCount = 0;
+    }
+
 
     private void initializeDesks() {
         int deskId = 1;  // Unique ID for each desk

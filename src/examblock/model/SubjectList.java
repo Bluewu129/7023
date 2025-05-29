@@ -2,20 +2,28 @@ package examblock.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A collection object for holding and managing {@link Subject}s.
+ * Updated to extend ListManager for streaming support.
  */
-public class SubjectList {
-
-    /** This instance's list of subjects. */
-    private final List<Subject> subjects;
+public class SubjectList extends ListManager<Subject> {
 
     /**
      * Constructs an empty list of {@link Subject}s.
      */
     public SubjectList() {
-        subjects = new ArrayList<>();
+        super(Subject::new, new RegistryImpl(), Subject.class);
+    }
+
+    /**
+     * Constructs a SubjectList with a specific registry.
+     *
+     * @param registry the registry to use
+     */
+    public SubjectList(Registry registry) {
+        super(Subject::new, registry, Subject.class);
     }
 
     /**
@@ -24,7 +32,7 @@ public class SubjectList {
      * @param subject - the subject object being added to this list.
      */
     public void addSubject(Subject subject) {
-        subjects.add(subject);
+        add(subject);
     }
 
     /**
@@ -33,7 +41,7 @@ public class SubjectList {
      * @param subject - the subject to remove from this list.
      */
     public void removeSubject(Subject subject) {
-        subjects.remove(subject);
+        remove(subject);
     }
 
     /**
@@ -46,12 +54,30 @@ public class SubjectList {
      *         the executing state and the complete list of possible subjects.
      */
     public Subject byTitle(String title) throws IllegalStateException {
-        for (Subject subject : this.subjects) {
-            if (subject.getTitle().equals(title)) {
-                return subject;
-            }
+        Subject subject = find(title);
+        if (subject != null) {
+            return subject;
         }
         throw new IllegalStateException("No such subject!");
+    }
+
+    @Override
+    public Subject find(String key) {
+        Optional<Subject> subject = super.all()
+                .stream()
+                .filter(s -> s.getTitle().equals(key))
+                .findFirst();
+
+        return subject.orElse(null);
+    }
+
+    @Override
+    public Subject get(String key) throws IllegalStateException {
+        Subject subject = find(key);
+        if (subject != null) {
+            return subject;
+        }
+        throw new IllegalStateException("Item with ID " + key + " not found for type Subject");
     }
 
     /**
@@ -61,8 +87,8 @@ public class SubjectList {
      * @return a new {@code List} holding {@code references} to all the {@link Subject}s
      * managed by this {@code SubjectList}.
      */
-    public List<Subject> all() {
-        return new ArrayList<>(this.subjects);
+    public ArrayList<Subject> all() {
+        return super.all();
     }
 
     /**
@@ -71,10 +97,9 @@ public class SubjectList {
      * @return detailed string representations of the contents of this subject list.
      */
     public String getFullDetail() {
-
         StringBuilder subjectStrings = new StringBuilder();
         int counter = 1;
-        for (Subject subject : this.subjects) {
+        for (Subject subject : getItems()) {
             subjectStrings.append(counter);
             subjectStrings.append(". ");
             subjectStrings.append(subject.getFullDetail());
@@ -90,10 +115,9 @@ public class SubjectList {
      */
     @Override
     public String toString() {
-
         StringBuilder subjectStrings = new StringBuilder();
         int counter = 1;
-        for (Subject subject : this.subjects) {
+        for (Subject subject : getItems()) {
             subjectStrings.append(counter);
             subjectStrings.append(". ");
             subjectStrings.append(subject.toString());

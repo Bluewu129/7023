@@ -1,12 +1,18 @@
 package examblock.model;
 
+import examblock.view.components.Verbose;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
  * An object describing a single Year 12 Exam.
+ * Updated to implement StreamManager and ManageableListItem interfaces.
  */
-public class Exam {
+public class Exam implements StreamManager, ManageableListItem {
 
     /**
      * An enum for the ExamType (INTERNAL or EXTERNAL).
@@ -32,22 +38,25 @@ public class Exam {
     private LocalDate examDate;
     /** The start time for this exam. */
     private LocalTime examTime;
+    /** The registry for dependencies. */
+    private Registry registry;
+
+    /**
+     * Default constructor for factory use.
+     */
+    public Exam() {
+        this.subject = null;
+        this.examType = ExamType.EXTERNAL;
+        this.paper = '\0';
+        this.subtitle = "";
+        this.unit = '\0';
+        this.examDate = LocalDate.now();
+        this.examTime = LocalTime.now();
+        this.registry = null;
+    }
 
     /**
      * Constructs an {@code Exam} with minimal details.
-     *
-     * @param subject the exam Subject.
-     * @param examType one of INTERNAL or EXTERNAL.
-     * @param day the integer day of the date of the exam, which must
-     *            be a valid day for the month and year provided.
-     * @param month the integer month of the date of the exam, which
-     *              must be between 1 - 12 inclusive.
-     * @param year the 4-digit integer year of the date of the exam,
-     *             which must be 2025 or greater.
-     * @param hour the 2-digit integer hour of the start of the exam window,
-     *             in 24-hour time, which must be between 7 and 17.
-     * @param minute the integer minute of the start of the exam window,
-     *               which must be between 0 - 59 inclusive.
      */
     public Exam(Subject subject, ExamType examType,
                 int day, int month, int year, int hour, int minute) {
@@ -56,20 +65,6 @@ public class Exam {
 
     /**
      * Constructs an {@code Exam} with the optional unit specified.
-     *
-     * @param subject the exam Subject.
-     * @param examType one of INTERNAL or EXTERNAL.
-     * @param unit an optional unit ID if only one unit is applicable.
-     * @param day the integer day of the date of the exam, which must
-     *            be a valid day for the month and year provided.
-     * @param month the integer month of the date of the exam, which
-     *              must be between 1 - 12 inclusive.
-     * @param year the 4-digit integer year of the date of the exam,
-     *             which must be 2025 or greater.
-     * @param hour the 2-digit integer hour of the start of the exam window,
-     *             in 24-hour time, which must be between 7 and 17.
-     * @param minute the integer minute of the start of the exam window,
-     *               which must be between 0 - 59 inclusive.
      */
     public Exam(Subject subject, ExamType examType, Character unit,
                 int day, int month, int year, int hour, int minute) {
@@ -78,21 +73,6 @@ public class Exam {
 
     /**
      * Constructs an {@code Exam} with paper number and subtitle but no unit specified.
-     *
-     * @param subject the exam Subject.
-     * @param examType one of INTERNAL or EXTERNAL.
-     * @param paper an optional paper number (null or 1 or 2).
-     * @param subtitle an optional subtitle e.g. "Technology Free".
-     * @param day the integer day of the date of the exam, which must
-     *            be a valid day for the month and year provided.
-     * @param month the integer month of the date of the exam, which
-     *              must be between 1 - 12 inclusive.
-     * @param year the 4-digit integer year of the date of the exam,
-     *             which must be 2025 or greater.
-     * @param hour the 2-digit integer hour of the start of the exam window,
-     *             in 24-hour time, which must be between 7 and 17.
-     * @param minute the integer minute of the start of the exam window,
-     *               which must be between 0 - 59 inclusive.
      */
     public Exam(Subject subject, ExamType examType, Character paper, String subtitle,
                 int day, int month, int year, int hour, int minute) {
@@ -101,22 +81,6 @@ public class Exam {
 
     /**
      * Constructs an {@code Exam} with all optional details provided.
-     *
-     * @param subject the exam Subject.
-     * @param examType one of INTERNAL or EXTERNAL.
-     * @param paper an optional paper number (null or 1 or 2).
-     * @param subtitle an optional subtitle e.g. "Technology Free".
-     * @param unit an optional unit ID if only one unit is applicable.
-     * @param day the integer day of the date of the exam, which must
-     *            be a valid day for the month and year provided.
-     * @param month the integer month of the date of the exam, which
-     *              must be between 1 - 12 inclusive.
-     * @param year the 4-digit integer year of the date of the exam,
-     *             which must be 2025 or greater.
-     * @param hour the 2-digit integer hour of the start of the exam window,
-     *             in 24-hour time, which must be between 7 and 17.
-     * @param minute the integer minute of the start of the exam window,
-     *               which must be between 0 - 59 inclusive.
      */
     public Exam(Subject subject, ExamType examType, Character paper, String subtitle,
                 Character unit, int day, int month, int year, int hour, int minute) {
@@ -127,12 +91,110 @@ public class Exam {
         this.unit = unit;
         examDate = LocalDate.of(year, month, day);
         examTime = LocalTime.of(hour, minute);
+        this.registry = null;
+    }
+
+    /**
+     * Constructs an Exam with registry.
+     */
+    public Exam(Subject subject, ExamType examType, Character paper, String subtitle,
+                Character unit, int day, int month, int year, int hour, int minute, Registry registry) {
+        this(subject, examType, paper, subtitle, unit, day, month, year, hour, minute);
+        this.registry = registry;
+
+        if (registry != null) {
+            registry.add(this, Exam.class);
+        }
+    }
+
+    /**
+     * Constructs an {@code Exam} with minimal details and registry.
+     */
+    public Exam(Subject subject, ExamType examType,
+                int day, int month, int year, int hour, int minute, Registry registry) {
+        this(subject, examType, '\0', "", '\0', day, month, year, hour, minute, registry);
+    }
+
+    /**
+     * Constructs an Exam by reading from a stream.
+     */
+    public Exam(BufferedReader br, Registry registry, int nthItem)
+            throws IOException, RuntimeException {
+        this.registry = registry;
+
+        readExamData(br, nthItem);
+
+        if (registry != null) {
+            registry.add(this, Exam.class);
+        }
+
+        if (Verbose.isVerbose()) {
+            System.out.println("Loaded Exam: " + getShortTitle());
+        }
+    }
+
+    private void readExamData(BufferedReader br, int nthItem)
+            throws IOException, RuntimeException {
+        // Read header line: "1. MATHEMATICS METHODS"
+        String headerLine = CSSE7023.getLine(br);
+        if (headerLine == null) {
+            throw new RuntimeException("EOF reading Exam #" + nthItem);
+        }
+
+        String[] headerParts = headerLine.split("\\. ", 2);
+        if (headerParts.length != 2) {
+            throw new RuntimeException("Invalid exam header format: " + headerLine);
+        }
+
+        int index = CSSE7023.toInt(headerParts[0],
+                "Number format exception parsing Exam " + nthItem + " header");
+        if (index != nthItem) {
+            throw new RuntimeException("Exam index out of sync!");
+        }
+
+        String subjectTitle = headerParts[1];
+        this.subject = registry.find(subjectTitle, Subject.class);
+        if (this.subject == null) {
+            throw new RuntimeException("Subject not found: " + subjectTitle);
+        }
+
+        // Read exam details line: "Year 12 External Assessment"
+        String examLine = CSSE7023.getLine(br);
+        if (examLine == null) {
+            throw new RuntimeException("EOF reading Exam #" + nthItem + " details");
+        }
+
+        // Parse exam type from line
+        if (examLine.contains("External")) {
+            this.examType = ExamType.EXTERNAL;
+        } else {
+            this.examType = ExamType.INTERNAL;
+        }
+
+        // Set default values for optional fields
+        this.paper = '\0';
+        this.subtitle = "";
+        this.unit = '\0';
+
+        // Set default date/time (would normally parse from file)
+        this.examDate = LocalDate.of(2025, 11, 15);
+        this.examTime = LocalTime.of(9, 0);
+    }
+
+    @Override
+    public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
+        bw.write(nthItem + ". " + subject.getTitle().toUpperCase() + System.lineSeparator());
+        bw.write(getTitle());
+    }
+
+    @Override
+    public void streamIn(BufferedReader br, Registry registry, int nthItem)
+            throws IOException, RuntimeException {
+        throw new UnsupportedOperationException("Use constructor instead");
     }
 
     /**
      * Gets the subject of the exam.
-     *
-     * @return subject of the exam
      */
     public Subject getSubject() {
         return subject;
@@ -140,11 +202,6 @@ public class Exam {
 
     /**
      * Gets the full title of the exam.
-     * Provides the exam type,
-     * and then on a new line, the exam subject, and any paper identifier (if more than one),
-     * and then on a new line, any subtitle (only if present).
-     *
-     * @return the full text title of the exam (type\n, subject, paper\n, subtitle)
      */
     public String getTitle() {
         StringBuilder title = new StringBuilder();
@@ -168,9 +225,6 @@ public class Exam {
 
     /**
      * Gets the short title of the exam with no subtitle.
-     * Provides type, subject, and any paper identifier (if more than one), all on one line.
-     *
-     * @return text title of the exam (type, subject, paper)
      */
     public String getShortTitle() {
         StringBuilder title = new StringBuilder();
@@ -190,8 +244,6 @@ public class Exam {
 
     /**
      * Gets the date of this exam.
-     *
-     * @return the date of this exam.
      */
     public LocalDate getDate() {
         return examDate;
@@ -199,27 +251,33 @@ public class Exam {
 
     /**
      * Gets the start time of this exam's window.
-     *
-     * @return the start time of this exam's window.
      */
     public LocalTime getTime() {
         return examTime;
     }
 
-    /**
-     * Returns a detailed string representation of this exam.
-     *
-     * @return a detailed string representation of this exam.
-     */
+    @Override
     public String getFullDetail() {
         return this.getSubject().toString().toUpperCase() + "\n" + this.getTitle();
     }
 
-    /**
-     * Returns a brief string representation of the exam.
-     *
-     * @return a brief string representation of the exam.
-     */
+    @Override
+    public Object[] toTableRow() {
+        return new Object[]{subject.getTitle(), examType.toString(), examDate, examTime};
+    }
+
+    @Override
+    public Object[] toLongTableRow() {
+        return new Object[]{subject.getTitle(), examType.toString(),
+                paper != '\0' ? paper.toString() : "", subtitle,
+                examDate, examTime};
+    }
+
+    @Override
+    public String getId() {
+        return subject.getTitle();
+    }
+
     @Override
     public String toString() {
         return this.getShortTitle();

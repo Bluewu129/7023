@@ -2,51 +2,47 @@ package examblock.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A collection object for holding and managing {@link Exam}s.
+ * Updated to extend ListManager for streaming support.
  */
-public class ExamList {
-
-    /** This instance's list of exams. */
-    private final List<Exam> exams;
+public class ExamList extends ListManager<Exam> {
 
     /**
      * Constructs an empty list of {@link Exam}s.
      */
     public ExamList() {
-        exams = new ArrayList<>();
+        super(Exam::new, new RegistryImpl(), Exam.class);
+    }
+
+    /**
+     * Constructs an ExamList with a specific registry.
+     */
+    public ExamList(Registry registry) {
+        super(Exam::new, registry, Exam.class);
     }
 
     /**
      * Adds an {@link Exam} to this list of {@link Exam}s.
-     *
-     * @param exam - the exam object being added to this list.
      */
     public void add(Exam exam) {
-        exams.add(exam);
+        super.add(exam);
     }
 
     /**
      * Removes a given {@link Exam} from this {@code ExamList}.
-     *
-     * @param exam - the subject to remove from this list.
      */
     public void removeExam(Exam exam) {
-        exams.remove(exam);
+        remove(exam);
     }
 
     /**
      * Get the first {@link Exam} with a matching {@link Subject} {@code title}.
-     *
-     * @param title the {@code title} of the {@link Exam}'s {@link Subject} to be found.
-     * @return first {@link Exam} with a matching {@link Subject} {@code title}, if it exists.
-     * @throws IllegalStateException - throw an IllegalStateException if it can't
-     *         find a matching exam as that indicates there is a misalignment of
-     *         the executing state and the complete list of possible exams.
      */
     public Exam bySubjectTitle(String title) throws IllegalStateException {
-        for (Exam exam : this.exams) {
+        for (Exam exam : getItems()) {
             if (exam.getSubject().getTitle().equals(title)) {
                 return exam;
             }
@@ -54,27 +50,41 @@ public class ExamList {
         throw new IllegalStateException("No such exam!");
     }
 
+    @Override
+    public Exam find(String key) {
+        Optional<Exam> exam = super.all()
+                .stream()
+                .filter(e -> e.getSubject().getTitle().equals(key))
+                .findFirst();
+
+        return exam.orElse(null);
+    }
+
+    @Override
+    public Exam get(String key) throws IllegalStateException {
+        Exam exam = find(key);
+        if (exam != null) {
+            return exam;
+        }
+        throw new IllegalStateException("Item with ID " + key + " not found for type Exam");
+    }
+
     /**
      * Creates a new {@code List} holding {@code references} to all the {@link Exam}s
      * managed by this {@code ExamList} and returns it.
-     *
-     * @return a new {@code List} holding {@code references} to all the {@link Exam}s
-     * managed by this {@code ExamList}.
      */
-    public List<Exam> all() {
-        return new ArrayList<>(this.exams);
+    public List<Exam> getAllExams() {
+        return super.all();
     }
 
     /**
      * Returns detailed string representations of the contents of this exam list.
-     *
-     * @return detailed string representations of the contents of this exam list.
      */
     public String getFullDetail() {
         StringBuilder examStrings = new StringBuilder();
         examStrings.append("Exams:\n");
         int counter = 1;
-        for (Exam exam : exams) {
+        for (Exam exam : getItems()) {
             examStrings.append(counter);
             examStrings.append(". ");
             examStrings.append(exam.getFullDetail());
@@ -86,18 +96,15 @@ public class ExamList {
 
     /**
      * Returns a string representation of the contents of the exam manager
-     *
-     * @return a string representation of the contents of the exam manager
      */
     @Override
     public String toString() {
         StringBuilder examStrings = new StringBuilder();
         int counter = 1;
-        for (Exam exam : exams) {
+        for (Exam exam : getItems()) {
             examStrings.append(counter);
             examStrings.append(". ");
             examStrings.append(exam.toString());
-            // examStrings.append(exam.getFullDetail());
             examStrings.append("\n");
             counter += 1;
         }
