@@ -381,33 +381,53 @@ public class ExamBlockModel {
                     }
 
                     if (exam != null) {
+                        // Extract student count from the exam line
+                        // Format: "Subject Name (N students)"
+                        int studentCount = 0;
+                        int startParen = examLine.lastIndexOf('(');
+                        int endParen = examLine.lastIndexOf(')');
+
+                        if (startParen > 0 && endParen > startParen) {
+                            String countStr = examLine.substring(startParen + 1, endParen);
+                            countStr = countStr.replace("students", "").trim();
+                            try {
+                                studentCount = Integer.parseInt(countStr);
+                            } catch (NumberFormatException e) {
+                                if (Verbose.isVerbose()) {
+                                    System.out.println("Could not parse student count from: " + countStr);
+                                }
+                            }
+                        }
+
                         // Check if there's a [Desks: N] line following
                         String nextLine = CSSE7023.getLine(br, true); // Peek
-                        int studentCount = 0;
 
                         if (nextLine != null && nextLine.trim().startsWith("[Desks:")) {
                             // Consume the [Desks: N] line
                             CSSE7023.getLine(br);
 
-                            // Extract desk count
-                            try {
-                                String deskCountStr = nextLine.trim();
-                                deskCountStr = deskCountStr.substring(7, deskCountStr.length() - 1).trim();
-                                int deskCount = Integer.parseInt(deskCountStr);
-                                studentCount = deskCount; // Use desk count as student count
-
-                                // Skip all desk allocation lines
-                                for (int k = 0; k < deskCount; k++) {
-                                    String deskLine = CSSE7023.getLine(br);
-                                    if (deskLine == null) {
-                                        break;
+                            // Extract desk count if we didn't get student count
+                            if (studentCount == 0) {
+                                try {
+                                    String deskCountStr = nextLine.trim();
+                                    deskCountStr = deskCountStr.substring(7, deskCountStr.length() - 1).trim();
+                                    int deskCount = Integer.parseInt(deskCountStr);
+                                    studentCount = deskCount; // Use desk count as student count
+                                } catch (Exception e) {
+                                    if (Verbose.isVerbose()) {
+                                        System.out.println("Error parsing desk count: " + e.getMessage());
                                     }
-                                    // Skip desk allocation details
                                 }
-                            } catch (Exception e) {
-                                if (Verbose.isVerbose()) {
-                                    System.out.println("Error parsing desk count: " + e.getMessage());
+                            }
+
+                            // Skip all desk allocation lines
+                            String deskLine;
+                            while ((deskLine = CSSE7023.getLine(br, true)) != null) {
+                                if (deskLine.trim().isEmpty() || !deskLine.contains("Desk")) {
+                                    break;
                                 }
+                                // Consume the line
+                                CSSE7023.getLine(br);
                             }
                         }
 
@@ -513,6 +533,12 @@ public class ExamBlockModel {
                 for (Exam exam : session.getExams()) {
                     bw.write("    " + exam.getSubject().getTitle() +
                             " (" + session.countStudents() + " students)" + System.lineSeparator());
+
+                    // If finalized, write desk allocations
+                    if (session.countStudents() > 0) {
+                        bw.write("    [Desks: " + session.countStudents() + "]" + System.lineSeparator());
+                        // Note: Actual desk allocations would be written here if we stored them
+                    }
                 }
                 sessionIndex++;
             }

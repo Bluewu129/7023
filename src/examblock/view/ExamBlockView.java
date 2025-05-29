@@ -44,6 +44,12 @@ public class ExamBlockView extends JFrame {
     // Menu items that need to be enabled/disabled
     private JMenuItem saveMenuItem;
     private JCheckBoxMenuItem verboseMenuItem;
+    private JMenuItem deskAllocationsMenuItem;
+    private JMenuItem finaliseReportsMenuItem;
+
+    // Store latest desk allocations and finalise report
+    private String latestDeskAllocations = "";
+    private String latestFinaliseReport = "";
 
     /**
      * Constructs a new ExamBlockView.
@@ -315,9 +321,84 @@ public class ExamBlockView extends JFrame {
         verboseMenuItem.addActionListener(controller);
         viewMenu.add(verboseMenuItem);
 
+        viewMenu.addSeparator();
+
+        // Desk Allocations menu item
+        deskAllocationsMenuItem = new JMenuItem("Desk Allocations");
+        deskAllocationsMenuItem.setEnabled(false);
+        deskAllocationsMenuItem.addActionListener(e -> showDeskAllocations());
+        viewMenu.add(deskAllocationsMenuItem);
+
+        // Finalise Reports menu item
+        finaliseReportsMenuItem = new JMenuItem("Finalise Reports");
+        finaliseReportsMenuItem.setEnabled(false);
+        finaliseReportsMenuItem.addActionListener(e -> showFinaliseReport());
+        viewMenu.add(finaliseReportsMenuItem);
+
         menuBar.add(viewMenu);
 
         setJMenuBar(menuBar);
+    }
+
+    /**
+     * Shows the desk allocations in a viewer.
+     */
+    private void showDeskAllocations() {
+        if (!latestDeskAllocations.isEmpty()) {
+            DialogUtils.showTextViewer(latestDeskAllocations, "Desk Allocations",
+                    DialogUtils.ViewerOptions.SCROLL_WRAP, CSSE7023.FileType.TXT);
+        } else {
+            // Generate desk allocations from current sessions
+            StringBuilder sb = new StringBuilder();
+            ExamBlockModel model = controller.getModel();
+
+            sb.append("Desk Allocations\n");
+            sb.append("================\n\n");
+
+            for (Session session : model.getSessions().all()) {
+                sb.append("Session: ").append(session.getVenue().venueId());
+                sb.append(" - ").append(session.getDate());
+                sb.append(" at ").append(session.getTime()).append("\n");
+                sb.append("-".repeat(50)).append("\n");
+
+                // Add desk layout info
+                writeDeskLayout(sb, session);
+
+                sb.append("\n");
+            }
+
+            DialogUtils.showTextViewer(sb.toString(), "Desk Allocations",
+                    DialogUtils.ViewerOptions.SCROLL_WRAP, CSSE7023.FileType.TXT);
+        }
+    }
+
+    /**
+     * Shows the finalise report in a viewer.
+     */
+    private void showFinaliseReport() {
+        if (!latestFinaliseReport.isEmpty()) {
+            DialogUtils.showTextViewer(latestFinaliseReport, "Exam Block Finalise Report",
+                    DialogUtils.ViewerOptions.SCROLL_WRAP, CSSE7023.FileType.EFR);
+        } else {
+            DialogUtils.showMessage("No finalise report available. Please finalise the exam block first.");
+        }
+    }
+
+    /**
+     * Write desk layout for a session.
+     */
+    private void writeDeskLayout(StringBuilder sb, Session session) {
+        int rows = session.getVenue().getRows();
+        int columns = session.getVenue().getColumns();
+
+        // Simple representation of desk layout
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                int deskNum = i * columns + j + 1;
+                sb.append(String.format("Desk %2d  ", deskNum));
+            }
+            sb.append("\n");
+        }
     }
 
     /**
@@ -355,6 +436,9 @@ public class ExamBlockView extends JFrame {
 
         // Finalise button is enabled when there are sessions
         finaliseButton.setEnabled(model.getSessions().all().size() > 0);
+
+        // Enable desk allocations menu if there are sessions
+        deskAllocationsMenuItem.setEnabled(model.getSessions().all().size() > 0);
 
         // Update button states based on selections
         updateButtonStates();
@@ -519,11 +603,13 @@ public class ExamBlockView extends JFrame {
                     model.getSessions().all().size() + ")");
 
             for (Session session : model.getSessions().all()) {
-                int availableDesks = session.getVenue().deskCount() - session.countStudents();
+                int usedDesks = session.countStudents();
+                int totalDesks = session.getVenue().deskCount();
+                int availableDesks = totalDesks - usedDesks;
 
                 String sessionText = session.getDate() + " at " + session.getTime() +
                         " in " + session.getVenue().venueId() +
-                        " (" + availableDesks + " of " + session.getVenue().deskCount() + " desks available)";
+                        " (" + availableDesks + " of " + totalDesks + " desks available)";
                 DefaultMutableTreeNode sessionNode = new DefaultMutableTreeNode(sessionText);
 
                 // Add "Exams (N)" node
@@ -532,23 +618,16 @@ public class ExamBlockView extends JFrame {
 
                 // Add each exam
                 for (Exam exam : session.getExams()) {
-                    // Count students for this exam in this venue type
-                    int studentCount = 0;
-                    boolean isAaraVenue = session.getVenue().isAara();
-
-                    for (Student student : model.getStudents().all()) {
-                        if (student.isAara() == isAaraVenue) {
-                            for (Subject subject : student.getSubjectsList()) {
-                                if (subject.equals(exam.getSubject())) {
-                                    studentCount++;
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    // Get the student count for this specific exam
+                    int studentCount = session.getStudentCountForExam(exam);
 
                     String examText = exam.getSubject().getTitle() + " (" + studentCount + " students)";
                     examsNode.add(new DefaultMutableTreeNode(examText));
+
+                    if (Verbose.isVerbose()) {
+                        System.out.println("Exam: " + exam.getSubject().getTitle() +
+                                " has " + studentCount + " students in session");
+                    }
                 }
 
                 sessionNode.add(examsNode);
@@ -595,8 +674,8 @@ public class ExamBlockView extends JFrame {
         // Add button is enabled when exam and venue are selected
         addButton.setEnabled(selectedExam != null && selectedVenue != null);
 
-        // Clear button is enabled when a session is selected
-        clearButton.setEnabled(selectedSession != null);
+        // Clear button is enabled when an exam is selected (Test 5)
+        clearButton.setEnabled(selectedExam != null);
     }
 
     /**
@@ -611,18 +690,9 @@ public class ExamBlockView extends JFrame {
      * Handles the Clear button action.
      */
     private void handleClear() {
-        Session selectedSession = getSelectedSession();
-        if (selectedSession != null) {
-            int result = JOptionPane.showConfirmDialog(this,
-                    "Are you sure you want to clear this session?",
-                    "Clear Session",
-                    JOptionPane.YES_NO_OPTION);
-
-            if (result == JOptionPane.YES_OPTION) {
-                controller.getModel().getSessions().remove(selectedSession);
-                updateView();
-            }
-        }
+        // Clear the exam selection (Test 6)
+        examTable.clearSelection();
+        updateButtonStates();
     }
 
     /**
@@ -724,5 +794,21 @@ public class ExamBlockView extends JFrame {
      */
     public void updateVerboseStatus(boolean verbose) {
         verboseMenuItem.setSelected(verbose);
+    }
+
+    /**
+     * Sets the latest desk allocations data.
+     */
+    public void setLatestDeskAllocations(String deskAllocations) {
+        this.latestDeskAllocations = deskAllocations;
+        deskAllocationsMenuItem.setEnabled(true);
+    }
+
+    /**
+     * Sets the latest finalise report data.
+     */
+    public void setLatestFinaliseReport(String report) {
+        this.latestFinaliseReport = report;
+        finaliseReportsMenuItem.setEnabled(true);
     }
 }

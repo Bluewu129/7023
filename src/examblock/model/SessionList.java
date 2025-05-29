@@ -93,7 +93,18 @@ public class SessionList {
             Session session = getSession(venue, exam);
             return session.countStudents();
         } catch (IllegalStateException e) {
-            return 0; // No session exists yet
+            // No session exists yet, check by date/time
+            LocalDate day = exam.getDate();
+            LocalTime start = exam.getTime();
+
+            for (Session session : sessions) {
+                if (session.getVenue().venueId().equals(venue.venueId())
+                        && session.getDate().equals(day)
+                        && session.getTime().equals(start)) {
+                    return session.countStudents();
+                }
+            }
+            return 0;
         }
     }
 
@@ -145,6 +156,10 @@ public class SessionList {
     /**
      * Allocates an exam to an existing session (Venue and time).
      * This method signature is expected by SessionHandler.
+     *
+     * @param venue the venue
+     * @param exam the exam to schedule
+     * @param studentCount the number of students for this exam in this venue
      */
     public void scheduleExam(Venue venue, Exam exam) {
         LocalDate day = exam.getDate();
@@ -160,7 +175,7 @@ public class SessionList {
 
         Session session = this.getSession(venue, sessionNumber);
         // Use a default student count since we don't have access to the full student list here
-        int studentCount = 25; // This would normally be calculated from the actual enrollment
+        int studentCount = session.getStudentCountForExam(exam);
         session.scheduleExam(exam, studentCount);
 
         System.out.println(exam.getSubject().getTitle() + " exam added to " + venue.venueId() + ".");

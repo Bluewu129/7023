@@ -19,6 +19,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
 
     private ExamBlockModel model;
     private ExamBlockView view;
+    private String latestFinaliseReport = "";
 
     /**
      * Constructs a new ExamBlockController.
@@ -237,9 +238,42 @@ public class ExamBlockController implements ActionListener, ModelObserver {
             return;
         }
 
+        // Store the current report before finalizing
+        String reportBefore = SessionHandler.printEverything(model);
+
         // Finalise will trigger save dialog through SessionHandler
         SessionHandler.finaliseExamBlock(model);
+
+        // Get the report after finalization (with desk allocations)
+        latestFinaliseReport = SessionHandler.printEverything(model);
+
+        // Update view with finalized data
         view.updateView();
+        view.setLatestFinaliseReport(latestFinaliseReport);
+
+        // Generate desk allocations string
+        StringBuilder deskAllocations = new StringBuilder();
+        deskAllocations.append("Desk Allocations\n");
+        deskAllocations.append("================\n\n");
+
+        for (Session session : model.getSessions().all()) {
+            Venue venue = session.getVenue();
+            deskAllocations.append("-".repeat(75)).append("\n");
+            deskAllocations.append(venue.venueId());
+            if (venue.isAara()) {
+                deskAllocations.append(" (").append(venue.deskCount()).append(" AARA desks)");
+            } else {
+                deskAllocations.append(" (").append(venue.deskCount()).append(" Non-AARA desks)");
+            }
+            deskAllocations.append("\n");
+            deskAllocations.append("-".repeat(75)).append("\n");
+            deskAllocations.append(session.toString()).append("\n\n");
+
+            // Note: Actual desk allocations would be here if Session provided access
+            // For now, just show the session info
+        }
+
+        view.setLatestDeskAllocations(deskAllocations.toString());
     }
 
     /**
@@ -315,5 +349,14 @@ public class ExamBlockController implements ActionListener, ModelObserver {
      */
     public ExamBlockModel getModel() {
         return model;
+    }
+
+    /**
+     * Gets the view.
+     *
+     * @return the view
+     */
+    public ExamBlockView getView() {
+        return view;
     }
 }

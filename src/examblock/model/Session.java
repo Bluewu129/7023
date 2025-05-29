@@ -7,6 +7,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An object describing a single {@link Exam} {@code Session}.
@@ -18,11 +20,6 @@ import java.util.List;
  */
 public class Session {
 
-    /**
-     * Version 1.3: added field studentCount as work-around for bug in Assignment 1
-     */
-    private int studentCount;
-
     /** The venue for this session. */
     private final Venue venue;
     /** The session number of this session in this venue. */
@@ -33,6 +30,8 @@ public class Session {
     private final LocalTime start;
     /** The list of exams in this session in this venue. */
     private final List<Exam> exams;
+    /** Map of exam to student count for that exam */
+    private final Map<Exam, Integer> examStudentCounts;
     /** The number of rows of desks set up for this session. */
     private int rows; // the number of rows of Desks, running across the room left to right.
     /** The number of columns of desks set up for this session. */
@@ -55,12 +54,12 @@ public class Session {
      * @param start the start time of the exam window.
      */
     public Session(Venue venue, int sessionNumber, LocalDate day, LocalTime start) {
-        studentCount = 0;
         this.venue = venue;
         this.sessionNumber = sessionNumber;
         this.day = day;
         this.start = start;
         this.exams = new ArrayList<>();
+        this.examStudentCounts = new HashMap<>();
         rows = venue.getRows();
         columns = venue.getColumns();
         totalDesks = venue.deskCount();
@@ -90,12 +89,12 @@ public class Session {
         this.day = day;
         this.start = start;
         this.exams = new ArrayList<>();
+        this.examStudentCounts = new HashMap<>();
         rows = venue.getRows();
         columns = venue.getColumns();
         totalDesks = venue.deskCount();
         desks = new Desk[rows][columns];
         initializeDesks();
-        studentCount = 0;
     }
 
 
@@ -155,36 +154,40 @@ public class Session {
 
     /**
      * Counts the number of students already scheduled in this {@code Session}.
-     *
-     * Version 1.3: added field studentCount as work-around for bug in Assignment 1
+     * This counts unique students across all exams (a student taking multiple exams
+     * in the same session only counts once).
      *
      * @return The number of students already scheduled in this session.
      */
     public int countStudents() {
-        // int totalStudents = 0;
-        // List<Exam> sessionExams = this.getExams();
-        // for (Exam exam : sessionExams) {
-        //     totalStudents += cohort.countStudents(exam.getSubject(), this.venue.isAara());
-        // }
-        // return totalStudents;
-        return studentCount;
+        int total = 0;
+        for (Integer count : examStudentCounts.values()) {
+            total += count;
+        }
+        return total;
     }
 
     /**
      * Allocates an exam to this session (Venue and time).
      *
-     * Version 1.3: added field studentCount as work-around for bug in Assignment 1
-     * Version 1.3: added parameter numberStudents as work-around for bug in Assignment 1
-     *
      * @param exam the exam to be allocated to this venue.
      * @param numberStudents the number of students being added with this allocation.
      */
     public void scheduleExam(Exam exam, int numberStudents) {
-        studentCount += numberStudents;
-        // Directly add exam to list without registry check
+        // Add exam if not already present
         if (!exams.contains(exam)) {
             exams.add(exam);
         }
+
+        // Store or update the student count for this exam
+        examStudentCounts.put(exam, numberStudents);
+    }
+
+    /**
+     * Get the number of students for a specific exam in this session.
+     */
+    public int getStudentCountForExam(Exam exam) {
+        return examStudentCounts.getOrDefault(exam, 0);
     }
 
     /**
@@ -194,13 +197,34 @@ public class Session {
      * @param cohort all the Year 12 students.
      */
     public void allocateStudents(ExamList exams, StudentList cohort) {
-        int i; // counters
-        int j; // counters
         int nextDesk = 1;
-        int startDesk = 1;
-        int finishDesk = 1;
-        int totalStudents = this.countStudents();
+
+        // Get all students for this session, sorted by family name
+        List<Student> allSessionStudents = new ArrayList<>();
+
+        for (Exam exam : this.exams) {
+            for (Student student : cohort.all()) {
+                if (student.isAara() == this.venue.isAara()) {
+                    for (Subject subject : student.getSubjectsList()) {
+                        if (subject.equals(exam.getSubject())) {
+                            // Check if student is already in the list (taking multiple exams)
+                            if (!allSessionStudents.contains(student)) {
+                                allSessionStudents.add(student);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sort students alphabetically by surname
+        allSessionStudents.sort(Comparator.comparing(Student::familyName));
+
+        int totalStudents = allSessionStudents.size();
+
         if (totalStudents <= totalDesks) {
+            // Calculate gaps and skip columns if needed
             int gaps = 0;
             boolean skipColumns = false;
             if (totalStudents < (totalDesks / 2)) {
@@ -210,47 +234,39 @@ public class Session {
                 skipColumns = false;
                 gaps = totalDesks - totalStudents;
             }
-            List<Exam> sessionExams = this.getExams();
-            List<Student> students = cohort.all();
-            // sort the students into alphabetical by surname
-            students.sort(Comparator.comparing(Student::familyName));
-            int countExams = 0;
-            for (Exam exam : sessionExams) {
-                countExams++;
-            }
-            int interGaps = 0;
-            if (countExams > 1) {
-                interGaps = gaps / (countExams - 1);
-            }
-            Subject subject;
-            for (Exam exam : sessionExams) {
-                // foreach exam find the students in this venue
-                startDesk = nextDesk;
-                finishDesk = nextDesk;
-                subject = exam.getSubject();
-                for (Student student : students) {
-                    if (student.isAara() == this.venue.isAara()) {
-                        List<Subject> subjects = student.getSubjectsList();
-                        for (Subject check : subjects) {
-                            if (check == subject) {
-                                // Assign the student to the next desk
-                                j = (nextDesk - 1) / rows;
-                                i = (nextDesk - 1) % rows;
-                                String givenAndInit = getGivenAndInit(student.givenNames());
-                                desks[i][j].setFamilyName(student.familyName());
-                                desks[i][j].setGivenAndInit(givenAndInit);
-                                finishDesk = nextDesk;
-                                if (skipColumns) {
-                                    if (nextDesk % rows == 0) {
-                                        nextDesk += rows;
-                                    }
-                                }
-                                nextDesk++;
-                            }
-                        }
-                    }
+
+            // Allocate each student to a desk
+            for (Student student : allSessionStudents) {
+                // Calculate desk position
+                int j = (nextDesk - 1) / rows;
+                int i = (nextDesk - 1) % rows;
+
+                if (i < rows && j < columns) {
+                    String givenAndInit = getGivenAndInit(student.givenNames());
+                    desks[i][j].setFamilyName(student.familyName());
+                    desks[i][j].setGivenAndInit(givenAndInit);
                 }
-                nextDesk += interGaps;
+
+                if (skipColumns && nextDesk % rows == 0) {
+                    nextDesk += rows;
+                }
+                nextDesk++;
+            }
+        }
+    }
+
+    /**
+     * Allocate students to the provided desk array.
+     * This method is used by the report generation.
+     */
+    public void allocateToDesks(Desk[][] providedDesks) {
+        // Copy the allocations from our internal desks to the provided desks
+        for (int i = 0; i < rows && i < providedDesks.length; i++) {
+            for (int j = 0; j < columns && j < providedDesks[i].length; j++) {
+                if (desks[i][j].deskFamilyName() != null) {
+                    providedDesks[i][j].setFamilyName(desks[i][j].deskFamilyName());
+                    providedDesks[i][j].setGivenAndInit(desks[i][j].deskGivenAndInit());
+                }
             }
         }
     }
