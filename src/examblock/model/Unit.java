@@ -36,20 +36,10 @@ public class Unit implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Constructs a new {@link Subject} {@code Unit} object.
+     * Constructs a Unit with specific parameters.
+     * As per specification
      */
-    public Unit(Subject subject, Character unitId, String title, String description) {
-        this.subject = subject;
-        this.unitId = unitId;
-        this.title = cleanTitle(title);
-        this.description = description;
-        this.registry = null;
-    }
-
-    /**
-     * Constructs a Unit with registry.
-     */
-    public Unit(Subject subject, Character unitId, String title, String description, Registry registry) {
+    public Unit(Registry registry, Character unitId, String title, String description, Subject subject) {
         this.subject = subject;
         this.unitId = unitId;
         this.title = cleanTitle(title);
@@ -183,14 +173,6 @@ public class Unit implements StreamManager, ManageableListItem {
      */
     public String getDescription() {
         return description;
-    }
-
-    /**
-     * Gets the title of this unit.
-     * This method was missing and is required by the tests.
-     */
-    public String getTitle() {
-        return title;
     }
 
     @Override

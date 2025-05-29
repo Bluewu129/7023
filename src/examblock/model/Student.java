@@ -37,65 +37,6 @@ public class Student implements StreamManager, ManageableListItem {
     private Registry registry;
 
     /**
-     * Constructs a new Student object with no AARA requirements by default.
-     */
-    public Student(Long lui, String givenNames, String familyName, int day,
-                   int month, int year, String house) {
-        this(lui, givenNames, familyName, day, month, year, house, false);
-    }
-
-    /**
-     * Constructs a new Student object with AARA requirements.
-     */
-    public Student(Long lui, String givenNames, String familyName, int day,
-                   int month, int year, String house, Boolean aara) {
-        this.lui = lui;
-        given = cleanName(givenNames);
-        family = cleanName(familyName);
-        dob = LocalDate.of(year, month, day);
-        this.house = house;
-        this.aara = aara;
-        subjects = new ArrayList<>();
-        units = new ArrayList<>();
-        exams = new ArrayList<>();
-        this.registry = null;
-    }
-
-    /**
-     * Constructs a Student with registry.
-     */
-    public Student(Long lui, String givenNames, String familyName, int day,
-                   int month, int year, String house, Boolean aara, Registry registry) {
-        this(lui, givenNames, familyName, day, month, year, house, aara);
-        this.registry = registry;
-
-        if (registry != null) {
-            registry.add(this, Student.class);
-        }
-    }
-
-    /**
-     * Constructs a Student by reading from a stream.
-     */
-    public Student(BufferedReader br, Registry registry, int nthItem)
-            throws IOException, RuntimeException {
-        this.registry = registry;
-        subjects = new ArrayList<>();
-        units = new ArrayList<>();
-        exams = new ArrayList<>();
-
-        readStudentData(br, registry, nthItem);
-
-        if (registry != null) {
-            registry.add(this, Student.class);
-        }
-
-        if (Verbose.isVerbose()) {
-            System.out.println("Loaded Student: " + lui + " " + shortName());
-        }
-    }
-
-    /**
      * Default constructor for factory use.
      */
     public Student() {
@@ -109,6 +50,50 @@ public class Student implements StreamManager, ManageableListItem {
         this.units = new ArrayList<>();
         this.exams = new ArrayList<>();
         this.registry = null;
+    }
+
+    /**
+     * Constructs a Student with parameters as per specification.
+     * Order: lui, givenNames, familyName, day, month, year, house, aara, registry
+     */
+    public Student(Long lui, String givenNames, String familyName, int day, int month, int year,
+                   String house, Boolean aara, Registry registry) {
+        this.lui = lui;
+        this.given = cleanName(givenNames);
+        this.family = cleanName(familyName);
+        this.dob = LocalDate.of(year, month, day);
+        this.house = house;
+        this.aara = aara;
+        this.subjects = new ArrayList<>();
+        this.units = new ArrayList<>();
+        this.exams = new ArrayList<>();
+        this.registry = registry;
+
+        if (registry != null) {
+            registry.add(this, Student.class);
+        }
+    }
+
+    /**
+     * Constructs a Student by reading from a stream.
+     * As per specification
+     */
+    public Student(BufferedReader br, Registry registry, int nthItem)
+            throws IOException, RuntimeException {
+        this.registry = registry;
+        this.subjects = new ArrayList<>();
+        this.units = new ArrayList<>();
+        this.exams = new ArrayList<>();
+
+        readStudentData(br, registry, nthItem);
+
+        if (registry != null) {
+            registry.add(this, Student.class);
+        }
+
+        if (Verbose.isVerbose()) {
+            System.out.println("Loaded Student: " + lui + " " + shortName());
+        }
     }
 
     /**
