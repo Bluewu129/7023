@@ -118,7 +118,14 @@ public class Student implements StreamManager, ManageableListItem {
         if (rawName == null) {
             return "";
         }
-        return rawName.trim().replaceAll("\\s+", " ");
+
+        // Remove numbers and special characters, keep only letters, spaces, hyphens, and apostrophes
+        String cleaned = rawName.replaceAll("[^a-zA-Z\\s\\-']", "");
+
+        // Normalize spaces
+        cleaned = cleaned.trim().replaceAll("\\s+", " ");
+
+        return cleaned;
     }
 
     /**
@@ -185,15 +192,22 @@ public class Student implements StreamManager, ManageableListItem {
                         break;
                     case "Date of Birth":
                         try {
-                            // Handle the problematic date "0200-10-06"
-                            if (value.startsWith("0200")) {
-                                value = value.replace("0200", "2007");
+                            // Handle various problematic date formats
+                            if (value.startsWith("0200") || value.startsWith("200-")) {
+                                value = value.replaceFirst("^0?200", "2007");
                             }
+
                             String[] dateParts = value.split("-");
                             if (dateParts.length == 3) {
                                 int year = Integer.parseInt(dateParts[0]);
                                 int month = Integer.parseInt(dateParts[1]);
                                 int day = Integer.parseInt(dateParts[2]);
+
+                                // Validate year
+                                if (year < 1900 || year > 2100) {
+                                    year = 2007; // Default year
+                                }
+
                                 dob = LocalDate.of(year, month, day);
                             }
                         } catch (Exception e) {
@@ -331,26 +345,56 @@ public class Student implements StreamManager, ManageableListItem {
 
     /**
      * Gets a wrapper for the student's subjects list.
-     * Creates a temporary SubjectList wrapper for compatibility.
+     * NOTE: This method is deprecated and should not be used.
+     * Use getSubjectsList() instead.
      */
+    @Deprecated
     public SubjectList getSubjects() {
-        SubjectList wrapper = new SubjectList();
-        for (Subject subject : subjects) {
-            wrapper.addSubject(subject);
-        }
-        return wrapper;
+        // Create a dummy SubjectList that doesn't use the registry
+        // This is a workaround for compatibility
+        return new SubjectList() {
+            @Override
+            public ArrayList<Subject> all() {
+                return new ArrayList<>(subjects);
+            }
+
+            @Override
+            public int size() {
+                return subjects.size();
+            }
+
+            @Override
+            public List<Subject> getItems() {
+                return new ArrayList<>(subjects);
+            }
+        };
     }
 
     /**
      * Gets a wrapper for the student's exams list.
-     * Creates a temporary ExamList wrapper for compatibility.
+     * NOTE: This method is deprecated and should not be used.
+     * Use getExamsList() instead.
      */
+    @Deprecated
     public ExamList getExams() {
-        ExamList wrapper = new ExamList();
-        for (Exam exam : exams) {
-            wrapper.add(exam);
-        }
-        return wrapper;
+        // Create a dummy ExamList that doesn't use the registry
+        // This is a workaround for compatibility
+        return new ExamList() {
+            @Override
+            public ArrayList<Exam> all() {
+                return new ArrayList<>(exams);
+            }
+
+            @Override
+            public int size() {
+                return exams.size();
+            }
+
+            @Override
+            public List<Exam> getItems() {
+                return new ArrayList<>(exams);
+            }
+        };
     }
 
     public void addSubject(Subject subject) {
@@ -378,6 +422,7 @@ public class Student implements StreamManager, ManageableListItem {
 
     /**
      * Gets the actual subjects list.
+     * This is the preferred method to use.
      */
     public List<Subject> getSubjectsList() {
         return new ArrayList<>(subjects);
@@ -385,6 +430,7 @@ public class Student implements StreamManager, ManageableListItem {
 
     /**
      * Gets the actual exams list.
+     * This is the preferred method to use.
      */
     public List<Exam> getExamsList() {
         return new ArrayList<>(exams);

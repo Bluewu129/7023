@@ -2,10 +2,11 @@ package examblock.view;
 
 import examblock.controller.ExamBlockController;
 import examblock.model.*;
-import examblock.view.components.ListboxAlternatingRowRenderer;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
@@ -17,23 +18,23 @@ import java.awt.*;
 public class ExamBlockView extends JFrame {
 
     private ExamBlockController controller;
-    private JList<Exam> examList;
+    private JTable examTable;
     private JTree sessionVenueTree;
-    private DefaultListModel<Exam> examListModel;
+    private DefaultTableModel examTableModel;
     private DefaultTreeModel treeModel;
-    private JTextArea statusArea;
-    private JLabel titleLabel;
-    private JLabel versionLabel;
-    private JCheckBoxMenuItem verboseMenuItem;
+
+    // Bottom tabbed pane and tables
+    private JTabbedPane bottomTabbedPane;
+    private JTable subjectsTable, examsTable, unitsTable, studentsTable, roomsTable, venuesTable;
 
     // Buttons that need to be enabled/disabled
-    private JButton scheduleButton;
     private JButton finaliseButton;
     private JButton addButton;
     private JButton clearButton;
 
     // Menu items that need to be enabled/disabled
     private JMenuItem saveMenuItem;
+    private JCheckBoxMenuItem verboseMenuItem;
 
     /**
      * Constructs a new ExamBlockView.
@@ -45,25 +46,53 @@ public class ExamBlockView extends JFrame {
         initializeComponents();
         layoutComponents();
         setupMenus();
+
+        // Initial update
         updateView();
+
+        // Make sure the frame is visible
+        setVisible(true);
     }
 
     /**
      * Initializes all GUI components.
      */
     private void initializeComponents() {
-        setTitle("Exam Block Manager");
+        setTitle("Exam Block Manager - Exam Block (v1.2)");
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setSize(1000, 700);
+        setSize(1200, 800);
         setLocationRelativeTo(null);
 
-        // Initialize list models
-        examListModel = new DefaultListModel<>();
+        // Initialize table model with column headers
+        String[] columnNames = {"Int.", "Subject", "Date", "Time", "AARA", "Non."};
+        examTableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table read-only
+            }
+        };
 
-        // Initialize exam list
-        examList = new JList<>(examListModel);
-        examList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        examList.setCellRenderer(new ListboxAlternatingRowRenderer());
+        // Initialize exam table
+        examTable = new JTable(examTableModel);
+        examTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        examTable.setRowHeight(20);
+
+        // Set column widths
+        examTable.getColumnModel().getColumn(0).setPreferredWidth(30);  // Int.
+        examTable.getColumnModel().getColumn(0).setMaxWidth(40);
+        examTable.getColumnModel().getColumn(1).setPreferredWidth(200); // Subject
+        examTable.getColumnModel().getColumn(2).setPreferredWidth(80);  // Date
+        examTable.getColumnModel().getColumn(3).setPreferredWidth(50);  // Time
+        examTable.getColumnModel().getColumn(4).setPreferredWidth(50);  // AARA
+        examTable.getColumnModel().getColumn(5).setPreferredWidth(40);  // Non.
+        examTable.getColumnModel().getColumn(5).setMaxWidth(50);
+
+        // Center align checkbox columns
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        examTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+        examTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
+        examTable.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
 
         // Initialize tree
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Sessions");
@@ -72,34 +101,18 @@ public class ExamBlockView extends JFrame {
         sessionVenueTree.setRootVisible(false);
         sessionVenueTree.setShowsRootHandles(true);
 
-        // Initialize other components
-        statusArea = new JTextArea(5, 40);
-        statusArea.setEditable(false);
-        statusArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-
-        titleLabel = new JLabel("Exam Block");
-        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-
-        versionLabel = new JLabel("Version: 1.0");
-        versionLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-
         // Initialize buttons
-        scheduleButton = new JButton("Schedule Exam");
-        scheduleButton.setActionCommand("Schedule Exam");
-        scheduleButton.addActionListener(controller);
-        scheduleButton.setEnabled(false); // Initially disabled
-
         finaliseButton = new JButton("Finalise");
         finaliseButton.setActionCommand("Finalise");
         finaliseButton.addActionListener(controller);
-        finaliseButton.setEnabled(false); // Initially disabled
+        finaliseButton.setEnabled(false);
 
         addButton = new JButton("Add");
-        addButton.setEnabled(false); // Initially disabled
+        addButton.setEnabled(false);
         addButton.addActionListener(e -> handleAdd());
 
         clearButton = new JButton("Clear");
-        clearButton.setEnabled(false); // Initially disabled
+        clearButton.setEnabled(false);
         clearButton.addActionListener(e -> handleClear());
 
         // Add window close listener
@@ -112,7 +125,7 @@ public class ExamBlockView extends JFrame {
         });
 
         // Add selection listeners
-        examList.addListSelectionListener(e -> {
+        examTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 updateButtonStates();
             }
@@ -125,14 +138,7 @@ public class ExamBlockView extends JFrame {
      * Lays out all GUI components.
      */
     private void layoutComponents() {
-        setLayout(new BorderLayout());
-
-        // Header panel
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        headerPanel.add(titleLabel);
-        headerPanel.add(Box.createHorizontalStrut(20));
-        headerPanel.add(versionLabel);
-        add(headerPanel, BorderLayout.NORTH);
+        setLayout(new BorderLayout(5, 5));
 
         // Main panel with three sections
         JPanel mainPanel = new JPanel(new GridLayout(1, 3, 5, 5));
@@ -142,22 +148,18 @@ public class ExamBlockView extends JFrame {
         JPanel examPanel = new JPanel(new BorderLayout());
         examPanel.setBorder(new TitledBorder("1. Select an Exam / Unit"));
 
-        // Table headers
-        JPanel examHeaderPanel = new JPanel(new GridLayout(1, 5));
-        examHeaderPanel.add(new JLabel("Int."));
-        examHeaderPanel.add(new JLabel("Subject"));
-        examHeaderPanel.add(new JLabel("Date"));
-        examHeaderPanel.add(new JLabel("Time"));
-        examHeaderPanel.add(new JLabel("AARA"));
-        examPanel.add(examHeaderPanel, BorderLayout.NORTH);
-
-        examPanel.add(new JScrollPane(examList), BorderLayout.CENTER);
+        JScrollPane examScrollPane = new JScrollPane(examTable);
+        examScrollPane.setPreferredSize(new Dimension(300, 200));
+        examPanel.add(examScrollPane, BorderLayout.CENTER);
         mainPanel.add(examPanel);
 
         // 2. Select a Session/Venue panel
         JPanel sessionVenuePanel = new JPanel(new BorderLayout());
         sessionVenuePanel.setBorder(new TitledBorder("2. Select a Session / Venue"));
-        sessionVenuePanel.add(new JScrollPane(sessionVenueTree), BorderLayout.CENTER);
+
+        JScrollPane treeScrollPane = new JScrollPane(sessionVenueTree);
+        treeScrollPane.setPreferredSize(new Dimension(300, 200));
+        sessionVenuePanel.add(treeScrollPane, BorderLayout.CENTER);
         mainPanel.add(sessionVenuePanel);
 
         // 3. Go panel with buttons
@@ -175,40 +177,95 @@ public class ExamBlockView extends JFrame {
 
         add(mainPanel, BorderLayout.CENTER);
 
-        // Bottom tabbed pane for details
-        JTabbedPane tabbedPane = new JTabbedPane();
+        // Create bottom tabbed pane
+        createBottomTabbedPane();
+        add(bottomTabbedPane, BorderLayout.SOUTH);
+    }
+
+    /**
+     * Creates the bottom tabbed pane with all tables.
+     */
+    private void createBottomTabbedPane() {
+        bottomTabbedPane = new JTabbedPane();
+        bottomTabbedPane.setPreferredSize(new Dimension(1200, 300));
 
         // Subjects tab
-        JTextArea subjectsArea = new JTextArea();
-        subjectsArea.setEditable(false);
-        tabbedPane.addTab("Subjects", new JScrollPane(subjectsArea));
+        String[] subjectColumns = {"Title", "Description"};
+        DefaultTableModel subjectsModel = new DefaultTableModel(subjectColumns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        subjectsTable = new JTable(subjectsModel);
+        subjectsTable.setRowHeight(20);
+        JScrollPane subjectsScroll = new JScrollPane(subjectsTable);
+        bottomTabbedPane.addTab("Subjects", subjectsScroll);
 
         // Exams tab
-        JTextArea examsArea = new JTextArea();
-        examsArea.setEditable(false);
-        tabbedPane.addTab("Exams", new JScrollPane(examsArea));
+        String[] examColumns = {"Subject", "Type", "Paper", "Subtitle", "Date", "Time"};
+        DefaultTableModel examsModel = new DefaultTableModel(examColumns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        examsTable = new JTable(examsModel);
+        examsTable.setRowHeight(20);
+        JScrollPane examsScroll = new JScrollPane(examsTable);
+        bottomTabbedPane.addTab("Exams", examsScroll);
 
         // Units tab
-        JTextArea unitsArea = new JTextArea();
-        unitsArea.setEditable(false);
-        tabbedPane.addTab("Units", new JScrollPane(unitsArea));
+        String[] unitColumns = {"Subject", "Unit ID", "Title"};
+        DefaultTableModel unitsModel = new DefaultTableModel(unitColumns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        unitsTable = new JTable(unitsModel);
+        unitsTable.setRowHeight(20);
+        JScrollPane unitsScroll = new JScrollPane(unitsTable);
+        bottomTabbedPane.addTab("Units", unitsScroll);
 
         // Students tab
-        JTextArea studentsArea = new JTextArea();
-        studentsArea.setEditable(false);
-        tabbedPane.addTab("Students", new JScrollPane(studentsArea));
+        String[] studentColumns = {"LUI", "Full Name", "House", "AARA"};
+        DefaultTableModel studentsModel = new DefaultTableModel(studentColumns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        studentsTable = new JTable(studentsModel);
+        studentsTable.setRowHeight(20);
+        JScrollPane studentsScroll = new JScrollPane(studentsTable);
+        bottomTabbedPane.addTab("Students", studentsScroll);
 
         // Rooms tab
-        JTextArea roomsArea = new JTextArea();
-        roomsArea.setEditable(false);
-        tabbedPane.addTab("Rooms", new JScrollPane(roomsArea));
+        String[] roomColumns = {"Room ID"};
+        DefaultTableModel roomsModel = new DefaultTableModel(roomColumns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        roomsTable = new JTable(roomsModel);
+        roomsTable.setRowHeight(20);
+        JScrollPane roomsScroll = new JScrollPane(roomsTable);
+        bottomTabbedPane.addTab("Rooms", roomsScroll);
 
         // Venues tab
-        JTextArea venuesArea = new JTextArea();
-        venuesArea.setEditable(false);
-        tabbedPane.addTab("Venues", new JScrollPane(venuesArea));
-
-        add(tabbedPane, BorderLayout.SOUTH);
+        String[] venueColumns = {"Venue", "Rooms", "Rows x Columns", "Desks", "AARA"};
+        DefaultTableModel venuesModel = new DefaultTableModel(venueColumns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        venuesTable = new JTable(venuesModel);
+        venuesTable.setRowHeight(20);
+        JScrollPane venuesScroll = new JScrollPane(venuesTable);
+        bottomTabbedPane.addTab("Venues", venuesScroll);
     }
 
     /**
@@ -233,7 +290,7 @@ public class ExamBlockView extends JFrame {
         saveMenuItem.setAccelerator(KeyStroke.getKeyStroke("ctrl S"));
         saveMenuItem.setActionCommand("Save");
         saveMenuItem.addActionListener(controller);
-        saveMenuItem.setEnabled(false); // Initially disabled
+        saveMenuItem.setEnabled(false);
         fileMenu.add(saveMenuItem);
 
         fileMenu.addSeparator();
@@ -271,18 +328,18 @@ public class ExamBlockView extends JFrame {
 
         ExamBlockModel model = controller.getModel();
 
-        // Update header
-        titleLabel.setText(model.getTitle());
-        versionLabel.setText("Version: " + model.getVersion());
+        // Update window title
+        String title = "Exam Block Manager - " + model.getTitle() + " (v" + model.getVersion() + ")";
+        setTitle(title);
 
-        // Update exam list
-        examListModel.clear();
-        for (Exam exam : model.getExams().all()) {
-            examListModel.addElement(exam);
-        }
+        // Update exam table
+        updateExamTable(model);
 
         // Update session/venue tree
         updateSessionVenueTree();
+
+        // Update bottom tabs
+        updateBottomTabs();
 
         // Check if data is loaded
         boolean hasData = model.getExams().size() > 0 ||
@@ -290,13 +347,114 @@ public class ExamBlockView extends JFrame {
                 model.getSessions().all().size() > 0;
 
         // Enable/disable controls based on data availability
-        saveMenuItem.setEnabled(hasData);
+        if (saveMenuItem != null) {
+            saveMenuItem.setEnabled(hasData);
+        }
         finaliseButton.setEnabled(hasData && model.getSessions().all().size() > 0);
 
         // Update button states based on selections
         updateButtonStates();
 
+        // Force repaint
+        revalidate();
         repaint();
+    }
+
+    /**
+     * Updates the exam table.
+     */
+    private void updateExamTable(ExamBlockModel model) {
+        examTableModel.setRowCount(0);
+
+        for (Exam exam : model.getExams().all()) {
+            // Count AARA and non-AARA students for this exam
+            int aaraCount = 0;
+            int nonAaraCount = 0;
+            for (Student student : model.getStudents().all()) {
+                // Check if student has this subject
+                boolean hasSubject = false;
+                for (Subject subject : student.getSubjectsList()) {
+                    if (subject.equals(exam.getSubject())) {
+                        hasSubject = true;
+                        break;
+                    }
+                }
+
+                if (hasSubject) {
+                    if (student.isAara()) {
+                        aaraCount++;
+                    } else {
+                        nonAaraCount++;
+                    }
+                }
+            }
+
+            Object[] rowData = {
+                    exam.getExamType() == Exam.ExamType.INTERNAL ? "✓" : "",
+                    exam.getSubject().getTitle(),
+                    exam.getDate().toString(),
+                    exam.getTime().toString(),
+                    String.valueOf(aaraCount),
+                    String.valueOf(nonAaraCount)
+            };
+
+            examTableModel.addRow(rowData);
+        }
+    }
+
+    /**
+     * Updates the bottom tabbed pane with current data.
+     */
+    private void updateBottomTabs() {
+        if (controller == null || controller.getModel() == null) {
+            return;
+        }
+
+        ExamBlockModel model = controller.getModel();
+
+        // Update Subjects tab
+        DefaultTableModel subjectsModel = (DefaultTableModel) subjectsTable.getModel();
+        subjectsModel.setRowCount(0);
+        for (Subject subject : model.getSubjects().all()) {
+            subjectsModel.addRow(subject.toTableRow());
+        }
+
+        // Update Exams tab
+        DefaultTableModel examsModel = (DefaultTableModel) examsTable.getModel();
+        examsModel.setRowCount(0);
+        for (Exam exam : model.getExams().all()) {
+            examsModel.addRow(exam.toLongTableRow());
+        }
+
+        // Update Units tab
+        DefaultTableModel unitsModel = (DefaultTableModel) unitsTable.getModel();
+        unitsModel.setRowCount(0);
+        for (Unit unit : model.getUnits().all()) {
+            unitsModel.addRow(unit.toTableRow());
+        }
+
+        // Update Students tab
+        DefaultTableModel studentsModel = (DefaultTableModel) studentsTable.getModel();
+        studentsModel.setRowCount(0);
+        for (Student student : model.getStudents().all()) {
+            studentsModel.addRow(student.toTableRow());
+        }
+
+        // Update Rooms tab
+        DefaultTableModel roomsModel = (DefaultTableModel) roomsTable.getModel();
+        roomsModel.setRowCount(0);
+        for (Room room : model.getRooms().all()) {
+            if (!(room instanceof Venue)) { // Only show actual rooms, not venues
+                roomsModel.addRow(room.toTableRow());
+            }
+        }
+
+        // Update Venues tab
+        DefaultTableModel venuesModel = (DefaultTableModel) venuesTable.getModel();
+        venuesModel.setRowCount(0);
+        for (Venue venue : model.getVenues().all()) {
+            venuesModel.addRow(venue.toTableRow());
+        }
     }
 
     /**
@@ -315,7 +473,9 @@ public class ExamBlockView extends JFrame {
 
             for (Session session : model.getSessions().all()) {
                 String sessionText = session.getDate() + " at " + session.getTime() +
-                        " in " + session.getVenue().venueId();
+                        " in " + session.getVenue().venueId() +
+                        " (" + calculateAvailableDesks(session) + " of " +
+                        session.getVenue().deskCount() + " desks available)";
                 DefaultMutableTreeNode sessionNode = new DefaultMutableTreeNode(sessionText);
 
                 // Add exams under each session
@@ -335,9 +495,11 @@ public class ExamBlockView extends JFrame {
         // Add "Create a new session" node with venues
         DefaultMutableTreeNode createNewNode = new DefaultMutableTreeNode("Create a new session");
         for (Venue venue : model.getVenues().all()) {
-            String venueText = venue.venueId() + " (" + venue.deskCount() + " desks)";
+            String venueText = venue.venueId() + " (" + venue.deskCount() + " ";
             if (venue.isAara()) {
-                venueText += " AARA";
+                venueText += "AARA desks)";
+            } else {
+                venueText += "Non-AARA desks)";
             }
             createNewNode.add(new DefaultMutableTreeNode(venueText));
         }
@@ -348,6 +510,13 @@ public class ExamBlockView extends JFrame {
         for (int i = 0; i < sessionVenueTree.getRowCount(); i++) {
             sessionVenueTree.expandRow(i);
         }
+    }
+
+    /**
+     * Calculates available desks for a session.
+     */
+    private int calculateAvailableDesks(Session session) {
+        return session.getVenue().deskCount() - session.countStudents();
     }
 
     /**
@@ -397,7 +566,11 @@ public class ExamBlockView extends JFrame {
      * @return the selected exam, or null if none selected
      */
     public Exam getSelectedExam() {
-        return examList.getSelectedValue();
+        int selectedRow = examTable.getSelectedRow();
+        if (selectedRow >= 0 && selectedRow < controller.getModel().getExams().all().size()) {
+            return controller.getModel().getExams().all().get(selectedRow);
+        }
+        return null;
     }
 
     /**
@@ -443,13 +616,30 @@ public class ExamBlockView extends JFrame {
             if (node != null && node.getParent() != null) {
                 DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
                 if (parent.getUserObject().toString().startsWith("Existing sessions")) {
-                    // This is a session node
+                    // This is a session node - need to parse and find the actual session
                     String nodeText = node.getUserObject().toString();
-                    // Parse session info and find matching session
-                    // This is simplified - in real implementation would need proper parsing
-                    ExamBlockModel model = controller.getModel();
-                    return model.getSessions().all().isEmpty() ? null :
-                            model.getSessions().all().get(0);
+
+                    // Extract date and venue from the text
+                    // Format: "2025-03-10 at 12:30 in V1+V2+V3 (X of Y desks available)"
+                    String[] parts = nodeText.split(" at ");
+                    if (parts.length >= 2) {
+                        String date = parts[0].trim();
+                        String[] timeParts = parts[1].split(" in ");
+                        if (timeParts.length >= 2) {
+                            String time = timeParts[0].trim();
+                            String venuePart = timeParts[1].split(" \\(")[0].trim();
+
+                            // Find matching session
+                            ExamBlockModel model = controller.getModel();
+                            for (Session session : model.getSessions().all()) {
+                                if (session.getDate().toString().equals(date) &&
+                                        session.getTime().toString().equals(time) &&
+                                        session.getVenue().venueId().equals(venuePart)) {
+                                    return session;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

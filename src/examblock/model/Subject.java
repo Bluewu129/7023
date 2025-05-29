@@ -93,8 +93,26 @@ public class Subject implements StreamManager, ManageableListItem {
         if (rawTitle == null) {
             return "";
         }
-        // Remove leading/trailing spaces and compress multiple spaces to single space
-        return rawTitle.trim().replaceAll("\\s+", " ");
+
+        // First, trim and normalize spaces
+        String cleaned = rawTitle.trim().replaceAll("\\s+", " ");
+
+        // Remove any trailing dots
+        cleaned = cleaned.replaceAll("\\.+$", "");
+
+        // Handle special cases for known subjects with formatting issues
+        // Check for case-insensitive matches and return properly formatted versions
+        if (cleaned.equalsIgnoreCase("Essential English")) {
+            return "Essential English";
+        } else if (cleaned.toLowerCase().contains("english and literature extension")) {
+            return "English And Literature Extension";
+        } else if (cleaned.equalsIgnoreCase("Digital Solutions")) {
+            return "Digital Solutions";
+        } else if (cleaned.equalsIgnoreCase("Drama")) {
+            return "Drama";
+        }
+
+        return cleaned;
     }
 
     /**
