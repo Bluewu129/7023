@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An object describing a single Year 12 Student.
@@ -26,11 +28,11 @@ public class Student implements StreamManager, ManageableListItem {
     /** The Student requires Access Arrangements and Reasonable Adjustments (AARA). */
     private Boolean aara;
     /** The list of the Student's subjects. */
-    private final SubjectList subjects;
+    private final List<Subject> subjects;
     /** The list of the Student's current units. */
-    private final UnitList units;
+    private final List<Unit> units;
     /** The list of the Student's exams for the current exam block. */
-    private final ExamList exams;
+    private final List<Exam> exams;
     /** The registry for dependencies. */
     private Registry registry;
 
@@ -53,9 +55,9 @@ public class Student implements StreamManager, ManageableListItem {
         dob = LocalDate.of(year, month, day);
         this.house = house;
         this.aara = aara;
-        subjects = new SubjectList();
-        units = new UnitList();
-        exams = new ExamList();
+        subjects = new ArrayList<>();
+        units = new ArrayList<>();
+        exams = new ArrayList<>();
         this.registry = null;
     }
 
@@ -78,9 +80,9 @@ public class Student implements StreamManager, ManageableListItem {
     public Student(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
         this.registry = registry;
-        subjects = new SubjectList();
-        units = new UnitList();
-        exams = new ExamList();
+        subjects = new ArrayList<>();
+        units = new ArrayList<>();
+        exams = new ArrayList<>();
 
         readStudentData(br, registry, nthItem);
 
@@ -91,6 +93,22 @@ public class Student implements StreamManager, ManageableListItem {
         if (Verbose.isVerbose()) {
             System.out.println("Loaded Student: " + lui + " " + shortName());
         }
+    }
+
+    /**
+     * Default constructor for factory use.
+     */
+    public Student() {
+        this.lui = 0L;
+        this.given = "";
+        this.family = "";
+        this.dob = LocalDate.now();
+        this.house = "";
+        this.aara = false;
+        this.subjects = new ArrayList<>();
+        this.units = new ArrayList<>();
+        this.exams = new ArrayList<>();
+        this.registry = null;
     }
 
     /**
@@ -207,7 +225,8 @@ public class Student implements StreamManager, ManageableListItem {
                     if (!trimmedName.isEmpty()) {
                         Subject subject = registry.find(trimmedName, Subject.class);
                         if (subject != null) {
-                            subjects.addSubject(subject);
+                            // Directly add to the student's subject list
+                            subjects.add(subject);
                         } else if (Verbose.isVerbose()) {
                             System.out.println("Warning: Subject not found for student #" + nthItem + ": " + trimmedName);
                         }
@@ -235,7 +254,7 @@ public class Student implements StreamManager, ManageableListItem {
         if (subjects.size() > 0) {
             bw.write("Subjects: ");
             boolean first = true;
-            for (Subject subject : subjects.all()) {
+            for (Subject subject : subjects) {
                 if (!first) bw.write(", ");
                 bw.write(subject.getTitle());
                 first = false;
@@ -310,20 +329,65 @@ public class Student implements StreamManager, ManageableListItem {
         return aara;
     }
 
+    /**
+     * Gets a wrapper for the student's subjects list.
+     * Creates a temporary SubjectList wrapper for compatibility.
+     */
     public SubjectList getSubjects() {
-        return subjects;
+        SubjectList wrapper = new SubjectList();
+        for (Subject subject : subjects) {
+            wrapper.addSubject(subject);
+        }
+        return wrapper;
     }
 
+    /**
+     * Gets a wrapper for the student's exams list.
+     * Creates a temporary ExamList wrapper for compatibility.
+     */
     public ExamList getExams() {
-        return exams;
+        ExamList wrapper = new ExamList();
+        for (Exam exam : exams) {
+            wrapper.add(exam);
+        }
+        return wrapper;
     }
 
     public void addSubject(Subject subject) {
-        subjects.addSubject(subject);
+        if (!subjects.contains(subject)) {
+            subjects.add(subject);
+        }
     }
 
     public void removeSubject(Subject subject) {
-        subjects.removeSubject(subject);
+        subjects.remove(subject);
+    }
+
+    public void addExam(Exam exam) {
+        if (!exams.contains(exam)) {
+            exams.add(exam);
+        }
+    }
+
+    /**
+     * Clears the exams list.
+     */
+    public void clearExams() {
+        exams.clear();
+    }
+
+    /**
+     * Gets the actual subjects list.
+     */
+    public List<Subject> getSubjectsList() {
+        return new ArrayList<>(subjects);
+    }
+
+    /**
+     * Gets the actual exams list.
+     */
+    public List<Exam> getExamsList() {
+        return new ArrayList<>(exams);
     }
 
     @Override
@@ -331,9 +395,20 @@ public class Student implements StreamManager, ManageableListItem {
         final String nameLine = String.valueOf(lui) + " " + shortName() + "\n";
         StringBuilder studentPrint = new StringBuilder();
         studentPrint.append(nameLine);
-        studentPrint.append(subjects.toString());
+
+        // Print subjects
+        int counter = 1;
+        for (Subject subject : subjects) {
+            studentPrint.append(counter++).append(". ").append(subject.toString());
+        }
         studentPrint.append("\n");
-        studentPrint.append(exams.toString());
+
+        // Print exams
+        counter = 1;
+        for (Exam exam : exams) {
+            studentPrint.append(counter++).append(". ").append(exam.toString());
+        }
+
         studentPrint.append("=".repeat(60));
         studentPrint.append("\n");
         return studentPrint.toString();
@@ -351,14 +426,7 @@ public class Student implements StreamManager, ManageableListItem {
 
     @Override
     public String toString() {
-        final String nameLine = String.valueOf(lui) + " " + shortName() + "\n";
-        StringBuilder studentPrint = new StringBuilder();
-        studentPrint.append(nameLine);
-        studentPrint.append(subjects.toString());
-        studentPrint.append(exams.toString());
-        studentPrint.append("=".repeat(60));
-        studentPrint.append("\n");
-        return studentPrint.toString();
+        return getFullDetail();
     }
 
     @Override

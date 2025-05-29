@@ -236,12 +236,13 @@ public class ExamBlockModel {
                 } else if (line.startsWith("[Units:")) {
                     units.streamIn(br, registry, 1);
                 } else if (line.startsWith("[Students:")) {
-                   break;
+                    students.streamIn(br, registry, 1);
                 } else if (line.startsWith("[Exams:")) {
                     exams.streamIn(br, registry, 1);
                 } else if (line.startsWith("[Rooms:")) {
                     rooms.streamIn(br, registry, 1);
                 } else if (line.startsWith("[Venues:")) {
+                    // Important: Venues must be loaded AFTER Rooms
                     venues.streamIn(br, registry, 1);
                 } else if (line.startsWith("[Sessions:")) {
                     // Sessions need special handling
@@ -274,7 +275,6 @@ public class ExamBlockModel {
                 System.err.println("Error loading file: " + e.getMessage());
                 e.printStackTrace();
             }
-            DialogUtils.showMessage("Error loading file: " + e.getMessage());
             return false;
         }
     }
@@ -358,66 +358,63 @@ public class ExamBlockModel {
             for (int j = 0; j < examCount; j++) {
                 String examLine = CSSE7023.getLine(br);
                 if (examLine != null && !examLine.trim().isEmpty()) {
-                    // Parse exam line to get subject
-                    // Format might be like "Literature (36 students)"
-                    String examSubject = examLine.trim();
-                    int studentCount = 0;
+                    // This should be the exam title line
+                    String examTitle = examLine.trim();
 
-                    if (examSubject.contains("(")) {
-                        // Extract student count
-                        int openParen = examSubject.indexOf("(");
-                        int closeParen = examSubject.indexOf("students)");
-                        if (closeParen > openParen) {
-                            String countStr = examSubject.substring(openParen + 1, closeParen).trim();
-                            try {
-                                studentCount = Integer.parseInt(countStr);
-                            } catch (NumberFormatException e) {
-                                // Ignore parsing errors
-                            }
-                        }
-                        examSubject = examSubject.substring(0, openParen).trim();
-                    }
-
-                    // Find the exam by subject
+                    // Find the exam by matching the title
                     Exam exam = null;
                     for (Exam e : exams.all()) {
-                        if (e.getSubject().getTitle().equals(examSubject)) {
+                        if (e.getShortTitle().equals(examTitle)) {
                             exam = e;
                             break;
                         }
                     }
 
+                    if (exam == null) {
+                        // Try to find by subject name if short title doesn't match
+                        for (Exam e : exams.all()) {
+                            if (examTitle.contains(e.getSubject().getTitle())) {
+                                exam = e;
+                                break;
+                            }
+                        }
+                    }
+
                     if (exam != null) {
+                        // Check if there's a [Desks: N] line following
+                        String nextLine = CSSE7023.getLine(br, true); // Peek
+                        int studentCount = 0;
+
+                        if (nextLine != null && nextLine.trim().startsWith("[Desks:")) {
+                            // Consume the [Desks: N] line
+                            CSSE7023.getLine(br);
+
+                            // Extract desk count
+                            try {
+                                String deskCountStr = nextLine.trim();
+                                deskCountStr = deskCountStr.substring(7, deskCountStr.length() - 1).trim();
+                                int deskCount = Integer.parseInt(deskCountStr);
+                                studentCount = deskCount; // Use desk count as student count
+
+                                // Skip all desk allocation lines
+                                for (int k = 0; k < deskCount; k++) {
+                                    String deskLine = CSSE7023.getLine(br);
+                                    if (deskLine == null) {
+                                        break;
+                                    }
+                                    // Skip desk allocation details
+                                }
+                            } catch (Exception e) {
+                                if (Verbose.isVerbose()) {
+                                    System.out.println("Error parsing desk count: " + e.getMessage());
+                                }
+                            }
+                        }
+
                         session.scheduleExam(exam, studentCount);
                     } else if (Verbose.isVerbose()) {
-                        System.out.println("Warning: Exam not found for subject: " + examSubject);
+                        System.out.println("Warning: Exam not found for title: " + examTitle);
                     }
-                }
-            }
-
-            // Check if there are desk allocations
-            String nextLine = CSSE7023.getLine(br, true); // Peek at next line
-            if (nextLine != null && nextLine.startsWith("[Desks:")) {
-                // Consume the [Desks: N] line
-                CSSE7023.getLine(br);
-
-                // Extract desk count
-                int deskCount = 0;
-                try {
-                    String deskCountStr = nextLine.substring(7, nextLine.length() - 1).trim();
-                    deskCount = Integer.parseInt(deskCountStr);
-                } catch (Exception e) {
-                    // Ignore parsing errors
-                }
-
-                // Skip desk allocation details for now
-                // These would be lines like "Desk: 1, LUI: 9999493906, Name: Black, Mitchell C."
-                for (int k = 0; k < deskCount; k++) {
-                    String deskLine = CSSE7023.getLine(br);
-                    if (deskLine == null) {
-                        break;
-                    }
-                    // TODO: Parse desk allocations if needed
                 }
             }
 
@@ -437,22 +434,19 @@ public class ExamBlockModel {
         // Link students to their exams based on subjects
         for (Student student : students.all()) {
             // Clear any existing exams
-            student.getExams().clear();
+            student.clearExams();
 
             // For each subject the student is enrolled in
-            for (Subject subject : student.getSubjects().all()) {
+            for (Subject subject : student.getSubjectsList()) {
                 // Find all exams for this subject
                 for (Exam exam : exams.all()) {
                     if (exam.getSubject().equals(subject)) {
                         // Add this exam to the student's exam list
-                        student.getExams().add(exam);
+                        student.addExam(exam);
                     }
                 }
             }
         }
-
-        // Link units to subjects if needed
-        // The units are already linked to subjects during loading
 
         if (Verbose.isVerbose()) {
             System.out.println("Established relationships between entities");
@@ -474,12 +468,19 @@ public class ExamBlockModel {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Save Exam Block Data");
             fileChooser.setSelectedFile(new File(title + " (v" + version + ").ebd"));
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "Exam Block Files (*.ebd)", "ebd"));
 
             int result = fileChooser.showSaveDialog(null);
             if (result != JFileChooser.APPROVE_OPTION) {
                 return false;
             }
             filename = fileChooser.getSelectedFile().getAbsolutePath();
+
+            // Ensure .ebd extension
+            if (!filename.toLowerCase().endsWith(".ebd")) {
+                filename = filename + ".ebd";
+            }
         }
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename))) {
@@ -532,28 +533,6 @@ public class ExamBlockModel {
             }
             DialogUtils.showMessage("Error saving file: " + e.getMessage());
             return false;
-        }
-    }
-
-    /**
-     * Gets the version number from user input.
-     *
-     * @return the version number, or BAD_VERSION if cancelled
-     */
-    public double getVersionNumber() {
-        String input = JOptionPane.showInputDialog(null,
-                "Enter version number:",
-                "Version",
-                JOptionPane.QUESTION_MESSAGE);
-
-        if (input == null || input.trim().isEmpty()) {
-            return CSSE7023.BAD_VERSION;
-        }
-
-        try {
-            return Double.parseDouble(input.trim());
-        } catch (NumberFormatException e) {
-            return CSSE7023.BAD_VERSION;
         }
     }
 }

@@ -5,16 +5,21 @@ import examblock.view.components.Verbose;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an exam venue, consisting of one or more {@link Room}s.
+ * Note: Venue should NOT inherit from Room - this is a composition relationship, not inheritance.
+ * However, to maintain compatibility with existing code structure, we keep the inheritance
+ * but handle it carefully.
  */
 public class Venue extends Room {
 
     /** The number of rooms used in the venue; must be one of 1, 2, or 3. */
     private int roomCount;
-    /** The list of rooms used in the venue - there must be at least one room. */
-    private RoomList rooms;
+    /** The list of room IDs that make up this venue. */
+    private List<String> roomIds;
     /** The number of rows of Desks, running across the room. */
     private int rows;
     /** number of columns of Desks, running front to rear. */
@@ -23,18 +28,21 @@ public class Venue extends Room {
     private int totalDesks;
     /** Whether or not this venue is suitable for AARA exams. */
     private boolean aara;
+    /** The registry reference for looking up rooms. */
+    private Registry venueRegistry;
 
     /**
      * Default constructor for factory use.
      */
     public Venue() {
-        super("", new RegistryImpl()); // Provide required parameters for Room constructor
+        super("", null); // Don't register the venue as a room
         this.roomCount = 0;
-        this.rooms = new RoomList(new RegistryImpl());
+        this.roomIds = new ArrayList<>();
         this.rows = 0;
         this.columns = 0;
         this.totalDesks = 0;
         this.aara = false;
+        this.venueRegistry = null;
     }
 
     /**
@@ -42,43 +50,20 @@ public class Venue extends Room {
      */
     public Venue(String id, int roomCount, RoomList rooms,
                  int rows, int columns, int totalDesks, boolean aara) {
-        super(id, new RegistryImpl()); // Use the Room constructor that takes id and registry
+        super(id, null); // Don't register the venue as a room
         this.roomCount = roomCount;
+        this.roomIds = new ArrayList<>();
 
-
-        this.rooms = new RoomList(rooms.getRegistry());
-        int counter = 0;
+        // Store room IDs, not room objects
         for (Room room : rooms.getItems()) {
-            counter++;
-            this.rooms.add(room);
+            this.roomIds.add(room.roomId());
         }
 
         this.rows = rows;
         this.columns = columns;
         this.totalDesks = totalDesks;
-
-        // Validation logic
-        if (counter < 1) {
-            System.out.println("Venue has no rooms!");
-            System.out.println("Therefore has no desks! Resetting all desk values to zero.");
-            this.rows = 0;
-            this.columns = 0;
-            this.totalDesks = 0;
-        }
-        if (counter != roomCount) {
-            System.out.println("Venue called with " + roomCount + " roomCount, but with "
-                    + counter + " rooms!");
-            System.out.println("Resetting roomCount to " + counter + " rooms!");
-            this.roomCount = counter;
-        }
-        counter = rows * columns;
-        if (totalDesks > counter) {
-            System.out.println("Venue called with " + totalDesks + " totalDesks, but with only "
-                    + counter + " desks!");
-            System.out.println("Resetting totalDesks to " + counter + "!");
-            this.totalDesks = counter;
-        }
         this.aara = aara;
+        this.venueRegistry = rooms.getRegistry();
     }
 
     /**
@@ -86,11 +71,11 @@ public class Venue extends Room {
      */
     public Venue(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
-        super("temp", registry); // Temporary ID, will be set by streamIn
-        this.rooms = new RoomList(registry);
+        super("temp", null); // Don't register as a room
+        this.roomIds = new ArrayList<>();
+        this.venueRegistry = registry;
         streamIn(br, registry, nthItem);
 
-        // Don't register here - let streamIn handle it
         if (Verbose.isVerbose()) {
             System.out.println("Loaded Venue: " + venueId());
         }
@@ -105,8 +90,16 @@ public class Venue extends Room {
 
     /**
      * Gets the list of rooms that make up this venue.
+     * This creates a temporary RoomList with the actual room objects.
      */
     public RoomList getRooms() {
+        RoomList rooms = new RoomList(venueRegistry);
+        for (String roomId : roomIds) {
+            Room room = venueRegistry.find(roomId, Room.class);
+            if (room != null && !(room instanceof Venue)) {
+                rooms.add(room);
+            }
+        }
         return rooms;
     }
 
@@ -185,9 +178,9 @@ public class Venue extends Room {
         bw.write("Room Count: " + roomCount);
         bw.write(", Rooms: ");
         boolean first = true;
-        for (Room room : rooms.getItems()) {
+        for (String roomId : roomIds) {
             if (!first) bw.write(" ");
-            bw.write(room.roomId());
+            bw.write(roomId);
             first = false;
         }
         bw.write(", Rows: " + rows);
@@ -271,25 +264,20 @@ public class Venue extends Room {
             }
         }
 
-        // Parse room IDs and create rooms
-        this.rooms = new RoomList(registry);
+        // Store room IDs (don't create new rooms!)
+        this.roomIds.clear();
         if (!roomsList.isEmpty()) {
-            String[] roomIds = roomsList.split(" ");
-            for (String roomId : roomIds) {
+            String[] roomIdArray = roomsList.split(" ");
+            for (String roomId : roomIdArray) {
                 roomId = roomId.trim();
                 if (!roomId.isEmpty()) {
-                    // Check if room already exists in registry
-                    Room room = registry.find(roomId, Room.class);
-                    if (room == null) {
-                        // Create new room
-                        room = new Room(roomId, registry);
-                    }
-                    this.rooms.add(room);
+                    // Just store the ID, don't create or register rooms
+                    this.roomIds.add(roomId);
                 }
             }
         }
 
-        // Register the venue after all data is loaded
+        // Register the venue (but not as a room!)
         if (registry != null) {
             registry.add(this, Venue.class);
         }
@@ -302,7 +290,7 @@ public class Venue extends Room {
 
     @Override
     public Object[] toLongTableRow() {
-        return new Object[]{venueId(), roomCount, rooms.size(), rows, columns, totalDesks, aara ? "AARA" : "Regular"};
+        return new Object[]{venueId(), roomCount, roomIds.size(), rows, columns, totalDesks, aara ? "AARA" : "Regular"};
     }
 
     @Override
@@ -311,9 +299,9 @@ public class Venue extends Room {
         sb.append("Venue: ").append(venueId()).append("\n");
         sb.append("Rooms: ").append(roomCount).append(" (");
         boolean first = true;
-        for (Room room : rooms.getItems()) {
+        for (String roomId : roomIds) {
             if (!first) sb.append(", ");
-            sb.append(room.roomId());
+            sb.append(roomId);
             first = false;
         }
         sb.append(")\n");

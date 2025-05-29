@@ -194,11 +194,42 @@ public class Exam implements StreamManager, ManageableListItem {
         // Read additional exam info (date, time, etc.)
         String examLine2 = CSSE7023.getLine(br);
         if (examLine2 != null && !examLine2.isEmpty()) {
-            // Parse date and time from line like: "2025-03-10 08:30 14 76"
-            String[] parts = examLine2.split(" ");
-            if (parts.length >= 2) {
-                this.examDate = CSSE7023.toLocalDate(parts[0], "Invalid date format");
-                this.examTime = CSSE7023.toLocalTime(parts[1], "Invalid time format");
+            // Parse key-value pairs from line like: "Subject: English, Exam Type: INTERNAL, Unit: 3, Exam Date: 2025-03-10, Exam Time: 08:30"
+            String[] details = examLine2.split(", ");
+            for (String detail : details) {
+                String[] kv = detail.split(": ", 2);
+                if (kv.length == 2) {
+                    String key = kv[0].trim();
+                    String value = kv[1].trim();
+
+                    switch (key) {
+                        case "Paper":
+                            if (!value.isEmpty() && !value.equals("null")) {
+                                this.paper = value.charAt(0);
+                            }
+                            break;
+                        case "Subtitle":
+                            this.subtitle = value;
+                            break;
+                        case "Unit":
+                            if (!value.isEmpty() && !value.equals("null")) {
+                                this.unit = value.charAt(0);
+                            }
+                            break;
+                        case "Exam Date":
+                            // Date and time are together: "2025-03-10 08:30"
+                            String[] dateTimeParts = value.split(" ");
+                            if (dateTimeParts.length >= 2) {
+                                this.examDate = CSSE7023.toLocalDate(dateTimeParts[0], "Invalid date format");
+                                this.examTime = CSSE7023.toLocalTime(dateTimeParts[1], "Invalid time format");
+                            } else {
+                                // Only date provided
+                                this.examDate = CSSE7023.toLocalDate(value, "Invalid date format");
+                                this.examTime = LocalTime.of(9, 0); // Default time
+                            }
+                            break;
+                    }
+                }
             }
         } else {
             // Default date/time if not specified
@@ -206,11 +237,15 @@ public class Exam implements StreamManager, ManageableListItem {
             this.examTime = LocalTime.of(9, 0);
         }
 
-        this.unit = '\0'; // No unit info in the file format
+        // Initialize unit if not set
+        if (this.unit == null) {
+            this.unit = '\0';
+        }
     }
 
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
+        // Write header line
         bw.write(nthItem + ". Year 12 ");
         if (examType == ExamType.EXTERNAL) {
             bw.write("External ");
@@ -228,9 +263,20 @@ public class Exam implements StreamManager, ManageableListItem {
         }
         bw.write(System.lineSeparator());
 
-        // Write date, time and additional info
-        bw.write(examDate.toString() + " " + examTime.toString());
-        bw.write(" 0 0"); // Placeholder for additional data
+        // Write details line
+        bw.write("Subject: " + subject.getTitle());
+        bw.write(", Exam Type: " + examType.toString());
+        if (paper != '\0') {
+            bw.write(", Paper: " + paper);
+        }
+        if (subtitle != null && !subtitle.isEmpty()) {
+            bw.write(", Subtitle: " + subtitle);
+        }
+        if (unit != '\0') {
+            bw.write(", Unit: " + unit);
+        }
+        bw.write(", Exam Date: " + examDate.toString());
+        bw.write(", Exam Time: " + examTime.toString());
         bw.write(System.lineSeparator());
     }
 

@@ -32,7 +32,7 @@ public class Session {
     /** The start time of this session. */
     private final LocalTime start;
     /** The list of exams in this session in this venue. */
-    private final ExamList exams;
+    private final List<Exam> exams;
     /** The number of rows of desks set up for this session. */
     private int rows; // the number of rows of Desks, running across the room left to right.
     /** The number of columns of desks set up for this session. */
@@ -60,7 +60,7 @@ public class Session {
         this.sessionNumber = sessionNumber;
         this.day = day;
         this.start = start;
-        this.exams = new ExamList();
+        this.exams = new ArrayList<>();
         rows = venue.getRows();
         columns = venue.getColumns();
         totalDesks = venue.deskCount();
@@ -89,7 +89,7 @@ public class Session {
         this.sessionNumber = sessionNumber;
         this.day = day;
         this.start = start;
-        this.exams = new ExamList();
+        this.exams = new ArrayList<>();
         rows = venue.getRows();
         columns = venue.getColumns();
         totalDesks = venue.deskCount();
@@ -150,7 +150,7 @@ public class Session {
      * @return The list of exams being held in this session.
      */
     public List<Exam> getExams() {
-        return new ArrayList<>(exams.all());
+        return new ArrayList<>(exams);
     }
 
     /**
@@ -181,7 +181,10 @@ public class Session {
      */
     public void scheduleExam(Exam exam, int numberStudents) {
         studentCount += numberStudents;
-        exams.add(exam);
+        // Directly add exam to list without registry check
+        if (!exams.contains(exam)) {
+            exams.add(exam);
+        }
     }
 
     /**
@@ -227,7 +230,7 @@ public class Session {
                 subject = exam.getSubject();
                 for (Student student : students) {
                     if (student.isAara() == this.venue.isAara()) {
-                        List<Subject> subjects = student.getSubjects().all();
+                        List<Subject> subjects = student.getSubjectsList();
                         for (Subject check : subjects) {
                             if (check == subject) {
                                 // Assign the student to the next desk

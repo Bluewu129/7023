@@ -52,12 +52,18 @@ public class ExamList extends ListManager<Exam> {
 
     @Override
     public Exam find(String key) {
+        // First try to find by subject title
         Optional<Exam> exam = super.all()
                 .stream()
                 .filter(e -> e.getSubject().getTitle().equals(key))
                 .findFirst();
 
-        return exam.orElse(null);
+        if (exam.isPresent()) {
+            return exam.get();
+        }
+
+        // If not found, try finding in registry by ID
+        return getRegistry().find(key, Exam.class);
     }
 
     @Override

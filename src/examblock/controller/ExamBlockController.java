@@ -57,9 +57,14 @@ public class ExamBlockController implements ActionListener, ModelObserver {
      */
     private void handleOpen() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Open Exam Block Data");
-        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                "Exam Block Files (*.ebd)", "ebd"));
+        fileChooser.setDialogTitle("Open");
+
+        // Set up file filters
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        javax.swing.filechooser.FileNameExtensionFilter ebdFilter =
+                new javax.swing.filechooser.FileNameExtensionFilter("Exam Block Files (*.ebd)", "ebd");
+        fileChooser.addChoosableFileFilter(ebdFilter);
+        fileChooser.setFileFilter(ebdFilter);
 
         // Set default directory to current directory
         fileChooser.setCurrentDirectory(new File("."));
@@ -80,8 +85,9 @@ public class ExamBlockController implements ActionListener, ModelObserver {
                 model.addObserver(this);
                 view.updateView();
 
-                // Update window title with loaded file
-                view.setTitle("ExamBlock - " + selectedFile.getName());
+                // Update window title with loaded file info
+                String title = "Exam Block Manager - " + model.getTitle() + " (v" + model.getVersion() + ")";
+                view.setTitle(title);
 
                 if (Verbose.isVerbose()) {
                     DialogUtils.showMessage("File loaded successfully: " + selectedFile.getName());
@@ -168,7 +174,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
     }
 
     /**
-     * Handles the Schedule Exam action.
+     * Handles the Add button action (Schedule Exam).
      */
     private void handleScheduleExam() {
         // Get selected exam and venue from view
@@ -186,18 +192,23 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         }
 
         // Check if venue type matches requirements (AARA or regular)
-        boolean isAaraExam = selectedVenue.isAara();
-
-        if (!selectedVenue.checkVenueType(isAaraExam)) {
-            return; // Message already displayed by checkVenueType
+        boolean needsAara = false;
+        // Count AARA students for this exam
+        for (Student student : model.getStudents().all()) {
+            if (student.isAara() && student.getSubjects().all().contains(selectedExam.getSubject())) {
+                needsAara = true;
+                break;
+            }
         }
 
         // Attempt to schedule the exam
-        boolean scheduled = SessionHandler.scheduleExam(model, selectedExam, selectedVenue, isAaraExam);
+        boolean scheduled = SessionHandler.scheduleExam(model, selectedExam, selectedVenue, needsAara);
 
         if (scheduled) {
             view.updateView();
-            DialogUtils.showMessage("Exam scheduled successfully!");
+            if (Verbose.isVerbose()) {
+                DialogUtils.showMessage("Exam scheduled successfully!");
+            }
         }
     }
 
@@ -226,15 +237,9 @@ public class ExamBlockController implements ActionListener, ModelObserver {
             return;
         }
 
-        int result = JOptionPane.showConfirmDialog(view,
-                "Are you sure you want to finalise the exam block? This will allocate students to desks.",
-                "Finalise Exam Block",
-                JOptionPane.YES_NO_OPTION);
-
-        if (result == JOptionPane.YES_OPTION) {
-            SessionHandler.finaliseExamBlock(model);
-            view.updateView();
-        }
+        // Finalise will trigger save dialog through SessionHandler
+        SessionHandler.finaliseExamBlock(model);
+        view.updateView();
     }
 
     /**
@@ -256,7 +261,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         Verbose.setVerbose(!currentVerbose);
         view.updateVerboseStatus(!currentVerbose);
 
-        String status = currentVerbose ? "disabled" : "enabled";
+        String status = !currentVerbose ? "enabled" : "disabled";
         if (!currentVerbose) { // Now enabling verbose
             DialogUtils.showMessage("Verbose output " + status);
         }
@@ -280,6 +285,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
                 handleExit();
                 break;
             case "Schedule Exam":
+            case "Add":
                 handleScheduleExam();
                 break;
             case "Finalise":
