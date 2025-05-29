@@ -24,10 +24,6 @@ public class DoubleSpinnerField extends JTextField {
         this.maximum = maximum;
     }
 
-    public void setStepSize(double stepSize) {
-        this.stepSize = stepSize;
-    }
-
     public void setDouble(double value) {
         setText(String.format("%.1f", value));
     }

@@ -1,7 +1,5 @@
 package examblock.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -26,16 +24,25 @@ public class ExamList extends ListManager<Exam> {
 
     /**
      * Adds an {@link Exam} to this list of {@link Exam}s.
+     * Method signature matches specification exactly.
      */
     public void add(Exam exam) {
-        super.add(exam);
+        if (exam instanceof ManageableListItem) {
+            super.add((Exam) exam);
+        }
     }
 
+
     /**
-     * Removes a given {@link Exam} from this {@code ExamList}.
+     * Get the first {@link Exam} with a matching short title.
      */
-    public void removeExam(Exam exam) {
-        remove(exam);
+    public Exam byShortTitle(String shortTitle) throws IllegalStateException {
+        for (Exam exam : getItems()) {
+            if (exam.getShortTitle().equals(shortTitle)) {
+                return exam;
+            }
+        }
+        throw new IllegalStateException("No such exam!");
     }
 
     /**
@@ -73,14 +80,6 @@ public class ExamList extends ListManager<Exam> {
             return exam;
         }
         throw new IllegalStateException("Item with ID " + key + " not found for type Exam");
-    }
-
-    /**
-     * Creates a new {@code List} holding {@code references} to all the {@link Exam}s
-     * managed by this {@code ExamList} and returns it.
-     */
-    public List<Exam> getAllExams() {
-        return super.all();
     }
 
     /**

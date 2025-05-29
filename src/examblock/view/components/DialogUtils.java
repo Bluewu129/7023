@@ -13,6 +13,8 @@ import java.io.IOException;
  */
 public class DialogUtils {
 
+    private static Component parentFrame = null;
+
     /**
      * Options for text viewer dialogs.
      */
@@ -134,28 +136,33 @@ public class DialogUtils {
 
             try (FileWriter writer = new FileWriter(file)) {
                 writer.write(text);
-                showMessage("File saved successfully!");
             } catch (IOException ex) {
-                showError("Error saving file: " + ex.getMessage());
+                JOptionPane.showMessageDialog(parentFrame,
+                        "Error saving file: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            } finally {
+                JOptionPane.showMessageDialog(parentFrame,
+                        "File saved successfully: " + file.getAbsolutePath(),
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         }
     }
 
-    /**
-     * Shows an error message dialog.
-     *
-     * @param message the error message to display
-     */
-    public static void showError(String message) {
-        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
+    public static void setParent(Component frame) {
+        parentFrame = frame;
     }
 
-    /**
-     * Shows a warning message dialog.
-     *
-     * @param message the warning message to display
-     */
-    public static void showWarning(String message) {
-        JOptionPane.showMessageDialog(null, message, "Warning", JOptionPane.WARNING_MESSAGE);
+    public static String getUserInput(String message, String title, String initialValue) {
+        return (String) JOptionPane.showInputDialog(
+                parentFrame,
+                message,
+                title,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                initialValue
+        );
     }
 }

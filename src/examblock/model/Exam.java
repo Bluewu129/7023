@@ -77,10 +77,11 @@ public class Exam implements StreamManager, ManageableListItem {
 
     /**
      * Constructs an {@code Exam} with the subject and exam type specified.
+     * As per specification - Registry is last parameter
      *
-     * @param subject  the subject of the exam   the subject of the exam
+     * @param subject  the subject of the exam
      * @param examType the type of the exam (INTERNAL or EXTERNAL)
-     * @param day      the day of the exam      the day of the exam
+     * @param day      the day of the exam
      * @param month    the month of the exam
      * @param year     the year of the exam
      * @param hour     the starting hour of the exam
@@ -89,16 +90,27 @@ public class Exam implements StreamManager, ManageableListItem {
      */
     public Exam(Subject subject, ExamType examType,
                 int day, int month, int year, int hour, int minute, Registry registry) {
-        this(subject, examType, '\0', "", '\0', day, month, year, hour, minute, registry);
+        this.subject = subject;
+        this.examType = examType;
+        this.paper = '\0';
+        this.subtitle = "";
+        this.unit = '\0';
+        this.examDate = LocalDate.of(year, month, day);
+        this.examTime = LocalTime.of(hour, minute);
+        this.registry = registry;
+
+        if (registry != null) {
+            registry.add(this, Exam.class);
+        }
     }
 
-
     /**
-     * Constructs an {@code Exam} with paper number and subtitle but no unit specified.
+     * Constructs an {@code Exam} with unit specified.
+     * As per specification - Registry is last parameter
      *
      * @param subject  the subject of the exam
      * @param examType the type of the exam (INTERNAL or EXTERNAL)
-     * @param unit     the unit ID if applicable (null or '1' or '2')
+     * @param unit     the unit ID if applicable
      * @param day      the day of the exam
      * @param month    the month of the exam
      * @param year     the year of the exam
@@ -108,11 +120,23 @@ public class Exam implements StreamManager, ManageableListItem {
      */
     public Exam(Subject subject, ExamType examType, Character unit,
                 int day, int month, int year, int hour, int minute, Registry registry) {
-        this(subject, examType, '\0', "", unit, day, month, year, hour, minute, registry);
+        this.subject = subject;
+        this.examType = examType;
+        this.paper = '\0';
+        this.subtitle = "";
+        this.unit = unit;
+        this.examDate = LocalDate.of(year, month, day);
+        this.examTime = LocalTime.of(hour, minute);
+        this.registry = registry;
+
+        if (registry != null) {
+            registry.add(this, Exam.class);
+        }
     }
 
     /**
      * Constructs an {@code Exam} with paper number and subtitle but no unit specified.
+     * As per specification - Registry is last parameter
      *
      * @param subject  the subject of the exam
      * @param examType the type of the exam (INTERNAL or EXTERNAL)
@@ -127,9 +151,19 @@ public class Exam implements StreamManager, ManageableListItem {
      */
     public Exam(Subject subject, ExamType examType, Character paper, String subtitle,
                 int day, int month, int year, int hour, int minute, Registry registry) {
-        this(subject, examType, paper, subtitle, '\0', day, month, year, hour, minute, registry);
-    }
+        this.subject = subject;
+        this.examType = examType;
+        this.paper = paper;
+        this.subtitle = subtitle;
+        this.unit = '\0';
+        this.examDate = LocalDate.of(year, month, day);
+        this.examTime = LocalTime.of(hour, minute);
+        this.registry = registry;
 
+        if (registry != null) {
+            registry.add(this, Exam.class);
+        }
+    }
 
     /**
      * Constructs an {@code Exam} with all optional details provided.
@@ -148,7 +182,7 @@ public class Exam implements StreamManager, ManageableListItem {
      * @param registry the registry to add this exam to
      */
     public Exam(Subject subject, ExamType examType, Character paper, String subtitle,
-                Character unit, int day, int month, int year, int hour, 
+                Character unit, int day, int month, int year, int hour,
                 int minute, Registry registry) {
         this.subject = subject;
         this.examType = examType;
@@ -189,74 +223,8 @@ public class Exam implements StreamManager, ManageableListItem {
         }
     }
 
-
-    /**
-     * Backward compatibility constructors (delegate to new ones with null registry)
-     *
-     * @param subject  the subject of the exam
-     * @param examType the type of the exam (INTERNAL or EXTERNAL)
-     * @param day      the day of the exam
-     * @param month    the month of the exam
-     * @param year     the year of the exam
-     * @param hour     the starting hour of the exam
-     * @param minute   the starting minute of the exam
-     */
-    @Deprecated
-    public Exam(Subject subject, ExamType examType,
-                int day, int month, int year, int hour, int minute) {
-        this(subject, examType, day, month, year, hour, minute, null);
-    }
-
-    /**
-     * Backward compatibility constructors (delegate to new ones with null registry)
-     *
-     * @param subject  the subject of the exam
-     * @param examType the type of the exam (INTERNAL or EXTERNAL)
-     * @param unit     the unit ID if only one unit is applicable for this exam
-     * @param day      the day of the exam
-     * @param month    the month of the exam
-     * @param year     the year of the exam
-     * @param hour     the starting hour of the exam
-     * @param minute   the starting minute of the exam
-     */
-    @Deprecated
-    public Exam(Subject subject, ExamType examType, Character unit,
-                int day, int month, int year, int hour, int minute) {
-        this(subject, examType, unit, day, month, year, hour, minute, null);
-    }
-
-    /**
-     * Backward compatibility constructors (delegate to new ones with null registry)
-     *
-     * @param subject  the subject of the exam
-     * @param examType the type of the exam (INTERNAL or EXTERNAL)
-     * @param paper    the paper number (null or 1 or 2) for this exam
-     * @param subtitle an optional subtitle e.g. "Technology Free" for this exam
-     * @param day      the day of the exam
-     * @param month    the month of the exam
-     * @param year     the year of the exam
-     * @param hour     the starting hour of the exam
-     * @param minute   the starting minute of the exam
-     */
-    @Deprecated
-    public Exam(Subject subject, ExamType examType, Character paper, String subtitle,
-                int day, int month, int year, int hour, int minute) {
-        this(subject, examType, paper, subtitle, day, month, year, hour, minute, null);
-    }
-
-    @Deprecated
-    public Exam(Subject subject, ExamType examType, Character paper, String subtitle,
-                Character unit, int day, int month, int year, int hour, int minute) {
-        this(subject, examType, paper, subtitle, unit, day, month, year, hour, minute, null);
-    }
-
     /**
      * Reads the exam data from the provided BufferedReader.
-     *
-     * @param br
-     * @param nthItem
-     * @throws IOException
-     * @throws RuntimeException
      */
     private void readExamData(BufferedReader br, int nthItem)
             throws IOException, RuntimeException {
@@ -368,6 +336,7 @@ public class Exam implements StreamManager, ManageableListItem {
         }
     }
 
+
     /**
      * Writes the exam data to the provided BufferedWriter.
      *
@@ -426,7 +395,6 @@ public class Exam implements StreamManager, ManageableListItem {
             throws IOException, RuntimeException {
         throw new UnsupportedOperationException("Use constructor instead");
     }
-
 
     /**
      * Gets the subject of the exam.
@@ -499,13 +467,6 @@ public class Exam implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Gets the exam type.
-     */
-    public ExamType getExamType() {
-        return examType;
-    }
-
-    /**
      * Gets the full details of this exam.
      */
     @Override
@@ -514,20 +475,20 @@ public class Exam implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Returns
-     *
-     * @return an array of objects representing the exam details.
-     * @Override public Object[] toTableRow() {
-     * return new Object[]{
-     * examType == ExamType.INTERNAL ? "✓" : "",
-     * subject.getTitle(),
-     * examDate,
-     * examTime,
-     * "" // AARA column - would need student info
-     * };
-     * }
-     * <p>
-     * /**
+     * Returns an array of objects representing the exam details for table display.
+     */
+    @Override
+    public Object[] toTableRow() {
+        return new Object[]{
+                examType == ExamType.INTERNAL ? "✓" : "",
+                subject.getTitle(),
+                examDate,
+                examTime,
+                "" // AARA column - would need student info to populate
+        };
+    }
+
+    /**
      * Returns a long table row with all exam details.
      */
     @Override

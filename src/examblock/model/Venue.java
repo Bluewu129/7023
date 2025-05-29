@@ -59,7 +59,8 @@ public class Venue extends Room {
      * @param registry the registry
      */
     public Venue(String id, int roomCount, RoomList rooms,
-                 int rows, int columns, int totalDesks, boolean aara, Registry registry) {
+                 int rows, int columns, int totalDesks, boolean aara, Registry registry) 
+        throws IOException, RuntimeException {
         super(id, null); // Don't register the venue as a room
         this.roomCount = roomCount;
         this.roomIds = new ArrayList<>();
@@ -100,13 +101,6 @@ public class Venue extends Room {
         if (Verbose.isVerbose()) {
             System.out.println("Loaded Venue: " + venueId());
         }
-    }
-
-    // Backward compatibility constructor (delegates to new one with null registry)
-    @Deprecated
-    public Venue(String id, int roomCount, RoomList rooms,
-                 int rows, int columns, int totalDesks, boolean aara) {
-        this(id, roomCount, rooms, rows, columns, totalDesks, aara, null);
     }
 
     /**
@@ -238,7 +232,7 @@ public class Venue extends Room {
 
     @Override
     public void streamIn(BufferedReader br, Registry registry, int nthItem)
-            throws IOException, RuntimeException {
+            throws RuntimeException {
 
         // Read header line: "1. V1 (25 Non-AARA desks)"
         String line = CSSE7023.getLine(br);

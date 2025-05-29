@@ -74,6 +74,17 @@ public class Student implements StreamManager, ManageableListItem {
         }
     }
 
+    public void addUnit(Unit unit) {
+        if (!units.contains(unit)) {
+            units.add(unit);
+        }
+    }
+    
+    public Student(Long lui, String givenNames, String familyName, int day, int month, int year,
+                   String house, Registry registry) {
+        this(lui, givenNames, familyName, day, month, year, house, false, registry);
+    }
+
     /**
      * Constructs a Student by reading from a stream.
      * As per specification

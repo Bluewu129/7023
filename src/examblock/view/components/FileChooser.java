@@ -7,8 +7,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.io.File;
 
 /**
@@ -67,7 +65,7 @@ public class FileChooser {
 
         JButton saveButton = findSaveButton(fileChooser);
         if (saveButton == null) {
-            DialogUtils.showError("Could not find save button in file chooser");
+            System.err.println("Error: Save button not found in JFileChooser.");
             return "";
         }
 

@@ -1,6 +1,9 @@
 package examblock.given;
 
-import examblock.model.*;
+import examblock.model.CSSE7023;
+import examblock.model.Exam;
+import examblock.model.ExamBlockModel;
+import examblock.model.Venue;
 import examblock.view.components.DialogUtils;
 import examblock.view.components.Verbose;
 
@@ -23,35 +26,9 @@ public class SessionHandler {
      * @return true if the exam was scheduled, false if not.
      */
     public static boolean scheduleExam(ExamBlockModel model, Exam exam, Venue venue, boolean aara) {
-        // Check if venue type matches requirements
-        if (venue.isAara() != aara) {
-            String message = aara ? "This is NOT an AARA venue. Please select an AARA venue for AARA students."
-                    : "This is an AARA venue. Please select a non-AARA venue for regular students.";
-            DialogUtils.showWarning(message);
-            return false;
-        }
 
-        // Count students for this exam based on venue type
-        int additionalStudents = 0;
-        for (Student student : model.getStudents().all()) {
-            if (student.isAara() == venue.isAara()) {
-                // Check if student takes this subject
-                for (Subject subject : student.getSubjectsList()) {
-                    if (subject.equals(exam.getSubject())) {
-                        additionalStudents++;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // If no students need this exam in this venue type, warn the user
-        if (additionalStudents == 0) {
-            String venueType = venue.isAara() ? "AARA" : "non-AARA";
-            DialogUtils.showWarning("No " + venueType + " students are taking " +
-                    exam.getSubject().getTitle() + ".");
-            return false;
-        }
+        // Select the exam to schedule.
+        int additionalStudents = model.getStudents().countStudents(exam.getSubject(), aara);
 
         // the number of available student desks in the venue.
         int numberSeats = venue.deskCount();
@@ -68,13 +45,11 @@ public class SessionHandler {
         model.getSessions().getSessionNewTotal(venue, exam, additionalStudents);
 
         // Confirm scheduling
-        String venueType = venue.isAara() ? "AARA " : "";
         String prompt = "CONFIRM scheduling the "
                 + exam.getSubject().getTitle()
-                + " exam into "
-                + venueType
-                + venue.venueId()
-                + " (" + additionalStudents + " students)";
+                + ((aara) ? " AARA " : " ")
+                + "exam into "
+                + venue.venueId();
 
         if (DialogUtils.askQuestion(prompt) == JOptionPane.OK_OPTION) {
             model.getSessions().scheduleExam(venue, exam);

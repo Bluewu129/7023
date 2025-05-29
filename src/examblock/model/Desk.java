@@ -1,5 +1,9 @@
 package examblock.model;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 /**
  * Represents an individual desk in an exam venue.
  */
@@ -12,6 +16,12 @@ public class Desk {
     private String familyName;
     /** The student's first given name and initial of first middle name, if any. */
     private String givenAndInit;
+
+
+    private Exam exam;
+    private Student student;
+    private Long lui;
+
 
     /**
      * Constructs a {@code Desk}.
@@ -56,15 +66,6 @@ public class Desk {
     }
 
     /**
-     * Sets the family name of the student assigned to this desk.
-     *
-     * @param familyName the family name of the student assigned to this desk.
-     */
-    public void setFamilyName(String familyName) {
-        this.familyName = familyName;
-    }
-
-    /**
      * Sets the first given name and initial of the student assigned to this desk.
      *
      * @param givenAndInit a single string with the first given name, a space,
@@ -91,5 +92,61 @@ public class Desk {
             }
         }
         return "Desk: " + id + " " + assignedStudent;
+    }
+    public String deskExam() {
+        return exam.getTitle();
+    }
+
+    public long deskLui() {
+        return lui;
+    }
+
+    public String deskStudent() {
+        return student.familyName();
+    }
+
+    public void setExam(Exam exam) {
+        this.exam = exam;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+        if (student != null) {
+            this.lui = student.getLui();
+            setGivenAndInit(getGivenAndInit(student.givenNames()));
+        }
+    }
+
+    public void streamIn(BufferedReader br, String examName) throws IOException {
+        // Implementation for reading desk data
+        String line = br.readLine();
+        if (line != null) {
+            // Parse desk data from line
+            // Format: "deskNumber,familyName,givenAndInit"
+            String[] parts = line.split(",");
+            if (parts.length >= 1) {
+                // Parse as needed
+            }
+        }
+    }
+
+    public void streamOut(BufferedWriter bw) throws IOException {
+        bw.write(id + "," +
+                (familyName != null ? familyName : "") + "," +
+                (givenAndInit != null ? givenAndInit : ""));
+        bw.newLine();
+    }
+
+    // Helper method for getGivenAndInit
+    private String getGivenAndInit(String given) {
+        if (given != null && !given.isEmpty()) {
+            String[] names = given.split(" ");
+            if (names.length > 1) {
+                return names[0] + " " + names[1].substring(0, 1) + ".";
+            } else {
+                return names[0];
+            }
+        }
+        return "";
     }
 }

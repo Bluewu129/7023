@@ -16,6 +16,7 @@ public class ExamBlockModel {
 
     private String title;
     private double version;
+    private String filename;
     private Registry registry;
     private SubjectList subjects;
     private UnitList units;
@@ -32,6 +33,7 @@ public class ExamBlockModel {
     public ExamBlockModel() {
         this.title = "Exam Block";
         this.version = 1.0;
+        this.filename = "";
         this.registry = new RegistryImpl();
         this.subjects = new SubjectList(registry);
         this.units = new UnitList(registry);
@@ -79,6 +81,24 @@ public class ExamBlockModel {
     public void setVersion(double version) {
         this.version = version;
         notifyObservers("version");
+    }
+
+    /**
+     * Gets the filename.
+     *
+     * @return the filename
+     */
+    public String getFilename() {
+        return filename;
+    }
+
+    /**
+     * Sets the filename.
+     *
+     * @param filename the filename
+     */
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 
     /**
@@ -162,14 +182,7 @@ public class ExamBlockModel {
         observers.add(observer);
     }
 
-    /**
-     * Removes an observer from this model.
-     *
-     * @param observer the observer to remove
-     */
-    public void removeObserver(ModelObserver observer) {
-        observers.remove(observer);
-    }
+
 
     /**
      * Notifies all observers of a change.
@@ -180,6 +193,27 @@ public class ExamBlockModel {
         for (ModelObserver observer : observers) {
             observer.modelChanged(property);
         }
+    }
+
+    /**
+     * Loads data from a file - simple version.
+     *
+     * @return true if successful, false otherwise
+     */
+    public void loadFromFile() {
+        if (filename != null && !filename.isEmpty()) {
+            loadFromFile(filename);
+        }
+    }
+
+    /**
+     * Loads data from a file with registry parameter.
+     *
+     * @param registry the registry (ignored, uses own registry)
+     * @return true if successful, false otherwise
+     */
+    public void loadFromFile(Registry registry) {
+        loadFromFile();
     }
 
     /**
@@ -255,6 +289,9 @@ public class ExamBlockModel {
 
             // After loading, we need to establish relationships
             establishRelationships();
+
+            // Set the filename for future saves
+            this.filename = filename;
 
             if (Verbose.isVerbose()) {
                 System.out.println("File loaded successfully!");
@@ -352,7 +389,7 @@ public class ExamBlockModel {
 
             Session session = new Session(venue, sessionNumber,
                     CSSE7023.toLocalDate(day, "Invalid date format"),
-                    CSSE7023.toLocalTime(start, "Invalid time format"));
+                    CSSE7023.toLocalTime(start, "Invalid time format"), registry);
 
             // Read exam allocations for this session
             for (int j = 0; j < examCount; j++) {
@@ -539,6 +576,9 @@ public class ExamBlockModel {
 
             bw.write(System.lineSeparator());
             bw.write("[End]" + System.lineSeparator());
+
+            // Update our stored filename
+            this.filename = filename;
 
             if (Verbose.isVerbose()) {
                 System.out.println("File saved successfully to: " + filename);

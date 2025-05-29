@@ -565,7 +565,7 @@ public class ExamBlockView extends JFrame implements ModelObserver {
             }
 
             Object[] rowData = {
-                    exam.getExamType() == Exam.ExamType.INTERNAL ? "✓" : "",
+                    "INTERNAL",
                     exam.getSubject().getTitle(),
                     exam.getDate().toString(),
                     exam.getTime().toString(),

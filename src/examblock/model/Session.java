@@ -384,7 +384,6 @@ public class Session implements StreamManager, ManageableListItem {
 
                 if (i < rows && j < columns) {
                     String givenAndInit = getGivenAndInit(student.givenNames());
-                    desks[i][j].setFamilyName(student.familyName());
                     desks[i][j].setGivenAndInit(givenAndInit);
                 }
 

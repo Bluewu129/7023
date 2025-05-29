@@ -94,10 +94,12 @@ public class ExamBlockController implements ActionListener, ModelObserver {
             // Create new model for loading
             ExamBlockModel newModel = new ExamBlockModel();
 
+            // Use the updated loadFromFile method
             if (newModel.loadFromFile(selectedFile.getAbsolutePath())) {
                 // Successfully loaded, replace the model
                 if (model != null) {
-                    model.removeObserver(this);
+                    // Note: removeObserver method was removed from specification
+                    // model.removeObserver(this);
                 }
                 model = newModel;
                 model.addObserver(this);
@@ -112,7 +114,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
                 }
             } else {
                 // Load failed, keep existing model
-                DialogUtils.showError("Failed to load file: " + selectedFile.getName());
+                DialogUtils.showMessage("Failed to load file: " + selectedFile.getName());
             }
         } else if (result == JFileChooser.CANCEL_OPTION) {
             // User cancelled - if no data loaded, disable most UI elements
@@ -171,7 +173,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
 
                 String newTitle = titleField.getText().trim();
                 if (newTitle.isEmpty()) {
-                    DialogUtils.showWarning("Title cannot be empty");
+                    DialogUtils.showMessage("Title cannot be empty");
                     return;
                 }
 
@@ -182,7 +184,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
                 // Show save file dialog
                 performSave();
             } catch (NumberFormatException ex) {
-                DialogUtils.showError("Invalid version number format");
+                DialogUtils.showMessage("Invalid version number format");
             }
         });
 
@@ -285,19 +287,19 @@ public class ExamBlockController implements ActionListener, ModelObserver {
 
         if (expectedStudents == 0) {
             String venueType = venueIsAara ? "AARA" : "non-AARA";
-            DialogUtils.showWarning("No " + venueType + " students are taking " +
+            DialogUtils.showMessage("No " + venueType + " students are taking " +
                     selectedExam.getSubject().getTitle() + ".");
             return;
         }
 
         // Check if venue matches student requirements
         if (venueIsAara && aaraStudents == 0) {
-            DialogUtils.showWarning("This is an AARA venue but no AARA students are taking this exam.");
+            DialogUtils.showMessage("This is an AARA venue but no AARA students are taking this exam.");
             return;
         }
 
         if (!venueIsAara && nonAaraStudents == 0) {
-            DialogUtils.showWarning("This is a non-AARA venue but no non-AARA students are taking this exam.");
+            DialogUtils.showMessage("This is a non-AARA venue but no non-AARA students are taking this exam.");
             return;
         }
 
@@ -333,7 +335,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         }
 
         if (!allScheduled) {
-            DialogUtils.showWarning("Not all exams have been scheduled. Please schedule all exams before finalising.");
+            DialogUtils.showMessage("Not all exams have been scheduled. Please schedule all exams before finalising.");
             return;
         }
 
@@ -406,7 +408,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
 
                 view.setLatestDeskAllocations(deskAllocations.toString());
             } catch (NumberFormatException e) {
-                DialogUtils.showError("Invalid version number");
+                DialogUtils.showMessage("Invalid version number");
             }
         }
     }
