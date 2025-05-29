@@ -4,7 +4,6 @@ import examblock.model.CSSE7023;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,7 +22,7 @@ public class DialogUtils {
 
     /**
      * Shows a simple message dialog.
-     *
+     *e
      * @param message the message to display
      */
     public static void showMessage(String message) {
@@ -44,9 +43,9 @@ public class DialogUtils {
     /**
      * Shows a text viewer dialog for displaying large amounts of text.
      *
-     * @param text the text to display
-     * @param title the title of the dialog
-     * @param options whether to include scroll bars
+     * @param text     the text to display
+     * @param title    the title of the dialog
+     * @param options  whether to include scroll bars
      * @param fileType the type of file (for styling purposes)
      */
     public static void showTextViewer(String text, String title, ViewerOptions options, CSSE7023.FileType fileType) {

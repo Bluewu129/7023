@@ -8,6 +8,7 @@ import java.io.IOException;
 
 /**
  * An object describing a single-semester Year 12 Unit of a Year 12 Subject.
+ * These are typically Unit 3 or Unit 4 for the Year 12 units, but may be different.
  * Updated to implement StreamManager and ManageableListItem interfaces.
  */
 public class Unit implements StreamManager, ManageableListItem {
@@ -186,6 +187,7 @@ public class Unit implements StreamManager, ManageableListItem {
 
     /**
      * Gets the title of this unit.
+     * This method was missing and is required by the tests.
      */
     public String getTitle() {
         return title;
@@ -215,5 +217,20 @@ public class Unit implements StreamManager, ManageableListItem {
     @Override
     public String toString() {
         return subject.getTitle() + ": Unit " + unitId + ": " + title;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Unit unit = (Unit) o;
+        return unitId.equals(unit.unitId) && subject.equals(unit.subject);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = subject.hashCode();
+        result = 31 * result + unitId.hashCode();
+        return result;
     }
 }

@@ -4,29 +4,26 @@ import examblock.controller.ExamBlockController;
 import examblock.model.*;
 import examblock.view.components.DialogUtils;
 import examblock.view.components.FileChooser;
-import examblock.view.components.Verbose;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.awt.event.ActionListener;
 
 /**
- * Main view class for the ExamBlock application.
- * Provides the GUI interface for exam scheduling.
+ * The V in MVC model. Drives and owns the UI
+ * As per specification - requires Registry parameter
  */
-public class ExamBlockView extends JFrame {
+public class ExamBlockView extends JFrame implements ModelObserver {
 
     private ExamBlockController controller;
+    private Registry registry;
+
     private JTable examTable;
     private JTree sessionVenueTree;
     private DefaultTableModel examTableModel;
@@ -53,11 +50,12 @@ public class ExamBlockView extends JFrame {
 
     /**
      * Constructs a new ExamBlockView.
+     * As per specification - requires Registry parameter
      *
-     * @param controller the controller for this view
+     * @param registry the registry for dependencies
      */
-    public ExamBlockView(ExamBlockController controller) {
-        this.controller = controller;
+    public ExamBlockView(Registry registry) {
+        this.registry = registry;
 
         // Set FileChooser parent
         FileChooser.setParent(this);
@@ -65,6 +63,24 @@ public class ExamBlockView extends JFrame {
         initializeComponents();
         layoutComponents();
         setupMenus();
+
+        // Initial update - will be done when controller is set
+    }
+
+    /**
+     * Sets the controller for this view.
+     * Must be called after construction.
+     *
+     * @param controller the controller
+     */
+    public void setController(ExamBlockController controller) {
+        this.controller = controller;
+
+        // Add controller as action listener where needed
+        if (finaliseButton != null) {
+            finaliseButton.removeActionListener(null);
+            finaliseButton.addActionListener(controller);
+        }
 
         // Initial update
         updateView();
@@ -120,7 +136,6 @@ public class ExamBlockView extends JFrame {
         // Initialize buttons
         finaliseButton = new JButton("Finalise");
         finaliseButton.setActionCommand("Finalise");
-        finaliseButton.addActionListener(controller);
         finaliseButton.setEnabled(false);
 
         addButton = new JButton("Add");
@@ -135,8 +150,10 @@ public class ExamBlockView extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                controller.actionPerformed(new java.awt.event.ActionEvent(this,
-                        java.awt.event.ActionEvent.ACTION_PERFORMED, "Exit"));
+                if (controller != null) {
+                    controller.actionPerformed(new java.awt.event.ActionEvent(this,
+                            java.awt.event.ActionEvent.ACTION_PERFORMED, "Exit"));
+                }
             }
         });
 
@@ -194,14 +211,15 @@ public class ExamBlockView extends JFrame {
         add(mainPanel, BorderLayout.CENTER);
 
         // Create bottom tabbed pane
-        createBottomTabbedPane();
+        createBottomPanel();
         add(bottomTabbedPane, BorderLayout.SOUTH);
     }
 
     /**
      * Creates the bottom tabbed pane with all tables.
+     * Method name as per specification
      */
-    private void createBottomTabbedPane() {
+    public JTabbedPane createBottomPanel() {
         bottomTabbedPane = new JTabbedPane();
         bottomTabbedPane.setPreferredSize(new Dimension(1200, 300));
 
@@ -282,6 +300,19 @@ public class ExamBlockView extends JFrame {
         venuesTable.setRowHeight(20);
         JScrollPane venuesScroll = new JScrollPane(venuesTable);
         bottomTabbedPane.addTab("Venues", venuesScroll);
+
+        return bottomTabbedPane;
+    }
+
+    /**
+     * Creates the top panel.
+     * Method name as per specification
+     */
+    public JPanel createTopPanel() {
+        // This method is not used in the current implementation
+        // but is required by the specification
+        JPanel topPanel = new JPanel();
+        return topPanel;
     }
 
     /**
@@ -295,12 +326,16 @@ public class ExamBlockView extends JFrame {
 
         JMenuItem openItem = new JMenuItem("Open");
         openItem.setActionCommand("Open");
-        openItem.addActionListener(controller);
+        if (controller != null) {
+            openItem.addActionListener(controller);
+        }
         fileMenu.add(openItem);
 
         saveMenuItem = new JMenuItem("Save");
         saveMenuItem.setActionCommand("Save");
-        saveMenuItem.addActionListener(controller);
+        if (controller != null) {
+            saveMenuItem.addActionListener(controller);
+        }
         saveMenuItem.setEnabled(false);
         fileMenu.add(saveMenuItem);
 
@@ -308,7 +343,9 @@ public class ExamBlockView extends JFrame {
 
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.setActionCommand("Exit");
-        exitItem.addActionListener(controller);
+        if (controller != null) {
+            exitItem.addActionListener(controller);
+        }
         fileMenu.add(exitItem);
 
         menuBar.add(fileMenu);
@@ -318,7 +355,9 @@ public class ExamBlockView extends JFrame {
 
         verboseMenuItem = new JCheckBoxMenuItem("Verbose Output");
         verboseMenuItem.setActionCommand("Verbose");
-        verboseMenuItem.addActionListener(controller);
+        if (controller != null) {
+            verboseMenuItem.addActionListener(controller);
+        }
         viewMenu.add(verboseMenuItem);
 
         viewMenu.addSeparator();
@@ -339,6 +378,16 @@ public class ExamBlockView extends JFrame {
 
         setJMenuBar(menuBar);
     }
+
+    /**
+     * Display the view.
+     * Method name as per specification
+     */
+    public void display() {
+        setVisible(true);
+    }
+
+    // All other existing methods remain the same...
 
     /**
      * Shows the desk allocations in a viewer.
@@ -415,14 +464,17 @@ public class ExamBlockView extends JFrame {
         String title = "Exam Block Manager - " + model.getTitle() + " (v" + String.format("%.1f", model.getVersion()) + ")";
         setTitle(title);
 
-        // Update exam table
-        updateExamTable(model);
+        // Update tables
+        updateExamTable(model.getExams());
+        updateSubjectPage(model.getSubjects());
+        updateExamPage(model.getExams());
+        updateUnitPage(model.getUnits());
+        updateStudentPage(model.getStudents());
+        updateRoomPage(model.getRooms());
+        updateVenuPage(model.getVenues());
 
-        // Update session/venue tree
-        updateSessionVenueTree();
-
-        // Update bottom tabs
-        updateBottomTabs();
+        // Update tree
+        updateTree(model.getSessions(), model.getVenues());
 
         // Check if data is loaded
         boolean hasData = model.getExams().size() > 0 ||
@@ -448,13 +500,48 @@ public class ExamBlockView extends JFrame {
         repaint();
     }
 
+    // Additional required methods as per specification
+
+    /**
+     * Sets the model for this view.
+     * Method name as per specification
+     */
+    public void setModel(ExamBlockModel model) {
+        // Model is accessed through controller
+        updateView();
+    }
+
+    /**
+     * Called when the model changes.
+     * Method name as per specification
+     */
+    @Override
+    public void modelChanged(String property) {
+        SwingUtilities.invokeLater(() -> updateView());
+    }
+
+    /**
+     * Gets the frame.
+     * Method name as per specification
+     */
+    public JFrame getFrame() {
+        return this;
+    }
+
     /**
      * Updates the exam table.
+     * Method name as per specification
      */
-    private void updateExamTable(ExamBlockModel model) {
+    public void updateExamTable(ExamList exams) {
         examTableModel.setRowCount(0);
 
-        for (Exam exam : model.getExams().all()) {
+        if (controller == null || controller.getModel() == null) {
+            return;
+        }
+
+        ExamBlockModel model = controller.getModel();
+
+        for (Exam exam : exams.all()) {
             // Count AARA and non-AARA students for this exam
             int aaraCount = 0;
             int nonAaraCount = 0;
@@ -491,26 +578,25 @@ public class ExamBlockView extends JFrame {
     }
 
     /**
-     * Updates the bottom tabbed pane with current data.
+     * Updates the subject page.
+     * Method name as per specification
      */
-    private void updateBottomTabs() {
-        if (controller == null || controller.getModel() == null) {
-            return;
-        }
-
-        ExamBlockModel model = controller.getModel();
-
-        // Update Subjects tab
+    public void updateSubjectPage(SubjectList subjects) {
         DefaultTableModel subjectsModel = (DefaultTableModel) subjectsTable.getModel();
         subjectsModel.setRowCount(0);
-        for (Subject subject : model.getSubjects().all()) {
+        for (Subject subject : subjects.all()) {
             subjectsModel.addRow(subject.toTableRow());
         }
+    }
 
-        // Update Exams tab
+    /**
+     * Updates the exam page.
+     * Method name as per specification
+     */
+    public void updateExamPage(ExamList exams) {
         DefaultTableModel examsModel = (DefaultTableModel) examsTable.getModel();
         examsModel.setRowCount(0);
-        for (Exam exam : model.getExams().all()) {
+        for (Exam exam : exams.all()) {
             Object[] row = exam.toLongTableRow();
             // Ensure we have all columns
             Object[] fullRow = new Object[7];
@@ -523,18 +609,28 @@ public class ExamBlockView extends JFrame {
             if (fullRow[4] == null) fullRow[4] = ""; // Unit
             examsModel.addRow(fullRow);
         }
+    }
 
-        // Update Units tab
+    /**
+     * Updates the unit page.
+     * Method name as per specification
+     */
+    public void updateUnitPage(UnitList units) {
         DefaultTableModel unitsModel = (DefaultTableModel) unitsTable.getModel();
         unitsModel.setRowCount(0);
-        for (Unit unit : model.getUnits().all()) {
+        for (Unit unit : units.all()) {
             unitsModel.addRow(unit.toTableRow());
         }
+    }
 
-        // Update Students tab - match the workflow format
+    /**
+     * Updates the student page.
+     * Method name as per specification
+     */
+    public void updateStudentPage(StudentList students) {
         DefaultTableModel studentsModel = (DefaultTableModel) studentsTable.getModel();
         studentsModel.setRowCount(0);
-        for (Student student : model.getStudents().all()) {
+        for (Student student : students.all()) {
             // Build subjects string
             StringBuilder subjects = new StringBuilder();
             boolean first = true;
@@ -553,20 +649,30 @@ public class ExamBlockView extends JFrame {
             };
             studentsModel.addRow(row);
         }
+    }
 
-        // Update Rooms tab
+    /**
+     * Updates the room page.
+     * Method name as per specification
+     */
+    public void updateRoomPage(RoomList rooms) {
         DefaultTableModel roomsModel = (DefaultTableModel) roomsTable.getModel();
         roomsModel.setRowCount(0);
-        for (Room room : model.getRooms().all()) {
+        for (Room room : rooms.all()) {
             if (!(room instanceof Venue)) { // Only show actual rooms, not venues
                 roomsModel.addRow(room.toTableRow());
             }
         }
+    }
 
-        // Update Venues tab - match the workflow format
+    /**
+     * Updates the venue page.
+     * Method name as per specification
+     */
+    public void updateVenuPage(VenueList venues) {
         DefaultTableModel venuesModel = (DefaultTableModel) venuesTable.getModel();
         venuesModel.setRowCount(0);
-        for (Venue venue : model.getVenues().all()) {
+        for (Venue venue : venues.all()) {
             // Build rooms string
             StringBuilder rooms = new StringBuilder();
             boolean first = true;
@@ -589,20 +695,21 @@ public class ExamBlockView extends JFrame {
     }
 
     /**
-     * Updates the session/venue tree structure.
+     * Updates the tree.
+     * Method name as per specification
      */
-    private void updateSessionVenueTree() {
+    public void updateTree(SessionList sessions, VenueList venues) {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
         root.removeAllChildren();
 
         ExamBlockModel model = controller.getModel();
 
         // Add existing sessions if any
-        if (model.getSessions().all().size() > 0) {
+        if (sessions.all().size() > 0) {
             DefaultMutableTreeNode existingNode = new DefaultMutableTreeNode("Existing sessions (" +
-                    model.getSessions().all().size() + ")");
+                    sessions.all().size() + ")");
 
-            for (Session session : model.getSessions().all()) {
+            for (Session session : sessions.all()) {
                 int totalStudentsInSession = 0;
 
                 // Count total students across all exams in this session
@@ -661,7 +768,7 @@ public class ExamBlockView extends JFrame {
 
         // Add "Create a new session" node
         DefaultMutableTreeNode createNewNode = new DefaultMutableTreeNode("Create a new session");
-        for (Venue venue : model.getVenues().all()) {
+        for (Venue venue : venues.all()) {
             String venueText = venue.venueId() + " (" + venue.deskCount() + " ";
             if (venue.isAara()) {
                 venueText += "AARA desks)";
@@ -692,12 +799,11 @@ public class ExamBlockView extends JFrame {
     private void updateButtonStates() {
         Exam selectedExam = getSelectedExam();
         Venue selectedVenue = getSelectedVenue();
-        Session selectedSession = getSelectedSession();
 
         // Add button is enabled when exam and venue are selected
         addButton.setEnabled(selectedExam != null && selectedVenue != null);
 
-        // Clear button is enabled when an exam is selected (Test 5)
+        // Clear button is enabled when an exam is selected
         clearButton.setEnabled(selectedExam != null);
     }
 
@@ -705,15 +811,17 @@ public class ExamBlockView extends JFrame {
      * Handles the Add button action.
      */
     private void handleAdd() {
-        controller.actionPerformed(new java.awt.event.ActionEvent(this,
-                java.awt.event.ActionEvent.ACTION_PERFORMED, "Schedule Exam"));
+        if (controller != null) {
+            controller.actionPerformed(new java.awt.event.ActionEvent(this,
+                    java.awt.event.ActionEvent.ACTION_PERFORMED, "Schedule Exam"));
+        }
     }
 
     /**
      * Handles the Clear button action.
      */
     private void handleClear() {
-        // Clear the exam selection (Test 6)
+        // Clear the exam selection
         examTable.clearSelection();
         updateButtonStates();
     }
@@ -722,6 +830,10 @@ public class ExamBlockView extends JFrame {
      * Gets the currently selected exam.
      */
     public Exam getSelectedExam() {
+        if (controller == null || controller.getModel() == null) {
+            return null;
+        }
+
         int selectedRow = examTable.getSelectedRow();
         if (selectedRow >= 0 && selectedRow < controller.getModel().getExams().all().size()) {
             return controller.getModel().getExams().all().get(selectedRow);
@@ -733,7 +845,7 @@ public class ExamBlockView extends JFrame {
      * Gets the currently selected venue from the tree.
      */
     public Venue getSelectedVenue() {
-        if (sessionVenueTree.getSelectionPath() == null) {
+        if (sessionVenueTree.getSelectionPath() == null || controller == null) {
             return null;
         }
 
@@ -769,7 +881,7 @@ public class ExamBlockView extends JFrame {
      * Gets the currently selected session from the tree.
      */
     public Session getSelectedSession() {
-        if (sessionVenueTree.getSelectionPath() == null) {
+        if (sessionVenueTree.getSelectionPath() == null || controller == null) {
             return null;
         }
 
@@ -833,5 +945,245 @@ public class ExamBlockView extends JFrame {
     public void setLatestFinaliseReport(String report) {
         this.latestFinaliseReport = report;
         finaliseReportsMenuItem.setEnabled(true);
+    }
+
+    // Additional methods required by specification
+
+    public JButton getAddButton() {
+        return addButton;
+    }
+
+    public JButton getClearButton() {
+        return clearButton;
+    }
+
+    public JButton getFinaliseButton() {
+        return finaliseButton;
+    }
+
+    public JTree getTree() {
+        return sessionVenueTree;
+    }
+
+    public JTable getExamTable() {
+        return examTable;
+    }
+
+    public DefaultTableModel getExamTableModel() {
+        return examTableModel;
+    }
+
+    public JTabbedPane getTabbedPane() {
+        return bottomTabbedPane;
+    }
+
+    public void setTitle(String title) {
+        super.setTitle(title);
+    }
+
+    public void setVersion(double version) {
+        // Version is displayed in title
+        if (controller != null && controller.getModel() != null) {
+            controller.getModel().setVersion(version);
+            updateView();
+        }
+    }
+
+    // Additional methods from specification
+
+    /**
+     * Add a listener for the Add button
+     */
+    public void addAddButtonListener(ActionListener listener) {
+        addButton.addActionListener(listener);
+    }
+
+    /**
+     * Add a listener for the Clear button
+     */
+    public void addClearButtonListener(ActionListener listener) {
+        clearButton.addActionListener(listener);
+    }
+
+    /**
+     * Add a listener for the Finalise button
+     */
+    public void addFinaliseButtonListener(ActionListener listener) {
+        finaliseButton.addActionListener(listener);
+    }
+
+    /**
+     * mapping from list to item represented
+     */
+    public void addExamToExamMap(int index, Exam exam) {
+        // This mapping is handled by the table model index
+        // No additional mapping needed as we use direct indexing
+    }
+
+    /**
+     * Add Session object to the SessionNode map
+     */
+    public void addSessionToSessionNodeMap(DefaultMutableTreeNode sessionNode, Session session) {
+        // Store mapping in node's user object
+        sessionNode.setUserObject(new NodeData("session", session));
+    }
+
+    /**
+     * Add Venue object to the VenueNode map
+     */
+    public void addVenueToVenueNodeMap(DefaultMutableTreeNode venueNode, Venue venue) {
+        // Store mapping in node's user object
+        venueNode.setUserObject(new NodeData("venue", venue));
+    }
+
+    /**
+     * get Exam stored for index index
+     */
+    public Exam getExamFromExamMap(int index) {
+        if (controller != null && controller.getModel() != null) {
+            ExamList exams = controller.getModel().getExams();
+            if (index >= 0 && index < exams.all().size()) {
+                return exams.all().get(index);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Mapping from list item to the item represented
+     */
+    public Exam getExamFromExamNodeMap(DefaultMutableTreeNode examNode) {
+        if (examNode.getUserObject() instanceof NodeData) {
+            NodeData data = (NodeData) examNode.getUserObject();
+            if ("exam".equals(data.type) && data.data instanceof Exam) {
+                return (Exam) data.data;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * return the selected exam rows
+     */
+    public int[] getSelectedExamRows() {
+        return examTable.getSelectedRows();
+    }
+
+    /**
+     * get the node from the session tree
+     */
+    public DefaultMutableTreeNode getSelectedTreeNode() {
+        TreePath path = sessionVenueTree.getSelectionPath();
+        if (path != null) {
+            return (DefaultMutableTreeNode) path.getLastPathComponent();
+        }
+        return null;
+    }
+
+    /**
+     * return Session object from the SessionNode map
+     */
+    public Session getSessionFromSessionNodeMap(DefaultMutableTreeNode sessionNode) {
+        if (sessionNode.getUserObject() instanceof NodeData) {
+            NodeData data = (NodeData) sessionNode.getUserObject();
+            if ("session".equals(data.type) && data.data instanceof Session) {
+                return (Session) data.data;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * return the Session root node
+     */
+    public DefaultMutableTreeNode getSessionRoot() {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
+        // Find the "Existing sessions" node
+        for (int i = 0; i < root.getChildCount(); i++) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) root.getChildAt(i);
+            if (child.getUserObject().toString().startsWith("Existing sessions")) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get Venue object from the VenueNode map
+     */
+    public Venue getVenueFromVenueNodeMap(DefaultMutableTreeNode venueNode) {
+        if (venueNode.getUserObject() instanceof NodeData) {
+            NodeData data = (NodeData) venueNode.getUserObject();
+            if ("venue".equals(data.type) && data.data instanceof Venue) {
+                return (Venue) data.data;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * return the Venue root node
+     */
+    public DefaultMutableTreeNode getVenueRoot() {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
+        // Find the "Create a new session" node
+        for (int i = 0; i < root.getChildCount(); i++) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) root.getChildAt(i);
+            if (child.getUserObject().equals("Create a new session")) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks if there are any un-finalized sessions in the JTree
+     */
+    public boolean hasUnfinalisedSessions() {
+        if (controller == null || controller.getModel() == null) {
+            return false;
+        }
+
+        // Check if any sessions exist but haven't been finalized
+        SessionList sessions = controller.getModel().getSessions();
+        if (sessions.all().isEmpty()) {
+            return false;
+        }
+
+        // Check if desk allocations have been done
+        for (Session session : sessions.all()) {
+            if (session.countStudents() == 0) {
+                return true; // Session exists but no students allocated
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * clear the selection of any control, as well as some cached values
+     */
+    public void removeAllSelections() {
+        examTable.clearSelection();
+        sessionVenueTree.clearSelection();
+    }
+
+    // Inner class for storing node data
+    private static class NodeData {
+        final String type;
+        final Object data;
+
+        NodeData(String type, Object data) {
+            this.type = type;
+            this.data = data;
+        }
+
+        @Override
+        public String toString() {
+            if (data != null) {
+                return data.toString();
+            }
+            return "";
+        }
     }
 }

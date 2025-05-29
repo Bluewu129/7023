@@ -47,9 +47,19 @@ public class Venue extends Room {
 
     /**
      * Constructs a new {@code Venue} object, consisting of one or more {@link Room}s.
+     * As per specification - Registry is last parameter
+     *
+     * @param id the venue identifier
+     * @param roomCount the number of rooms (1, 2, or 3)
+     * @param rooms the list of rooms
+     * @param rows the number of rows of desks
+     * @param columns the number of columns of desks
+     * @param totalDesks the total number of desks
+     * @param aara whether this is an AARA venue
+     * @param registry the registry
      */
     public Venue(String id, int roomCount, RoomList rooms,
-                 int rows, int columns, int totalDesks, boolean aara) {
+                 int rows, int columns, int totalDesks, boolean aara, Registry registry) {
         super(id, null); // Don't register the venue as a room
         this.roomCount = roomCount;
         this.roomIds = new ArrayList<>();
@@ -63,11 +73,22 @@ public class Venue extends Room {
         this.columns = columns;
         this.totalDesks = totalDesks;
         this.aara = aara;
-        this.venueRegistry = rooms.getRegistry();
+        this.venueRegistry = registry != null ? registry : rooms.getRegistry();
+
+        if (this.venueRegistry != null) {
+            this.venueRegistry.add(this, Venue.class);
+        }
     }
 
     /**
      * Constructs a Venue by reading from a stream.
+     * As per specification
+     *
+     * @param br BufferedReader opened and ready to read from
+     * @param registry the global object registry
+     * @param nthItem the index number of this serialized object
+     * @throws IOException on any read failure
+     * @throws RuntimeException on any logic failure
      */
     public Venue(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
@@ -81,8 +102,17 @@ public class Venue extends Room {
         }
     }
 
+    // Backward compatibility constructor (delegates to new one with null registry)
+    @Deprecated
+    public Venue(String id, int roomCount, RoomList rooms,
+                 int rows, int columns, int totalDesks, boolean aara) {
+        this(id, roomCount, rooms, rows, columns, totalDesks, aara, null);
+    }
+
     /**
      * Gets the identifier of the venue.
+     *
+     * @return The identifier of the venue.
      */
     public String venueId() {
         return roomId(); // Use the inherited roomId method
@@ -91,6 +121,8 @@ public class Venue extends Room {
     /**
      * Gets the list of rooms that make up this venue.
      * This creates a temporary RoomList with the actual room objects.
+     *
+     * @return The list of rooms.
      */
     public RoomList getRooms() {
         RoomList rooms = new RoomList(venueRegistry);
@@ -105,6 +137,8 @@ public class Venue extends Room {
 
     /**
      * Gets the number of rows of {@link Desk}s in this venue.
+     *
+     * @return The number of rows.
      */
     public int getRows() {
         return rows;
@@ -112,6 +146,8 @@ public class Venue extends Room {
 
     /**
      * Gets the number of columns of {@link Desk}s in this venue.
+     *
+     * @return The number of columns.
      */
     public int getColumns() {
         return columns;
@@ -119,6 +155,8 @@ public class Venue extends Room {
 
     /**
      * Gets the total number of desks in the venue.
+     *
+     * @return The total number of desks.
      */
     public int deskCount() {
         return totalDesks;
@@ -126,6 +164,8 @@ public class Venue extends Room {
 
     /**
      * Is this an AARA venue?
+     *
+     * @return true if this is an AARA venue, false otherwise.
      */
     public boolean isAara() {
         return aara;
@@ -133,6 +173,9 @@ public class Venue extends Room {
 
     /**
      * Check if the venue type is AARA or not.
+     *
+     * @param aara whether checking for AARA venue
+     * @return true if venue type matches
      */
     public boolean checkVenueType(boolean aara) {
         if (aara) {
@@ -153,6 +196,9 @@ public class Venue extends Room {
 
     /**
      * Checks if numberStudents will fit in this venue.
+     *
+     * @param numberStudents the number of students to check
+     * @return true if they will fit, false otherwise
      */
     public boolean willFit(int numberStudents) {
         if (totalDesks < numberStudents) {
@@ -314,5 +360,18 @@ public class Venue extends Room {
     @Override
     public String toString() {
         return venueId();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Venue venue = (Venue) o;
+        return venueId().equals(venue.venueId());
+    }
+
+    @Override
+    public int hashCode() {
+        return venueId().hashCode();
     }
 }

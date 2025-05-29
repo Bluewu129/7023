@@ -12,8 +12,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 /**
- * Controller class for the ExamBlock application.
- * Handles communication between the model and view.
+ * Main controller to coordinate between model and view
+ * As per specification - requires no-args constructor
  */
 public class ExamBlockController implements ActionListener, ModelObserver {
 
@@ -23,10 +23,17 @@ public class ExamBlockController implements ActionListener, ModelObserver {
 
     /**
      * Constructs a new ExamBlockController.
+     * As per specification - no parameters
      */
     public ExamBlockController() {
         model = new ExamBlockModel();
-        view = new ExamBlockView(this);
+
+        // Create view with the model's registry
+        view = new ExamBlockView(model.getRegistry());
+
+        // Set the controller in the view
+        view.setController(this);
+
         model.addObserver(this);
 
         view.setVisible(true);

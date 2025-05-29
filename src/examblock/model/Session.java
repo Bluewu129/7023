@@ -1,6 +1,7 @@
 package examblock.model;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -12,13 +13,13 @@ import java.util.Map;
 
 /**
  * An object describing a single {@link Exam} {@code Session}.
- * An exam "session" is a block of time in a particular {@link Venue}.
+ * An exam "session" is a block of time in a particular {@link Venue}, with zero or more {@link Exam}s.
  * Sessions are numbered from 1 and unique in each venue, but not across venues.
  * Session number can be, but do not have to be, in chronological order of session start times.
  * That is, a new session may be inserted earlier into an existing schedule.
  * Session numbers do not have to necessarily be sequential.
  */
-public class Session {
+public class Session implements StreamManager, ManageableListItem {
 
     /** The venue for this session. */
     private final Venue venue;
@@ -33,13 +34,15 @@ public class Session {
     /** Map of exam to student count for that exam */
     private final Map<Exam, Integer> examStudentCounts;
     /** The number of rows of desks set up for this session. */
-    private int rows; // the number of rows of Desks, running across the room left to right.
+    private int rows;
     /** The number of columns of desks set up for this session. */
-    private int columns; // an optional third (maximum) room object involved in the venue.
+    private int columns;
     /** The total number of desks available for this session. */
-    private int totalDesks; // the total available Desks (may be less than rows x columns).
+    private int totalDesks;
     /** The 2D array (row x column) of all desks available for this session. */
-    private Desk[][] desks;  // 2D array for desk matrix
+    private Desk[][] desks;
+    /** The registry for dependencies. */
+    private Registry registry;
 
     /**
      * Constructs a new empty {@link Exam} {@code Session} for a particular {@link Venue}.
@@ -47,47 +50,96 @@ public class Session {
      * Session numbers do not have to be sequential, only unique.
      * The constructor must also prepare the empty (unassigned as yet) desks that will be
      * used in this session. (The session has the same rows and columns of desks as the venue.)
+     * As per specification - Registry is last parameter
      *
      * @param venue the exam venue for the new session.
      * @param sessionNumber the number (unique by venue) of the new session.
      * @param day the session date.
      * @param start the start time of the exam window.
+     * @param registry the registry
      */
-    public Session(Venue venue, int sessionNumber, LocalDate day, LocalTime start) {
+    public Session(Venue venue, int sessionNumber, LocalDate day, LocalTime start, Registry registry) {
         this.venue = venue;
         this.sessionNumber = sessionNumber;
         this.day = day;
         this.start = start;
         this.exams = new ArrayList<>();
         this.examStudentCounts = new HashMap<>();
+        this.registry = registry;
         rows = venue.getRows();
         columns = venue.getColumns();
         totalDesks = venue.deskCount();
-        desks = new Desk[rows][columns]; // Initialize 2D array
-        initializeDesks();  // Fill matrix with Desk objects
+        desks = new Desk[rows][columns];
+        initializeDesks();
+
+        if (registry != null) {
+            registry.add(this, Session.class);
+        }
     }
 
-    public Session(BufferedReader br, Registry registry, int nthItem) throws IOException {
+    /**
+     * Constructs a Session by reading from a BufferedReader.
+     * As per specification
+     *
+     * @param br BufferedReader opened and ready to read from
+     * @param registry the global object registry, needed to resolve references
+     * @param nthItem the index number of this serialized object
+     * @throws IOException on any read failure
+     * @throws RuntimeException on any logic failure
+     */
+    public Session(BufferedReader br, Registry registry, int nthItem)
+            throws IOException, RuntimeException {
+        this.registry = registry;
+
         String line = CSSE7023.getLine(br);
         if (line == null) throw new RuntimeException("EOF reading Session #" + nthItem);
+
         String[] idxAndRest = line.split("\\. ", 2);
         if (idxAndRest.length != 2) throw new RuntimeException("Session header format error: " + line);
+
         int idx = CSSE7023.toInt(idxAndRest[0], "Number format exception parsing Session " + nthItem + " header");
         if (idx != nthItem) throw new RuntimeException("Session index out of sync!");
 
-        String[] parts = idxAndRest[1].split(": ");
-        if (parts.length < 4) throw new RuntimeException("Session data format error: " + idxAndRest[1]);
-        String venueId = parts[0];
-        int sessionNumber = Integer.parseInt(parts[1]);
-        LocalDate day = LocalDate.parse(parts[2]);
-        LocalTime start = LocalTime.parse(parts[3]);
-        Venue venue = registry.find(venueId, Venue.class);
-        if (venue == null) throw new RuntimeException("Venue not found: " + venueId);
+        // Parse session data
+        String[] parts = idxAndRest[1].split(", ");
+        if (parts.length < 5) throw new RuntimeException("Session data format error: " + idxAndRest[1]);
 
-        this.venue = venue;
-        this.sessionNumber = sessionNumber;
-        this.day = day;
-        this.start = start;
+        String venueId = null;
+        int sessionNum = 0;
+        LocalDate sessionDay = null;
+        LocalTime sessionStart = null;
+        int examCount = 0;
+
+        for (String part : parts) {
+            String[] kv = part.split(": ");
+            if (kv.length == 2) {
+                switch (kv[0]) {
+                    case "Venue":
+                        venueId = kv[1];
+                        break;
+                    case "Session Number":
+                        sessionNum = Integer.parseInt(kv[1]);
+                        break;
+                    case "Day":
+                        sessionDay = LocalDate.parse(kv[1]);
+                        break;
+                    case "Start":
+                        sessionStart = LocalTime.parse(kv[1]);
+                        break;
+                    case "Exams":
+                        examCount = Integer.parseInt(kv[1]);
+                        break;
+                }
+            }
+        }
+
+        Venue sessionVenue = registry.find(venueId, Venue.class);
+        if (sessionVenue == null) throw new RuntimeException("Venue not found: " + venueId);
+
+        this.venue = sessionVenue;
+        this.sessionNumber = sessionNum;
+        this.day = sessionDay;
+        this.start = sessionStart;
         this.exams = new ArrayList<>();
         this.examStudentCounts = new HashMap<>();
         rows = venue.getRows();
@@ -95,11 +147,76 @@ public class Session {
         totalDesks = venue.deskCount();
         desks = new Desk[rows][columns];
         initializeDesks();
+
+        // Read exam data
+        for (int i = 0; i < examCount; i++) {
+            String examLine = CSSE7023.getLine(br);
+            if (examLine != null && !examLine.trim().isEmpty()) {
+                examLine = examLine.trim();
+
+                // Parse exam info and student count
+                int studentCount = 0;
+                String examTitle = examLine;
+
+                int startParen = examLine.lastIndexOf('(');
+                int endParen = examLine.lastIndexOf(')');
+
+                if (startParen > 0 && endParen > startParen) {
+                    examTitle = examLine.substring(0, startParen).trim();
+                    String countStr = examLine.substring(startParen + 1, endParen);
+                    countStr = countStr.replace("students", "").replace("student", "").trim();
+                    try {
+                        studentCount = Integer.parseInt(countStr);
+                    } catch (NumberFormatException e) {
+                        // Ignore parsing errors
+                    }
+                }
+
+                // Find the exam
+                Exam exam = null;
+                List<Exam> allExams = registry.getAll(Exam.class);
+                for (Exam e : allExams) {
+                    if (e.getSubject().getTitle().equals(examTitle)) {
+                        exam = e;
+                        break;
+                    }
+                }
+
+                if (exam != null) {
+                    // Skip desk allocation data if present
+                    String nextLine = CSSE7023.getLine(br, true);
+                    if (nextLine != null && nextLine.trim().startsWith("[Desks:")) {
+                        CSSE7023.getLine(br); // Consume [Desks: N] line
+
+                        // Skip desk lines
+                        String deskLine;
+                        while ((deskLine = CSSE7023.getLine(br, true)) != null) {
+                            if (deskLine.trim().isEmpty() ||
+                                    (!deskLine.contains("Desk") && !deskLine.contains(",") && !deskLine.contains("."))) {
+                                break;
+                            }
+                            CSSE7023.getLine(br);
+                        }
+                    }
+
+                    scheduleExam(exam, studentCount);
+                }
+            }
+        }
+
+        if (registry != null) {
+            registry.add(this, Session.class);
+        }
     }
 
+    // Backward compatibility constructor (delegates to new one with null registry)
+    @Deprecated
+    public Session(Venue venue, int sessionNumber, LocalDate day, LocalTime start) {
+        this(venue, sessionNumber, day, start, null);
+    }
 
     private void initializeDesks() {
-        int deskId = 1;  // Unique ID for each desk
+        int deskId = 1;
         for (int j = 0; j < columns; j++) {
             for (int i = 0; i < rows; i++) {
                 desks[i][j] = new Desk(deskId++);
@@ -144,6 +261,15 @@ public class Session {
     }
 
     /**
+     * Gets the total number of desks in this session.
+     *
+     * @return The total number of desks.
+     */
+    public int getTotalDesks() {
+        return totalDesks;
+    }
+
+    /**
      * Gets the list of exams being held in this session.
      *
      * @return The list of exams being held in this session.
@@ -168,18 +294,34 @@ public class Session {
     }
 
     /**
+     * Removes an exam from this session.
+     *
+     * @param exam the exam to remove
+     */
+    public void removeExam(Exam exam) {
+        exams.remove(exam);
+        examStudentCounts.remove(exam);
+    }
+
+    /**
+     * Allocates an exam to this session (Venue and time).
+     *
+     * @param exam the exam to be allocated to this venue.
+     */
+    public void scheduleExam(Exam exam) {
+        scheduleExam(exam, 0);
+    }
+
+    /**
      * Allocates an exam to this session (Venue and time).
      *
      * @param exam the exam to be allocated to this venue.
      * @param numberStudents the number of students being added with this allocation.
      */
     public void scheduleExam(Exam exam, int numberStudents) {
-        // Add exam if not already present
         if (!exams.contains(exam)) {
             exams.add(exam);
         }
-
-        // Store or update the student count for this exam
         examStudentCounts.put(exam, numberStudents);
     }
 
@@ -207,7 +349,6 @@ public class Session {
                 if (student.isAara() == this.venue.isAara()) {
                     for (Subject subject : student.getSubjectsList()) {
                         if (subject.equals(exam.getSubject())) {
-                            // Check if student is already in the list (taking multiple exams)
                             if (!allSessionStudents.contains(student)) {
                                 allSessionStudents.add(student);
                             }
@@ -255,22 +396,6 @@ public class Session {
         }
     }
 
-    /**
-     * Allocate students to the provided desk array.
-     * This method is used by the report generation.
-     */
-    public void allocateToDesks(Desk[][] providedDesks) {
-        // Copy the allocations from our internal desks to the provided desks
-        for (int i = 0; i < rows && i < providedDesks.length; i++) {
-            for (int j = 0; j < columns && j < providedDesks[i].length; j++) {
-                if (desks[i][j].deskFamilyName() != null) {
-                    providedDesks[i][j].setFamilyName(desks[i][j].deskFamilyName());
-                    providedDesks[i][j].setGivenAndInit(desks[i][j].deskGivenAndInit());
-                }
-            }
-        }
-    }
-
     private String getGivenAndInit(String given) {
         if (given != null && !given.isEmpty()) {
             String[] names = given.split(" ");
@@ -289,31 +414,89 @@ public class Session {
      * Prints a grid of the deskNumber, family name, and given name and initial for each desk.
      */
     public void printDesks() {
+        StringBuilder sb = new StringBuilder();
+        printDesks(sb);
+        System.out.print(sb.toString());
+    }
+
+    /**
+     * Prints the layout of the desks in this session to a StringBuilder.
+     *
+     * @param sb the StringBuilder to append to
+     */
+    public void printDesks(StringBuilder sb) {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                System.out.printf("%-15s", "Desk " + desks[i][j].deskNumber());
+                sb.append(String.format("%-15s", "Desk " + desks[i][j].deskNumber()));
             }
-            System.out.println();
+            sb.append("\n");
             for (int j = 0; j < columns; j++) {
-                // print any nulls as empty strings, not a null
                 if (desks[i][j].deskFamilyName() == null) {
-                    System.out.printf("%-15s", "");
+                    sb.append(String.format("%-15s", ""));
                 } else {
-                    System.out.printf("%-15s", desks[i][j].deskFamilyName());
+                    sb.append(String.format("%-15s", desks[i][j].deskFamilyName()));
                 }
             }
-            System.out.println();
+            sb.append("\n");
             for (int j = 0; j < columns; j++) {
-                // print any nulls as empty strings, not a null
                 if (desks[i][j].deskGivenAndInit() == null) {
-                    System.out.printf("%-15s", "");
+                    sb.append(String.format("%-15s", ""));
                 } else {
-                    System.out.printf("%-15s", desks[i][j].deskGivenAndInit());
+                    sb.append(String.format("%-15s", desks[i][j].deskGivenAndInit()));
                 }
             }
-            System.out.println();
-            System.out.println();
+            sb.append("\n\n");
         }
+    }
+
+    @Override
+    public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
+        // Write session header
+        bw.write(nthItem + ". Venue: " + venue.venueId() +
+                ", Session Number: " + sessionNumber +
+                ", Day: " + day +
+                ", Start: " + start +
+                ", Exams: " + exams.size() + System.lineSeparator());
+
+        // Write exam details
+        for (Exam exam : exams) {
+            int studentCount = examStudentCounts.getOrDefault(exam, 0);
+            bw.write("    " + exam.getSubject().getTitle() +
+                    " (" + studentCount + " students)" + System.lineSeparator());
+
+            // If finalized, write desk allocations
+            if (studentCount > 0) {
+                bw.write("    [Desks: " + studentCount + "]" + System.lineSeparator());
+                // TODO: Write actual desk allocations if needed
+            }
+        }
+    }
+
+    @Override
+    public void streamIn(BufferedReader br, Registry registry, int nthItem)
+            throws IOException, RuntimeException {
+        throw new UnsupportedOperationException("Use constructor instead");
+    }
+
+    @Override
+    public String getFullDetail() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(toString()).append("\n");
+        sb.append("Exams: ").append(exams.size()).append("\n");
+        for (Exam exam : exams) {
+            sb.append("  - ").append(exam.getSubject().getTitle());
+            int count = examStudentCounts.getOrDefault(exam, 0);
+            if (count > 0) {
+                sb.append(" (").append(count).append(" students)");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String getId() {
+        return venue.venueId() + "_" + sessionNumber + "_" + day + "_" + start;
     }
 
     /**
@@ -330,5 +513,25 @@ public class Session {
                 + this.day.toString()
                 + " "
                 + this.start.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Session session = (Session) o;
+        return sessionNumber == session.sessionNumber &&
+                venue.equals(session.venue) &&
+                day.equals(session.day) &&
+                start.equals(session.start);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = venue.hashCode();
+        result = 31 * result + sessionNumber;
+        result = 31 * result + day.hashCode();
+        result = 31 * result + start.hashCode();
+        return result;
     }
 }
