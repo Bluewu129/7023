@@ -603,9 +603,27 @@ public class ExamBlockView extends JFrame {
                     model.getSessions().all().size() + ")");
 
             for (Session session : model.getSessions().all()) {
-                int usedDesks = session.countStudents();
+                int totalStudentsInSession = 0;
+
+                // Count total students across all exams in this session
+                for (Exam exam : session.getExams()) {
+                    int studentCount = 0;
+                    // Count students taking this exam in this venue type
+                    for (Student student : model.getStudents().all()) {
+                        if (student.isAara() == session.getVenue().isAara()) {
+                            for (Subject subject : student.getSubjectsList()) {
+                                if (subject.equals(exam.getSubject())) {
+                                    studentCount++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    totalStudentsInSession += studentCount;
+                }
+
                 int totalDesks = session.getVenue().deskCount();
-                int availableDesks = totalDesks - usedDesks;
+                int availableDesks = totalDesks - totalStudentsInSession;
 
                 String sessionText = session.getDate() + " at " + session.getTime() +
                         " in " + session.getVenue().venueId() +
@@ -618,16 +636,21 @@ public class ExamBlockView extends JFrame {
 
                 // Add each exam
                 for (Exam exam : session.getExams()) {
-                    // Get the student count for this specific exam
-                    int studentCount = session.getStudentCountForExam(exam);
+                    // Count students for this specific exam
+                    int studentCount = 0;
+                    for (Student student : model.getStudents().all()) {
+                        if (student.isAara() == session.getVenue().isAara()) {
+                            for (Subject subject : student.getSubjectsList()) {
+                                if (subject.equals(exam.getSubject())) {
+                                    studentCount++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
 
                     String examText = exam.getSubject().getTitle() + " (" + studentCount + " students)";
                     examsNode.add(new DefaultMutableTreeNode(examText));
-
-                    if (Verbose.isVerbose()) {
-                        System.out.println("Exam: " + exam.getSubject().getTitle() +
-                                " has " + studentCount + " students in session");
-                    }
                 }
 
                 sessionNode.add(examsNode);

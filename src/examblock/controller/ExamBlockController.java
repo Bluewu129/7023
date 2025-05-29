@@ -32,9 +32,13 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         view.setVisible(true);
 
         // Show file open dialog on startup as per workflow
-        SwingUtilities.invokeLater(() -> {
+        // Use a timer to ensure the view is fully initialized
+        Timer timer = new Timer(100, e -> {
+            ((Timer)e.getSource()).stop();
             handleOpen();
         });
+        timer.setRepeats(false);
+        timer.start();
     }
 
     /**
@@ -60,8 +64,8 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Open");
 
-        // Set up file filters
-        fileChooser.setAcceptAllFileFilterUsed(false);
+        // Set up file filters - EXACTLY as shown in the PDF
+        fileChooser.setAcceptAllFileFilterUsed(true); // PDF shows "All Files" option
         javax.swing.filechooser.FileNameExtensionFilter ebdFilter =
                 new javax.swing.filechooser.FileNameExtensionFilter("Exam Block Files (*.ebd)", "ebd");
         fileChooser.addChoosableFileFilter(ebdFilter);
@@ -69,6 +73,12 @@ public class ExamBlockController implements ActionListener, ModelObserver {
 
         // Set default directory to current directory
         fileChooser.setCurrentDirectory(new File("."));
+
+        // Look for default file as shown in PDF
+        File defaultFile = new File("2025s1a2");
+        if (defaultFile.exists()) {
+            fileChooser.setSelectedFile(defaultFile);
+        }
 
         int result = fileChooser.showOpenDialog(view);
         if (result == JFileChooser.APPROVE_OPTION) {
@@ -112,35 +122,81 @@ public class ExamBlockController implements ActionListener, ModelObserver {
      * Handles the Save menu action.
      */
     private void handleSave() {
-        // Get version number
-        double newVersion = model.getVersion() + 0.1; // Default increment
+        // Create a custom dialog for version input as shown in PDF
+        JDialog saveDialog = new JDialog(view, "Save", true);
+        saveDialog.setLayout(new BoxLayout(saveDialog.getContentPane(), BoxLayout.Y_AXIS));
+        saveDialog.setSize(400, 200);
+        saveDialog.setLocationRelativeTo(view);
 
-        String versionInput = JOptionPane.showInputDialog(view,
-                "Enter new version number (current: " + model.getVersion() + "):",
-                "Save - Version Number",
-                JOptionPane.QUESTION_MESSAGE);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        if (versionInput != null && !versionInput.trim().isEmpty()) {
+        // Title field
+        JPanel titlePanel = new JPanel();
+        titlePanel.add(new JLabel("Title:"));
+        JTextField titleField = new JTextField(model.getTitle(), 20);
+        titlePanel.add(titleField);
+        panel.add(titlePanel);
+
+        // Version field
+        JPanel versionPanel = new JPanel();
+        versionPanel.add(new JLabel("Version:"));
+        JTextField versionField = new JTextField(String.format("%.1f", model.getVersion() + 0.1), 10);
+        versionPanel.add(versionField);
+        JLabel versionWarning = new JLabel("Version must be greater than " + model.getVersion());
+        versionWarning.setForeground(java.awt.Color.RED);
+        panel.add(versionPanel);
+        panel.add(versionWarning);
+
+        // Buttons
+        JPanel buttonPanel = new JPanel();
+        JButton saveButton = new JButton("Save");
+        JButton cancelButton = new JButton("Cancel");
+
+        saveButton.addActionListener(e -> {
             try {
-                newVersion = Double.parseDouble(versionInput.trim());
+                double newVersion = Double.parseDouble(versionField.getText());
                 if (newVersion <= model.getVersion()) {
-                    DialogUtils.showWarning("Version must be greater than " + model.getVersion());
+                    versionWarning.setVisible(true);
                     return;
                 }
-            } catch (NumberFormatException e) {
+
+                String newTitle = titleField.getText().trim();
+                if (newTitle.isEmpty()) {
+                    DialogUtils.showWarning("Title cannot be empty");
+                    return;
+                }
+
+                model.setTitle(newTitle);
+                model.setVersion(newVersion);
+                saveDialog.dispose();
+
+                // Show save file dialog
+                performSave();
+            } catch (NumberFormatException ex) {
                 DialogUtils.showError("Invalid version number format");
-                return;
             }
-        } else {
-            return; // User cancelled
-        }
+        });
 
-        model.setVersion(newVersion);
+        cancelButton.addActionListener(e -> saveDialog.dispose());
 
-        // Show save dialog
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+        panel.add(buttonPanel);
+
+        saveDialog.add(panel);
+        saveDialog.setVisible(true);
+    }
+
+    private void performSave() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Save Exam Block Data");
-        fileChooser.setSelectedFile(new File(model.getTitle() + " (v" + newVersion + ").ebd"));
+
+        // Set default filename as shown in PDF
+        String defaultFilename = "scheduled.ebd";
+        fileChooser.setSelectedFile(new File(defaultFilename));
+
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
                 "Exam Block Files (*.ebd)", "ebd"));
 
@@ -154,7 +210,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
             }
 
             if (model.saveToFile(model.getRegistry(), file.getAbsolutePath(),
-                    model.getTitle(), newVersion)) {
+                    model.getTitle(), model.getVersion())) {
                 DialogUtils.showMessage("File saved successfully!");
             }
         }
@@ -193,17 +249,53 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         }
 
         // Check if venue type matches requirements (AARA or regular)
-        boolean needsAara = false;
-        // Count AARA students for this exam
+        // Count AARA and non-AARA students for this exam
+        int aaraStudents = 0;
+        int nonAaraStudents = 0;
+
         for (Student student : model.getStudents().all()) {
-            if (student.isAara() && student.getSubjects().all().contains(selectedExam.getSubject())) {
-                needsAara = true;
-                break;
+            // Check if student takes this subject
+            boolean takesSubject = false;
+            for (Subject subject : student.getSubjectsList()) {
+                if (subject.equals(selectedExam.getSubject())) {
+                    takesSubject = true;
+                    break;
+                }
+            }
+
+            if (takesSubject) {
+                if (student.isAara()) {
+                    aaraStudents++;
+                } else {
+                    nonAaraStudents++;
+                }
             }
         }
 
+        // Determine if we need AARA venue based on selected venue type
+        boolean venueIsAara = selectedVenue.isAara();
+        int expectedStudents = venueIsAara ? aaraStudents : nonAaraStudents;
+
+        if (expectedStudents == 0) {
+            String venueType = venueIsAara ? "AARA" : "non-AARA";
+            DialogUtils.showWarning("No " + venueType + " students are taking " +
+                    selectedExam.getSubject().getTitle() + ".");
+            return;
+        }
+
+        // Check if venue matches student requirements
+        if (venueIsAara && aaraStudents == 0) {
+            DialogUtils.showWarning("This is an AARA venue but no AARA students are taking this exam.");
+            return;
+        }
+
+        if (!venueIsAara && nonAaraStudents == 0) {
+            DialogUtils.showWarning("This is a non-AARA venue but no non-AARA students are taking this exam.");
+            return;
+        }
+
         // Attempt to schedule the exam
-        boolean scheduled = SessionHandler.scheduleExam(model, selectedExam, selectedVenue, needsAara);
+        boolean scheduled = SessionHandler.scheduleExam(model, selectedExam, selectedVenue, venueIsAara);
 
         if (scheduled) {
             view.updateView();
@@ -238,42 +330,78 @@ public class ExamBlockController implements ActionListener, ModelObserver {
             return;
         }
 
-        // Store the current report before finalizing
-        String reportBefore = SessionHandler.printEverything(model);
+        // First show the save dialog with incremented version
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save");
 
-        // Finalise will trigger save dialog through SessionHandler
-        SessionHandler.finaliseExamBlock(model);
+        // Create accessory panel for version
+        JPanel accessoryPanel = new JPanel();
+        accessoryPanel.setLayout(new BoxLayout(accessoryPanel, BoxLayout.Y_AXIS));
+        accessoryPanel.setBorder(BorderFactory.createTitledBorder("Exam Block Details"));
 
-        // Get the report after finalization (with desk allocations)
-        latestFinaliseReport = SessionHandler.printEverything(model);
+        JPanel titlePanel = new JPanel();
+        titlePanel.add(new JLabel("Title:"));
+        JTextField titleField = new JTextField(model.getTitle(), 15);
+        titlePanel.add(titleField);
+        accessoryPanel.add(titlePanel);
 
-        // Update view with finalized data
-        view.updateView();
-        view.setLatestFinaliseReport(latestFinaliseReport);
+        JPanel versionPanel = new JPanel();
+        versionPanel.add(new JLabel("Version:"));
+        JTextField versionField = new JTextField(String.format("%.1f", model.getVersion() + 0.2), 10);
+        versionPanel.add(versionField);
+        accessoryPanel.add(versionPanel);
 
-        // Generate desk allocations string
-        StringBuilder deskAllocations = new StringBuilder();
-        deskAllocations.append("Desk Allocations\n");
-        deskAllocations.append("================\n\n");
+        fileChooser.setAccessory(accessoryPanel);
+        fileChooser.setSelectedFile(new File("finalised.ebd"));
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "Exam Block Files (*.ebd)", "ebd"));
 
-        for (Session session : model.getSessions().all()) {
-            Venue venue = session.getVenue();
-            deskAllocations.append("-".repeat(75)).append("\n");
-            deskAllocations.append(venue.venueId());
-            if (venue.isAara()) {
-                deskAllocations.append(" (").append(venue.deskCount()).append(" AARA desks)");
-            } else {
-                deskAllocations.append(" (").append(venue.deskCount()).append(" Non-AARA desks)");
+        int result = fileChooser.showSaveDialog(view);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            try {
+                double newVersion = Double.parseDouble(versionField.getText());
+                model.setVersion(newVersion);
+
+                // Store the current report before finalizing
+                String reportBefore = SessionHandler.printEverything(model);
+
+                // Finalise will trigger save dialog through SessionHandler
+                SessionHandler.finaliseExamBlock(model);
+
+                // Get the report after finalization (with desk allocations)
+                latestFinaliseReport = SessionHandler.printEverything(model);
+
+                // Update view with finalized data
+                view.updateView();
+                view.setLatestFinaliseReport(latestFinaliseReport);
+
+                // Generate desk allocations string
+                StringBuilder deskAllocations = new StringBuilder();
+                deskAllocations.append("Desk Allocations\n");
+                deskAllocations.append("================\n\n");
+
+                for (Session session : model.getSessions().all()) {
+                    Venue venue = session.getVenue();
+                    deskAllocations.append("-".repeat(75)).append("\n");
+                    deskAllocations.append(venue.venueId());
+                    if (venue.isAara()) {
+                        deskAllocations.append(" (").append(venue.deskCount()).append(" AARA desks)");
+                    } else {
+                        deskAllocations.append(" (").append(venue.deskCount()).append(" Non-AARA desks)");
+                    }
+                    deskAllocations.append("\n");
+                    deskAllocations.append("-".repeat(75)).append("\n");
+                    deskAllocations.append(session.toString()).append("\n\n");
+
+                    // Add desk allocations
+                    session.printDesks();
+                }
+
+                view.setLatestDeskAllocations(deskAllocations.toString());
+            } catch (NumberFormatException e) {
+                DialogUtils.showError("Invalid version number");
             }
-            deskAllocations.append("\n");
-            deskAllocations.append("-".repeat(75)).append("\n");
-            deskAllocations.append(session.toString()).append("\n\n");
-
-            // Note: Actual desk allocations would be here if Session provided access
-            // For now, just show the session info
         }
-
-        view.setLatestDeskAllocations(deskAllocations.toString());
     }
 
     /**

@@ -358,22 +358,46 @@ public class ExamBlockModel {
             for (int j = 0; j < examCount; j++) {
                 String examLine = CSSE7023.getLine(br);
                 if (examLine != null && !examLine.trim().isEmpty()) {
-                    // This should be the exam title line
-                    String examTitle = examLine.trim();
+                    // Remove leading spaces if any
+                    examLine = examLine.trim();
 
-                    // Find the exam by matching the title
+                    // Extract student count from the exam line
+                    // Format: "Subject Name (N students)"
+                    int studentCount = 0;
+                    String examTitle = examLine;
+
+                    int startParen = examLine.lastIndexOf('(');
+                    int endParen = examLine.lastIndexOf(')');
+
+                    if (startParen > 0 && endParen > startParen) {
+                        // Extract the title without the student count
+                        examTitle = examLine.substring(0, startParen).trim();
+
+                        String countStr = examLine.substring(startParen + 1, endParen);
+                        countStr = countStr.replace("students", "").replace("student", "").trim();
+                        try {
+                            studentCount = Integer.parseInt(countStr);
+                        } catch (NumberFormatException e) {
+                            if (Verbose.isVerbose()) {
+                                System.out.println("Could not parse student count from: " + countStr);
+                            }
+                        }
+                    }
+
+                    // Find the exam by matching the subject title
                     Exam exam = null;
                     for (Exam e : exams.all()) {
-                        if (e.getShortTitle().equals(examTitle)) {
+                        if (e.getSubject().getTitle().equals(examTitle)) {
                             exam = e;
                             break;
                         }
                     }
 
                     if (exam == null) {
-                        // Try to find by subject name if short title doesn't match
+                        // Try matching by partial title
                         for (Exam e : exams.all()) {
-                            if (examTitle.contains(e.getSubject().getTitle())) {
+                            if (examTitle.contains(e.getSubject().getTitle()) ||
+                                    e.getSubject().getTitle().contains(examTitle)) {
                                 exam = e;
                                 break;
                             }
@@ -381,24 +405,6 @@ public class ExamBlockModel {
                     }
 
                     if (exam != null) {
-                        // Extract student count from the exam line
-                        // Format: "Subject Name (N students)"
-                        int studentCount = 0;
-                        int startParen = examLine.lastIndexOf('(');
-                        int endParen = examLine.lastIndexOf(')');
-
-                        if (startParen > 0 && endParen > startParen) {
-                            String countStr = examLine.substring(startParen + 1, endParen);
-                            countStr = countStr.replace("students", "").trim();
-                            try {
-                                studentCount = Integer.parseInt(countStr);
-                            } catch (NumberFormatException e) {
-                                if (Verbose.isVerbose()) {
-                                    System.out.println("Could not parse student count from: " + countStr);
-                                }
-                            }
-                        }
-
                         // Check if there's a [Desks: N] line following
                         String nextLine = CSSE7023.getLine(br, true); // Peek
 
@@ -406,24 +412,12 @@ public class ExamBlockModel {
                             // Consume the [Desks: N] line
                             CSSE7023.getLine(br);
 
-                            // Extract desk count if we didn't get student count
-                            if (studentCount == 0) {
-                                try {
-                                    String deskCountStr = nextLine.trim();
-                                    deskCountStr = deskCountStr.substring(7, deskCountStr.length() - 1).trim();
-                                    int deskCount = Integer.parseInt(deskCountStr);
-                                    studentCount = deskCount; // Use desk count as student count
-                                } catch (Exception e) {
-                                    if (Verbose.isVerbose()) {
-                                        System.out.println("Error parsing desk count: " + e.getMessage());
-                                    }
-                                }
-                            }
-
                             // Skip all desk allocation lines
                             String deskLine;
                             while ((deskLine = CSSE7023.getLine(br, true)) != null) {
-                                if (deskLine.trim().isEmpty() || !deskLine.contains("Desk")) {
+                                // Check if this is a desk line
+                                if (deskLine.trim().isEmpty() ||
+                                        (!deskLine.contains("Desk") && !deskLine.contains(",") && !deskLine.contains("."))) {
                                     break;
                                 }
                                 // Consume the line
