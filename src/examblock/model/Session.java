@@ -36,7 +36,7 @@ public class Session implements StreamManager, ManageableListItem {
     /** The total number of desks available for this session. */
     private int totalDesks;
     /** The 2D array (row x column) of all desks available for this session. */
-    public Desk[][] desks;
+    private Desk[][] desks;
     /** The registry for dependencies. */
     private Registry registry;
 
