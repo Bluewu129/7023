@@ -2,8 +2,6 @@ package examblock.model;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -23,28 +21,12 @@ public class StudentList extends ListManager<Student> {
     }
 
     /**
-     * Constructs an empty list of {@link Student}s.
-     */
-    public StudentList() {
-        super(new StudentFactory(), new RegistryImpl(), Student.class);
-    }
-
-    /**
      * Constructs a StudentList with a specific registry.
      *
      * @param registry the registry to use
      */
     public StudentList(Registry registry) {
         super(new StudentFactory(), registry, Student.class);
-    }
-
-    /**
-     * Adds a {@link Student} to this list of {@link Student}s.
-     *
-     * @param student - the student object being added to this list.
-     */
-    public void add(Student student) {
-        super.add(student);
     }
 
     /**
@@ -81,14 +63,6 @@ public class StudentList extends ListManager<Student> {
             return student;
         }
         throw new IllegalStateException("Item with ID " + key + " not found for type Student");
-    }
-
-    /**
-     * Creates a new {@code List} holding {@code references} to all the {@link Student}s
-     * managed by this {@code StudentList} and returns it.
-     */
-    public List<Student> getAllStudents() {
-        return super.all();
     }
 
     /**

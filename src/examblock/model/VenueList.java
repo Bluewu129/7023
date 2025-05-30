@@ -13,13 +13,6 @@ import java.util.Optional;
 public class VenueList extends ListManager<Venue> {
 
     /**
-     * Constructs an empty list of {@link Venue}s.
-     */
-    public VenueList() {
-        super(new VenueFactory(), new RegistryImpl(), Venue.class);
-    }
-
-    /**
      * Constructs a VenueList with a specific registry.
      *
      * @param registry the registry to use
@@ -74,7 +67,7 @@ public class VenueList extends ListManager<Venue> {
     }
 
     @Override
-    public Venue find(String key) {
+    public Venue find(String key) throws IllegalStateException {
         Optional<Venue> venue = super.all()
                 .stream()
                 .filter(v -> v.getId().equals(key))

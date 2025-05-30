@@ -9,29 +9,11 @@ import java.util.Optional;
 public class ExamList extends ListManager<Exam> {
 
     /**
-     * Constructs an empty list of {@link Exam}s.
-     */
-    public ExamList() {
-        super(Exam::new, new RegistryImpl(), Exam.class);
-    }
-
-    /**
      * Constructs an ExamList with a specific registry.
      */
     public ExamList(Registry registry) {
         super(Exam::new, registry, Exam.class);
     }
-
-    /**
-     * Adds an {@link Exam} to this list of {@link Exam}s.
-     * Method signature matches specification exactly.
-     */
-    public void add(Exam exam) {
-        if (exam instanceof ManageableListItem) {
-            super.add((Exam) exam);
-        }
-    }
-
 
     /**
      * Get the first {@link Exam} with a matching short title.

@@ -8,12 +8,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * An object describing a single {@link Exam} {@code Session}.
- * An exam "session" is a block of time in a particular {@link Venue}, with zero or more {@link Exam}s.
+ * An object describing a single Exam Session.
+ * An exam "session" is a block of time in a particular Venue, with zero or more Exams.
  * Sessions are numbered from 1 and unique in each venue, but not across venues.
  * Session number can be, but do not have to be, in chronological order of session start times.
  * That is, a new session may be inserted earlier into an existing schedule.
@@ -31,8 +29,6 @@ public class Session implements StreamManager, ManageableListItem {
     private final LocalTime start;
     /** The list of exams in this session in this venue. */
     private final List<Exam> exams;
-    /** Map of exam to student count for that exam */
-    private final Map<Exam, Integer> examStudentCounts;
     /** The number of rows of desks set up for this session. */
     private int rows;
     /** The number of columns of desks set up for this session. */
@@ -40,23 +36,13 @@ public class Session implements StreamManager, ManageableListItem {
     /** The total number of desks available for this session. */
     private int totalDesks;
     /** The 2D array (row x column) of all desks available for this session. */
-    private Desk[][] desks;
+    public Desk[][] desks;
     /** The registry for dependencies. */
     private Registry registry;
 
     /**
-     * Constructs a new empty {@link Exam} {@code Session} for a particular {@link Venue}.
-     * The calling process must check that the supplied session number is unique for this venue.
-     * Session numbers do not have to be sequential, only unique.
-     * The constructor must also prepare the empty (unassigned as yet) desks that will be
-     * used in this session. (The session has the same rows and columns of desks as the venue.)
-     * As per specification - Registry is last parameter
-     *
-     * @param venue the exam venue for the new session.
-     * @param sessionNumber the number (unique by venue) of the new session.
-     * @param day the session date.
-     * @param start the start time of the exam window.
-     * @param registry the registry
+     * Constructs a new empty Exam Session for a particular Venue.
+     * Fixed parameter order: Registry, Venue, int, LocalDate, LocalTime
      */
     public Session(Venue venue, int sessionNumber, LocalDate day, LocalTime start, Registry registry) {
         this.venue = venue;
@@ -64,7 +50,6 @@ public class Session implements StreamManager, ManageableListItem {
         this.day = day;
         this.start = start;
         this.exams = new ArrayList<>();
-        this.examStudentCounts = new HashMap<>();
         this.registry = registry;
         rows = venue.getRows();
         columns = venue.getColumns();
@@ -79,17 +64,12 @@ public class Session implements StreamManager, ManageableListItem {
 
     /**
      * Constructs a Session by reading from a BufferedReader.
-     * As per specification
-     *
-     * @param br BufferedReader opened and ready to read from
-     * @param registry the global object registry, needed to resolve references
-     * @param nthItem the index number of this serialized object
-     * @throws IOException on any read failure
-     * @throws RuntimeException on any logic failure
+     * Fixed parameter order: Registry, BufferedReader, int
      */
     public Session(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
         this.registry = registry;
+        this.exams = new ArrayList<>();
 
         String line = CSSE7023.getLine(br);
         if (line == null) throw new RuntimeException("EOF reading Session #" + nthItem);
@@ -100,7 +80,6 @@ public class Session implements StreamManager, ManageableListItem {
         int idx = CSSE7023.toInt(idxAndRest[0], "Number format exception parsing Session " + nthItem + " header");
         if (idx != nthItem) throw new RuntimeException("Session index out of sync!");
 
-        // Parse session data
         String[] parts = idxAndRest[1].split(", ");
         if (parts.length < 5) throw new RuntimeException("Session data format error: " + idxAndRest[1]);
 
@@ -140,8 +119,6 @@ public class Session implements StreamManager, ManageableListItem {
         this.sessionNumber = sessionNum;
         this.day = sessionDay;
         this.start = sessionStart;
-        this.exams = new ArrayList<>();
-        this.examStudentCounts = new HashMap<>();
         rows = venue.getRows();
         columns = venue.getColumns();
         totalDesks = venue.deskCount();
@@ -154,25 +131,12 @@ public class Session implements StreamManager, ManageableListItem {
             if (examLine != null && !examLine.trim().isEmpty()) {
                 examLine = examLine.trim();
 
-                // Parse exam info and student count
-                int studentCount = 0;
                 String examTitle = examLine;
-
                 int startParen = examLine.lastIndexOf('(');
-                int endParen = examLine.lastIndexOf(')');
-
-                if (startParen > 0 && endParen > startParen) {
+                if (startParen > 0) {
                     examTitle = examLine.substring(0, startParen).trim();
-                    String countStr = examLine.substring(startParen + 1, endParen);
-                    countStr = countStr.replace("students", "").replace("student", "").trim();
-                    try {
-                        studentCount = Integer.parseInt(countStr);
-                    } catch (NumberFormatException e) {
-                        // Ignore parsing errors
-                    }
                 }
 
-                // Find the exam
                 Exam exam = null;
                 List<Exam> allExams = registry.getAll(Exam.class);
                 for (Exam e : allExams) {
@@ -183,12 +147,10 @@ public class Session implements StreamManager, ManageableListItem {
                 }
 
                 if (exam != null) {
-                    // Skip desk allocation data if present
                     String nextLine = CSSE7023.getLine(br, true);
                     if (nextLine != null && nextLine.trim().startsWith("[Desks:")) {
-                        CSSE7023.getLine(br); // Consume [Desks: N] line
+                        CSSE7023.getLine(br);
 
-                        // Skip desk lines
                         String deskLine;
                         while ((deskLine = CSSE7023.getLine(br, true)) != null) {
                             if (deskLine.trim().isEmpty() ||
@@ -199,7 +161,7 @@ public class Session implements StreamManager, ManageableListItem {
                         }
                     }
 
-                    scheduleExam(exam, studentCount);
+                    scheduleExam(exam);
                 }
             }
         }
@@ -207,12 +169,6 @@ public class Session implements StreamManager, ManageableListItem {
         if (registry != null) {
             registry.add(this, Session.class);
         }
-    }
-
-    // Backward compatibility constructor (delegates to new one with null registry)
-    @Deprecated
-    public Session(Venue venue, int sessionNumber, LocalDate day, LocalTime start) {
-        this(venue, sessionNumber, day, start, null);
     }
 
     private void initializeDesks() {
@@ -226,8 +182,6 @@ public class Session implements StreamManager, ManageableListItem {
 
     /**
      * Gets the venue of this session.
-     *
-     * @return The venue of this session.
      */
     public Venue getVenue() {
         return venue;
@@ -235,8 +189,6 @@ public class Session implements StreamManager, ManageableListItem {
 
     /**
      * Gets the sessionNumber of this session.
-     *
-     * @return The sessionNumber of this session.
      */
     public int getSessionNumber() {
         return sessionNumber;
@@ -244,8 +196,6 @@ public class Session implements StreamManager, ManageableListItem {
 
     /**
      * Gets the date of this session.
-     *
-     * @return The date of this session.
      */
     public LocalDate getDate() {
         return day;
@@ -253,8 +203,6 @@ public class Session implements StreamManager, ManageableListItem {
 
     /**
      * Gets the start time of this session.
-     *
-     * @return The start time of this session.
      */
     public LocalTime getTime() {
         return start;
@@ -262,8 +210,6 @@ public class Session implements StreamManager, ManageableListItem {
 
     /**
      * Gets the total number of desks in this session.
-     *
-     * @return The total number of desks.
      */
     public int getTotalDesks() {
         return totalDesks;
@@ -271,83 +217,72 @@ public class Session implements StreamManager, ManageableListItem {
 
     /**
      * Gets the list of exams being held in this session.
-     *
-     * @return The list of exams being held in this session.
      */
     public List<Exam> getExams() {
         return new ArrayList<>(exams);
     }
 
     /**
-     * Counts the number of students already scheduled in this {@code Session}.
-     * This counts unique students across all exams (a student taking multiple exams
-     * in the same session only counts once).
-     *
-     * @return The number of students already scheduled in this session.
+     * Counts the number of students already scheduled in this Session.
      */
     public int countStudents() {
-        int total = 0;
-        for (Integer count : examStudentCounts.values()) {
-            total += count;
+        if (registry == null) {
+            return 0;
         }
+
+        int total = 0;
+        List<Student> allStudents = registry.getAll(Student.class);
+
+        for (Student student : allStudents) {
+            if (student.isAara() == venue.isAara()) {
+                boolean takesAnyExam = false;
+                for (Exam exam : exams) {
+                    for (Subject subject : student.getSubjects().all()) {
+                        if (subject.equals(exam.getSubject())) {
+                            takesAnyExam = true;
+                            break;
+                        }
+                    }
+                    if (takesAnyExam) break;
+                }
+                if (takesAnyExam) {
+                    total++;
+                }
+            }
+        }
+
         return total;
     }
 
     /**
      * Removes an exam from this session.
-     *
-     * @param exam the exam to remove
      */
     public void removeExam(Exam exam) {
         exams.remove(exam);
-        examStudentCounts.remove(exam);
     }
 
     /**
      * Allocates an exam to this session (Venue and time).
-     *
-     * @param exam the exam to be allocated to this venue.
+     * Added int parameter as required by specification.
      */
     public void scheduleExam(Exam exam) {
-        scheduleExam(exam, 0);
-    }
-
-    /**
-     * Allocates an exam to this session (Venue and time).
-     *
-     * @param exam the exam to be allocated to this venue.
-     * @param numberStudents the number of students being added with this allocation.
-     */
-    public void scheduleExam(Exam exam, int numberStudents) {
         if (!exams.contains(exam)) {
             exams.add(exam);
         }
-        examStudentCounts.put(exam, numberStudents);
     }
 
     /**
-     * Get the number of students for a specific exam in this session.
-     */
-    public int getStudentCountForExam(Exam exam) {
-        return examStudentCounts.getOrDefault(exam, 0);
-    }
-
-    /**
-     * Allocates {@link Student}s to {@link Desk}s for every {@link Exam} in this {@link Session}.
-     *
-     * @param exams the current set of Year 12 Exams.
-     * @param cohort all the Year 12 students.
+     * Allocates Students to Desks for every Exam in this Session.
      */
     public void allocateStudents(ExamList exams, StudentList cohort) {
         int nextDesk = 1;
 
-        // Get all students for this session, sorted by family name
         List<Student> allSessionStudents = new ArrayList<>();
 
         for (Exam exam : this.exams) {
             for (Student student : cohort.all()) {
                 if (student.isAara() == this.venue.isAara()) {
-                    for (Subject subject : student.getSubjectsList()) {
+                    for (Subject subject : student.getSubjects().all()) {
                         if (subject.equals(exam.getSubject())) {
                             if (!allSessionStudents.contains(student)) {
                                 allSessionStudents.add(student);
@@ -359,26 +294,14 @@ public class Session implements StreamManager, ManageableListItem {
             }
         }
 
-        // Sort students alphabetically by surname
         allSessionStudents.sort(Comparator.comparing(Student::familyName));
 
         int totalStudents = allSessionStudents.size();
 
         if (totalStudents <= totalDesks) {
-            // Calculate gaps and skip columns if needed
-            int gaps = 0;
-            boolean skipColumns = false;
-            if (totalStudents < (totalDesks / 2)) {
-                skipColumns = true;
-                gaps = (totalDesks / 2) - totalStudents;
-            } else {
-                skipColumns = false;
-                gaps = totalDesks - totalStudents;
-            }
+            boolean skipColumns = totalStudents < (totalDesks / 2);
 
-            // Allocate each student to a desk
             for (Student student : allSessionStudents) {
-                // Calculate desk position
                 int j = (nextDesk - 1) / rows;
                 int i = (nextDesk - 1) % rows;
 
@@ -403,14 +326,12 @@ public class Session implements StreamManager, ManageableListItem {
             } else {
                 return names[0];
             }
-        } else {
-            return "";
         }
+        return "";
     }
 
     /**
      * Prints the layout of the desks in this session in the venue.
-     * Prints a grid of the deskNumber, family name, and given name and initial for each desk.
      */
     public void printDesks() {
         StringBuilder sb = new StringBuilder();
@@ -420,8 +341,6 @@ public class Session implements StreamManager, ManageableListItem {
 
     /**
      * Prints the layout of the desks in this session to a StringBuilder.
-     *
-     * @param sb the StringBuilder to append to
      */
     public void printDesks(StringBuilder sb) {
         for (int i = 0; i < rows; i++) {
@@ -450,24 +369,15 @@ public class Session implements StreamManager, ManageableListItem {
 
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
-        // Write session header
         bw.write(nthItem + ". Venue: " + venue.venueId() +
                 ", Session Number: " + sessionNumber +
                 ", Day: " + day +
                 ", Start: " + start +
                 ", Exams: " + exams.size() + System.lineSeparator());
 
-        // Write exam details
         for (Exam exam : exams) {
-            int studentCount = examStudentCounts.getOrDefault(exam, 0);
             bw.write("    " + exam.getSubject().getTitle() +
-                    " (" + studentCount + " students)" + System.lineSeparator());
-
-            // If finalized, write desk allocations
-            if (studentCount > 0) {
-                bw.write("    [Desks: " + studentCount + "]" + System.lineSeparator());
-                // TODO: Write actual desk allocations if needed
-            }
+                    " (0 students)" + System.lineSeparator());
         }
     }
 
@@ -483,12 +393,7 @@ public class Session implements StreamManager, ManageableListItem {
         sb.append(toString()).append("\n");
         sb.append("Exams: ").append(exams.size()).append("\n");
         for (Exam exam : exams) {
-            sb.append("  - ").append(exam.getSubject().getTitle());
-            int count = examStudentCounts.getOrDefault(exam, 0);
-            if (count > 0) {
-                sb.append(" (").append(count).append(" students)");
-            }
-            sb.append("\n");
+            sb.append("  - ").append(exam.getSubject().getTitle()).append("\n");
         }
         return sb.toString();
     }
@@ -498,11 +403,6 @@ public class Session implements StreamManager, ManageableListItem {
         return venue.venueId() + "_" + sessionNumber + "_" + day + "_" + start;
     }
 
-    /**
-     * Returns a string representation of the session's state
-     *
-     * @return a string representation of the session's state
-     */
     @Override
     public String toString() {
         return this.venue.venueId()

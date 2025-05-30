@@ -548,7 +548,7 @@ public class ExamBlockView extends JFrame implements ModelObserver {
             for (Student student : model.getStudents().all()) {
                 // Check if student has this subject
                 boolean hasSubject = false;
-                for (Subject subject : student.getSubjectsList()) {
+                for (Subject subject : student.getSubjects().all()) {
                     if (subject.equals(exam.getSubject())) {
                         hasSubject = true;
                         break;
@@ -565,7 +565,7 @@ public class ExamBlockView extends JFrame implements ModelObserver {
             }
 
             Object[] rowData = {
-                    "INTERNAL",
+                    "✓",
                     exam.getSubject().getTitle(),
                     exam.getDate().toString(),
                     exam.getTime().toString(),
@@ -634,7 +634,7 @@ public class ExamBlockView extends JFrame implements ModelObserver {
             // Build subjects string
             StringBuilder subjects = new StringBuilder();
             boolean first = true;
-            for (Subject subject : student.getSubjectsList()) {
+            for (Subject subject : student.getSubjects().all()) {
                 if (!first) subjects.append(", ");
                 subjects.append(subject.getTitle());
                 first = false;
@@ -718,7 +718,7 @@ public class ExamBlockView extends JFrame implements ModelObserver {
                     // Count students taking this exam in this venue type
                     for (Student student : model.getStudents().all()) {
                         if (student.isAara() == session.getVenue().isAara()) {
-                            for (Subject subject : student.getSubjectsList()) {
+                            for (Subject subject : student.getSubjects().all()) {
                                 if (subject.equals(exam.getSubject())) {
                                     studentCount++;
                                     break;
@@ -747,7 +747,7 @@ public class ExamBlockView extends JFrame implements ModelObserver {
                     int studentCount = 0;
                     for (Student student : model.getStudents().all()) {
                         if (student.isAara() == session.getVenue().isAara()) {
-                            for (Subject subject : student.getSubjectsList()) {
+                            for (Subject subject : student.getSubjects().all()) {
                                 if (subject.equals(exam.getSubject())) {
                                     studentCount++;
                                     break;

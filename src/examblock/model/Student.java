@@ -11,56 +11,59 @@ import java.util.List;
 
 /**
  * An object describing a single Year 12 Student.
- * Updated to implement StreamManager and ManageableListItem interfaces.
  */
 public class Student implements StreamManager, ManageableListItem {
 
-    /** The Student's 10-digit Learner Unique Identifier (LUI). */
+    /**
+     * The Student's 10-digit Learner Unique Identifier (LUI).
+     */
     private Long lui;
-    /** The Student's given name(s). */
+    /**
+     * The Student's given name(s).
+     */
     private String given;
-    /** The Student's family name. */
+    /**
+     * The Student's family name.
+     */
     private String family;
-    /** The Student's date of birth. */
+    /**
+     * The Student's date of birth.
+     */
     private LocalDate dob;
-    /** The Student's house colour. */
+    /**
+     * The Student's house colour.
+     */
     private String house;
-    /** The Student requires Access Arrangements and Reasonable Adjustments (AARA). */
+    /**
+     * The Student requires Access Arrangements and Reasonable Adjustments (AARA).
+     */
     private Boolean aara;
-    /** The list of the Student's subjects. */
+    /**
+     * The list of the Student's subjects.
+     */
     private final List<Subject> subjects;
-    /** The list of the Student's current units. */
+    /**
+     * The list of the Student's current units.
+     */
     private final List<Unit> units;
-    /** The list of the Student's exams for the current exam block. */
+    /**
+     * The list of the Student's exams for the current exam block.
+     */
     private final List<Exam> exams;
-    /** The registry for dependencies. */
+    /**
+     * The registry for dependencies.
+     */
     private Registry registry;
 
     /**
-     * Default constructor for factory use.
-     */
-    public Student() {
-        this.lui = 0L;
-        this.given = "";
-        this.family = "";
-        this.dob = LocalDate.now();
-        this.house = "";
-        this.aara = false;
-        this.subjects = new ArrayList<>();
-        this.units = new ArrayList<>();
-        this.exams = new ArrayList<>();
-        this.registry = null;
-    }
-
-    /**
-     * Constructs a Student with parameters as per specification.
-     * Order: lui, givenNames, familyName, day, month, year, house, aara, registry
+     * Constructs a Student with parameters.
+     * Parameter order: lui, givenNames, familyName, day, month, year, house, aara, registry
      */
     public Student(Long lui, String givenNames, String familyName, int day, int month, int year,
-                   String house, Boolean aara, Registry registry) {
+                   String house, Boolean aara, Registry registry){
         this.lui = lui;
-        this.given = cleanName(givenNames);
-        this.family = cleanName(familyName);
+        this.given = sanitiseName(givenNames);
+        this.family = sanitiseName(familyName);
         this.dob = LocalDate.of(year, month, day);
         this.house = house;
         this.aara = aara;
@@ -74,20 +77,17 @@ public class Student implements StreamManager, ManageableListItem {
         }
     }
 
-    public void addUnit(Unit unit) {
-        if (!units.contains(unit)) {
-            units.add(unit);
-        }
-    }
-    
+    /**
+     * Constructs a Student without AARA parameter.
+     */
     public Student(Long lui, String givenNames, String familyName, int day, int month, int year,
-                   String house, Registry registry) {
+                   String house, Registry registry){
         this(lui, givenNames, familyName, day, month, year, house, false, registry);
     }
 
     /**
      * Constructs a Student by reading from a stream.
-     * As per specification
+     * Fixed parameter order and exceptions as per specification.
      */
     public Student(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
@@ -108,9 +108,10 @@ public class Student implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Cleans a name by removing extra spaces and formatting correctly.
+     * Sanitizes a name by removing numbers and invalid characters.
+     * Required static method as per specification.
      */
-    private String cleanName(String rawName) {
+    public String sanitiseName(String rawName) {
         if (rawName == null) {
             return "";
         }
@@ -150,7 +151,7 @@ public class Student implements StreamManager, ManageableListItem {
         // The name is in uppercase in the header
         String fullNameUpper = headerParts[1].trim();
 
-        // Read the details line: "LUI: 9999365663, Family Name: Smith, Given Name(s): Liam Alexander, Date of Birth: 2007-12-08, House: Blue, AARA: false"
+        // Read the details line
         String detailsLine = CSSE7023.getLine(br);
         if (detailsLine == null) {
             throw new RuntimeException("EOF reading Student #" + nthItem + " details");
@@ -181,10 +182,10 @@ public class Student implements StreamManager, ManageableListItem {
                         }
                         break;
                     case "Family Name":
-                        family = value;
+                        family = sanitiseName(value);
                         break;
                     case "Given Name(s)":
-                        given = value;
+                        given = sanitiseName(value);
                         break;
                     case "Date of Birth":
                         try {
@@ -224,7 +225,7 @@ public class Student implements StreamManager, ManageableListItem {
             }
         }
 
-        // Read subjects line: "Subjects: Essential English, Essential Mathematics, Ancient History, Industrial Technology Skills, Trade Course, Another Trade Course"
+        // Read subjects line
         String subjectsLine = CSSE7023.getLine(br);
         if (subjectsLine != null && subjectsLine.startsWith("Subjects:")) {
             String subjectsList = subjectsLine.substring("Subjects:".length()).trim();
@@ -235,7 +236,6 @@ public class Student implements StreamManager, ManageableListItem {
                     if (!trimmedName.isEmpty()) {
                         Subject subject = registry.find(trimmedName, Subject.class);
                         if (subject != null) {
-                            // Directly add to the student's subject list
                             subjects.add(subject);
                         } else if (Verbose.isVerbose()) {
                             System.out.println("Warning: Subject not found for student #" + nthItem + ": " + trimmedName);
@@ -276,7 +276,6 @@ public class Student implements StreamManager, ManageableListItem {
     @Override
     public void streamIn(BufferedReader br, Registry registry, int nthItem)
             throws IOException, RuntimeException {
-        // This method is implemented in the constructor
         throw new UnsupportedOperationException("Use constructor instead");
     }
 
@@ -286,13 +285,13 @@ public class Student implements StreamManager, ManageableListItem {
 
     public void setGiven(String givenNames) {
         if (givenNames != null && givenNames.length() > 0) {
-            given = cleanName(givenNames);
+            given = sanitiseName(givenNames);
         }
     }
 
     public void setFamily(String familyName) {
         if (familyName != null && familyName.length() > 0) {
-            family = cleanName(familyName);
+            family = sanitiseName(familyName);
         }
     }
 
@@ -341,14 +340,11 @@ public class Student implements StreamManager, ManageableListItem {
 
     /**
      * Gets a wrapper for the student's subjects list.
-     * NOTE: This method is deprecated and should not be used.
-     * Use getSubjectsList() instead.
+     * Note: This method is deprecated and should not be used.
+     * Use direct access to subjects list instead.
      */
-    @Deprecated
     public SubjectList getSubjects() {
-        // Create a dummy SubjectList that doesn't use the registry
-        // This is a workaround for compatibility
-        return new SubjectList() {
+        return new SubjectList(registry) {
             @Override
             public ArrayList<Subject> all() {
                 return new ArrayList<>(subjects);
@@ -368,14 +364,12 @@ public class Student implements StreamManager, ManageableListItem {
 
     /**
      * Gets a wrapper for the student's exams list.
-     * NOTE: This method is deprecated and should not be used.
-     * Use getExamsList() instead.
+     * Note: This method is deprecated and should not be used.
+     * Use direct access to exams list instead.
      */
     @Deprecated
     public ExamList getExams() {
-        // Create a dummy ExamList that doesn't use the registry
-        // This is a workaround for compatibility
-        return new ExamList() {
+        return new ExamList(registry) {
             @Override
             public ArrayList<Exam> all() {
                 return new ArrayList<>(exams);
@@ -409,27 +403,10 @@ public class Student implements StreamManager, ManageableListItem {
         }
     }
 
-    /**
-     * Clears the exams list.
-     */
-    public void clearExams() {
-        exams.clear();
-    }
-
-    /**
-     * Gets the actual subjects list.
-     * This is the preferred method to use.
-     */
-    public List<Subject> getSubjectsList() {
-        return new ArrayList<>(subjects);
-    }
-
-    /**
-     * Gets the actual exams list.
-     * This is the preferred method to use.
-     */
-    public List<Exam> getExamsList() {
-        return new ArrayList<>(exams);
+    public void addUnit(Unit unit) {
+        if (!units.contains(unit)) {
+            units.add(unit);
+        }
     }
 
     @Override

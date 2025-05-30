@@ -32,20 +32,6 @@ public class Venue extends Room {
     private Registry venueRegistry;
 
     /**
-     * Default constructor for factory use.
-     */
-    public Venue() {
-        super("", null); // Don't register the venue as a room
-        this.roomCount = 0;
-        this.roomIds = new ArrayList<>();
-        this.rows = 0;
-        this.columns = 0;
-        this.totalDesks = 0;
-        this.aara = false;
-        this.venueRegistry = null;
-    }
-
-    /**
      * Constructs a new {@code Venue} object, consisting of one or more {@link Room}s.
      * As per specification - Registry is last parameter
      *
@@ -58,9 +44,8 @@ public class Venue extends Room {
      * @param aara whether this is an AARA venue
      * @param registry the registry
      */
-    public Venue(String id, int roomCount, RoomList rooms,
-                 int rows, int columns, int totalDesks, boolean aara, Registry registry) 
-        throws IOException, RuntimeException {
+    public Venue(RoomList rooms,boolean aara,  Registry registry, String id, int roomCount,
+                 int rows, int columns, int totalDesks) {
         super(id, null); // Don't register the venue as a room
         this.roomCount = roomCount;
         this.roomIds = new ArrayList<>();

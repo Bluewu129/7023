@@ -41,7 +41,7 @@ public class ExamBlockModel {
         this.students = new StudentList(registry);
         this.rooms = new RoomList(registry);
         this.venues = new VenueList(registry);
-        this.sessions = new SessionList();
+        this.sessions = new SessionList(registry);
         this.observers = new ArrayList<>();
     }
 
@@ -195,124 +195,113 @@ public class ExamBlockModel {
         }
     }
 
+
     /**
-     * Loads data from a file - simple version.
+     * Loads data from a file with registry parameter.
+     * Fixed return type to boolean and parameter order
      *
+     * @param registry the registry (uses own registry)
      * @return true if successful, false otherwise
      */
-    public void loadFromFile() {
+    public void loadFromFile(Registry registry, String filename) {
         if (filename != null && !filename.isEmpty()) {
-            loadFromFile(filename);
+            this.filename = filename;
+            loadFromFile();
         }
     }
 
     /**
-     * Loads data from a file with registry parameter.
-     *
-     * @param registry the registry (ignored, uses own registry)
-     * @return true if successful, false otherwise
+     * Loads data from a file - simple version.
+     * Fixed return type to void as per specification
      */
-    public void loadFromFile(Registry registry) {
-        loadFromFile();
-    }
+    public void loadFromFile() {
+        if (filename != null && !filename.isEmpty()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+                // Clear existing data
+                registry.clear();
+                subjects = new SubjectList(registry);
+                units = new UnitList(registry);
+                exams = new ExamList(registry);
+                students = new StudentList(registry);
+                rooms = new RoomList(registry);
+                venues = new VenueList(registry);
+                sessions = new SessionList(registry);
 
-    /**
-     * Loads data from a file.
-     *
-     * @param filename the file to load from
-     * @return true if successful, false otherwise
-     */
-    public boolean loadFromFile(String filename) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            // Clear existing data
-            registry.clear();
-            subjects = new SubjectList(registry);
-            units = new UnitList(registry);
-            exams = new ExamList(registry);
-            students = new StudentList(registry);
-            rooms = new RoomList(registry);
-            venues = new VenueList(registry);
-            sessions = new SessionList();
-
-            // Read header information
-            String line = CSSE7023.getLine(br);
-            if (line != null && line.startsWith("Title:")) {
-                String[] headerParts = CSSE7023.keyValuePair(line);
-                if (headerParts != null) {
-                    title = headerParts[1];
-                }
-            }
-
-            line = CSSE7023.getLine(br);
-            if (line != null && line.startsWith("Version:")) {
-                String[] versionParts = CSSE7023.keyValuePair(line);
-                if (versionParts != null) {
-                    version = CSSE7023.toDouble(versionParts[1], "Invalid version format");
-                }
-            }
-
-            // Skip the [Begin] marker
-            line = CSSE7023.getLine(br);
-            if (line == null || !line.equals("[Begin]")) {
-                throw new RuntimeException("Expected [Begin] marker but found: " + line);
-            }
-
-            // Load each section
-            while ((line = CSSE7023.getLine(br, true)) != null) {
-                if (line.equals("[End]")) {
-                    // Read the actual line to consume it
-                    CSSE7023.getLine(br);
-                    break;
+                // Read header information
+                String line = CSSE7023.getLine(br);
+                if (line != null && line.startsWith("Title:")) {
+                    String[] headerParts = CSSE7023.keyValuePair(line);
+                    if (headerParts != null) {
+                        title = headerParts[1];
+                    }
                 }
 
-                if (line.startsWith("[Subjects:")) {
-                    subjects.streamIn(br, registry, 1);
-                } else if (line.startsWith("[Units:")) {
-                    units.streamIn(br, registry, 1);
-                } else if (line.startsWith("[Students:")) {
-                    students.streamIn(br, registry, 1);
-                } else if (line.startsWith("[Exams:")) {
-                    exams.streamIn(br, registry, 1);
-                } else if (line.startsWith("[Rooms:")) {
-                    rooms.streamIn(br, registry, 1);
-                } else if (line.startsWith("[Venues:")) {
-                    // Important: Venues must be loaded AFTER Rooms
-                    venues.streamIn(br, registry, 1);
-                } else if (line.startsWith("[Sessions:")) {
-                    // Sessions need special handling
-                    loadSessions(br);
-                } else {
-                    // Unknown section, skip the line
-                    CSSE7023.getLine(br);
+                line = CSSE7023.getLine(br);
+                if (line != null && line.startsWith("Version:")) {
+                    String[] versionParts = CSSE7023.keyValuePair(line);
+                    if (versionParts != null) {
+                        version = CSSE7023.toDouble(versionParts[1], "Invalid version format");
+                    }
+                }
+
+                // Skip the [Begin] marker
+                line = CSSE7023.getLine(br);
+                if (line == null || !line.equals("[Begin]")) {
+                    throw new RuntimeException("Expected [Begin] marker but found: " + line);
+                }
+
+                // Load each section
+                while ((line = CSSE7023.getLine(br, true)) != null) {
+                    if (line.equals("[End]")) {
+                        // Read the actual line to consume it
+                        CSSE7023.getLine(br);
+                        break;
+                    }
+
+                    if (line.startsWith("[Subjects:")) {
+                        subjects.streamIn(br, registry, 1);
+                    } else if (line.startsWith("[Units:")) {
+                        units.streamIn(br, registry, 1);
+                    } else if (line.startsWith("[Students:")) {
+                        students.streamIn(br, registry, 1);
+                    } else if (line.startsWith("[Exams:")) {
+                        exams.streamIn(br, registry, 1);
+                    } else if (line.startsWith("[Rooms:")) {
+                        rooms.streamIn(br, registry, 1);
+                    } else if (line.startsWith("[Venues:")) {
+                        // Important: Venues must be loaded AFTER Rooms
+                        venues.streamIn(br, registry, 1);
+                    } else if (line.startsWith("[Sessions:")) {
+                        // Sessions need special handling
+                        loadSessions(br);
+                    } else {
+                        // Unknown section, skip the line
+                        CSSE7023.getLine(br);
+                    }
+                }
+
+                // Set the filename for future saves
+                this.filename = filename;
+
+                if (Verbose.isVerbose()) {
+                    System.out.println("File loaded successfully!");
+                    System.out.println("Loaded " + subjects.size() + " subjects");
+                    System.out.println("Loaded " + units.size() + " units");
+                    System.out.println("Loaded " + students.size() + " students");
+                    System.out.println("Loaded " + exams.size() + " exams");
+                    System.out.println("Loaded " + rooms.size() + " rooms");
+                    System.out.println("Loaded " + venues.size() + " venues");
+                    System.out.println("Loaded " + sessions.all().size() + " sessions");
+                }
+
+                notifyObservers("loaded");
+
+            } catch (IOException | RuntimeException e) {
+                if (Verbose.isVerbose()) {
+                    System.err.println("Error loading file: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
-
-            // After loading, we need to establish relationships
-            establishRelationships();
-
-            // Set the filename for future saves
-            this.filename = filename;
-
-            if (Verbose.isVerbose()) {
-                System.out.println("File loaded successfully!");
-                System.out.println("Loaded " + subjects.size() + " subjects");
-                System.out.println("Loaded " + units.size() + " units");
-                System.out.println("Loaded " + students.size() + " students");
-                System.out.println("Loaded " + exams.size() + " exams");
-                System.out.println("Loaded " + rooms.size() + " rooms");
-                System.out.println("Loaded " + venues.size() + " venues");
-                System.out.println("Loaded " + sessions.all().size() + " sessions");
-            }
-
-            notifyObservers("loaded");
-            return true;
-
-        } catch (IOException | RuntimeException e) {
-            if (Verbose.isVerbose()) {
-                System.err.println("Error loading file: " + e.getMessage());
-                e.printStackTrace();
-            }
-            return false;
         }
     }
 
@@ -400,7 +389,6 @@ public class ExamBlockModel {
 
                     // Extract student count from the exam line
                     // Format: "Subject Name (N students)"
-                    int studentCount = 0;
                     String examTitle = examLine;
 
                     int startParen = examLine.lastIndexOf('(');
@@ -409,16 +397,6 @@ public class ExamBlockModel {
                     if (startParen > 0 && endParen > startParen) {
                         // Extract the title without the student count
                         examTitle = examLine.substring(0, startParen).trim();
-
-                        String countStr = examLine.substring(startParen + 1, endParen);
-                        countStr = countStr.replace("students", "").replace("student", "").trim();
-                        try {
-                            studentCount = Integer.parseInt(countStr);
-                        } catch (NumberFormatException e) {
-                            if (Verbose.isVerbose()) {
-                                System.out.println("Could not parse student count from: " + countStr);
-                            }
-                        }
                     }
 
                     // Find the exam by matching the subject title
@@ -462,7 +440,7 @@ public class ExamBlockModel {
                             }
                         }
 
-                        session.scheduleExam(exam, studentCount);
+                        session.scheduleExam(exam);
                     } else if (Verbose.isVerbose()) {
                         System.out.println("Warning: Exam not found for title: " + examTitle);
                     }
@@ -474,34 +452,6 @@ public class ExamBlockModel {
 
         if (Verbose.isVerbose()) {
             System.out.println("Successfully loaded " + sessions.all().size() + " sessions");
-        }
-    }
-
-    /**
-     * Establishes relationships between loaded entities.
-     * For example, linking students to their subjects and exams.
-     */
-    private void establishRelationships() {
-        // Link students to their exams based on subjects
-        for (Student student : students.all()) {
-            // Clear any existing exams
-            student.clearExams();
-
-            // For each subject the student is enrolled in
-            for (Subject subject : student.getSubjectsList()) {
-                // Find all exams for this subject
-                for (Exam exam : exams.all()) {
-                    if (exam.getSubject().equals(subject)) {
-                        // Add this exam to the student's exam list
-                        student.addExam(exam);
-                    }
-                }
-            }
-        }
-
-        if (Verbose.isVerbose()) {
-            System.out.println("Established relationships between entities");
-            System.out.println("Linked students to their exams based on enrolled subjects");
         }
     }
 

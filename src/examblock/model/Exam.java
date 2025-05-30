@@ -62,20 +62,6 @@ public class Exam implements StreamManager, ManageableListItem {
     private Registry registry;
 
     /**
-     * Default constructor for factory use.
-     */
-    public Exam() {
-        this.subject = null;
-        this.examType = ExamType.EXTERNAL;
-        this.paper = '\0';
-        this.subtitle = "";
-        this.unit = '\0';
-        this.examDate = LocalDate.now();
-        this.examTime = LocalTime.now();
-        this.registry = null;
-    }
-
-    /**
      * Constructs an {@code Exam} with the subject and exam type specified.
      * As per specification - Registry is last parameter
      *
@@ -125,6 +111,34 @@ public class Exam implements StreamManager, ManageableListItem {
         this.paper = '\0';
         this.subtitle = "";
         this.unit = unit;
+        this.examDate = LocalDate.of(year, month, day);
+        this.examTime = LocalTime.of(hour, minute);
+        this.registry = registry;
+
+        if (registry != null) {
+            registry.add(this, Exam.class);
+        }
+    }
+
+    /**
+     * Constructs an {@code Exam} with unit specified.
+     * As per specification - Registry is last parameter
+     *
+     * @param subject  the subject of the exam
+     * @param examType the type of the exam (INTERNAL or EXTERNAL)
+     * @param day      the day of the exam
+     * @param month    the month of the exam
+     * @param year     the year of the exam
+     * @param hour     the starting hour of the exam
+     * @param minute   the starting minute of the exam
+     * @param registry the registry to add this exam to
+     */
+    public Exam(Registry registry ,ExamType examType, Subject subject,
+                int day, int month, int year, int hour, int minute ) {
+        this.subject = subject;
+        this.examType = examType;
+        this.paper = '\0';
+        this.subtitle = "";
         this.examDate = LocalDate.of(year, month, day);
         this.examTime = LocalTime.of(hour, minute);
         this.registry = registry;

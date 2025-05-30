@@ -1,7 +1,5 @@
 package examblock.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -11,31 +9,10 @@ import java.util.Optional;
 public class UnitList extends ListManager<Unit> {
 
     /**
-     * Constructs an empty list of {@link Unit}s.
-     */
-    public UnitList() {
-        super(Unit::new, new RegistryImpl(), Unit.class);
-    }
-
-    /**
      * Constructs a UnitList with a specific registry.
      */
     public UnitList(Registry registry) {
         super(Unit::new, registry, Unit.class);
-    }
-
-    /**
-     * Adds a {@link Unit} to this list of {@link Unit}s.
-     */
-    public void addUnit(Unit unit) {
-        add(unit);
-    }
-
-    /**
-     * Removes a given {@link Unit} from the {@code UnitList}.
-     */
-    public void removeUnit(Unit unit) {
-        remove(unit);
     }
 
     /**
@@ -75,14 +52,6 @@ public class UnitList extends ListManager<Unit> {
             return unit;
         }
         throw new IllegalStateException("Item with ID " + key + " not found for type Unit");
-    }
-
-    /**
-     * Creates a new {@code List} holding {@code references} to all the {@link Unit}s
-     * managed by the {@code UnitList} and returns it.
-     */
-    public List<Unit> getAllUnits() {
-        return super.all();
     }
 
     /**

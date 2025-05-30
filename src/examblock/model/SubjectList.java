@@ -1,7 +1,8 @@
 package examblock.model;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -11,37 +12,18 @@ import java.util.Optional;
 public class SubjectList extends ListManager<Subject> {
 
     /**
-     * Constructs an empty list of {@link Subject}s.
-     */
-    public SubjectList() {
-        super(Subject::new, new RegistryImpl(), Subject.class);
-    }
-
-    /**
      * Constructs a SubjectList with a specific registry.
      *
      * @param registry the registry to use
      */
     public SubjectList(Registry registry) {
-        super(Subject::new, registry, Subject.class);
+        super(new SubjectFactory(), registry, Subject.class);
     }
-
-    /**
-     * Adds a {@link Subject} to this list of {@link Subject}s.
-     *
-     * @param subject - the subject object being added to this list.
-     */
-    public void addSubject(Subject subject) {
-        add(subject);
-    }
-
-    /**
-     * Removes a given {@link Subject} from the {@code SubjectList}.
-     *
-     * @param subject - the subject to remove from this list.
-     */
-    public void removeSubject(Subject subject) {
-        remove(subject);
+    
+    private static class SubjectFactory implements ItemFactory<Subject> {
+        public Subject createItem(BufferedReader br, Registry registry, int index) throws IOException {
+            return new Subject(registry, br, index);
+        }
     }
 
     /**

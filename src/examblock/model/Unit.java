@@ -25,17 +25,6 @@ public class Unit implements StreamManager, ManageableListItem {
     private Registry registry;
 
     /**
-     * Default constructor for factory use.
-     */
-    public Unit() {
-        this.subject = null;
-        this.unitId = '1';
-        this.title = "";
-        this.description = "";
-        this.registry = null;
-    }
-
-    /**
      * Constructs a Unit with specific parameters.
      * As per specification
      */

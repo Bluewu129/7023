@@ -9,20 +9,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A collection object for holding and managing {@link Session}s.
+ * A collection object for holding and managing Sessions.
  */
 public class SessionList implements StreamManager {
 
-    /** This instance's list of sessions. */
+    /**
+     * This instance's list of sessions.
+     */
     private final List<Session> sessions;
-    /** The registry for dependencies. */
+    /**
+     * The registry for dependencies.
+     */
     private final Registry registry;
 
     /**
-     * Constructs a new empty SessionList.
-     * As per specification - requires Registry parameter
-     *
-     * @param registry the registry for dependencies
+     * Constructs a new SessionList.
+     * Constructor requires Registry parameter as per specification.
      */
     public SessionList(Registry registry) {
         this.sessions = new ArrayList<>();
@@ -30,40 +32,98 @@ public class SessionList implements StreamManager {
     }
 
     /**
-     * Constructs a new empty SessionList without registry.
-     * For backward compatibility
+     * Add the given Session to this SessionList for it to manage.
+     * Method signature matches ListManager.add specification.
      */
-    @Deprecated
-    public SessionList() {
-        this(null);
+    public void add(ManageableListItem session) {
+        if (session instanceof Session) {
+            sessions.add((Session) session);
+        }
     }
 
     /**
-     * Add the given {@link Session} to this {@code SessionList} for it to manage.
-     *
-     * @param session the given {@link Session} for this {@code SessionList} to manage.
+     * Remove the given Session from this SessionList.
+     * Method signature matches ListManager.remove specification.
      */
-    public void add(Session session) {
-        sessions.add(session);
+    public void remove(ManageableListItem session) {
+        if (session instanceof Session) {
+            sessions.remove((Session) session);
+        }
     }
 
     /**
-     * Remove the given {@link Session} from this {@code SessionList}.
-     *
-     * @param session the given {@link Session} from this {@code SessionList}.
+     * Creates a new List holding references to all the Sessions
+     * in this SessionList.
+     * Return type matches ListManager.all specification.
      */
-    public void remove(Session session) {
-        sessions.remove(session);
+    public ArrayList<Session> all() {
+        return new ArrayList<>(sessions);
     }
 
     /**
-     * Find the sessionNumber of a session at a particular time in a given {@link Venue}.
+     * Returns the number of items in the list.
+     * Required method as per specification.
+     */
+    public int size() {
+        return sessions.size();
+    }
+
+    /**
+     * Removes all items from the list.
+     * Required method as per specification.
+     */
+    public void clear() {
+        sessions.clear();
+    }
+
+    /**
+     * Replaces the contents of this list with the provided items.
+     * Required method as per specification.
+     */
+    public void addAll(ArrayList<Session> source) {
+        sessions.clear();
+        if (source != null) {
+            sessions.addAll(source);
+        }
+    }
+
+    /**
+     * Returns a copy of the ordered list of all items.
+     * Required method as per specification.
+     */
+    public List<Session> getItems() {
+        return new ArrayList<>(sessions);
+    }
+
+    /**
+     * Find a session by its ID.
+     * Method signature matches specification: ManageableListItem return type, no exceptions.
+     */
+    public Session find(String key) throws IllegalStateException {
+        for (Session session : sessions) {
+            if (session.getId().equals(key)) {
+                return session;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get a session by its ID.
+     * Method signature matches specification: ManageableListItem return type, no exceptions.
+     */
+    public Session get(String key) {
+        for (Session session : sessions) {
+            if (session.getId().equals(key)) {
+                return session;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find the sessionNumber of a session at a particular time in a given Venue.
      * Return zero if no session exists at that time.
-     *
-     * @param venue the venue to check
-     * @param day the day to check
-     * @param start the start time to check
-     * @return the session number or 0 if not found
      */
     public int getSessionNumber(Venue venue, LocalDate day, LocalTime start) {
         for (Session session : sessions) {
@@ -76,12 +136,8 @@ public class SessionList implements StreamManager {
     }
 
     /**
-     * Get the {@link Session} with a matching {@link Venue} and {@code sessionNumber}.
-     *
-     * @param venue the venue
-     * @param sessionNumber the session number
-     * @return the matching session
-     * @throws IllegalStateException if no such session exists
+     * Get the Session with a matching Venue and sessionNumber.
+     * Fixed to throw IllegalStateException as required.
      */
     public Session getSession(Venue venue, int sessionNumber) throws IllegalStateException {
         for (Session session : sessions) {
@@ -94,12 +150,8 @@ public class SessionList implements StreamManager {
     }
 
     /**
-     * Get the {@link Session} with a matching {@link Venue} and {@link Exam} scheduled.
-     *
-     * @param venue the venue
-     * @param exam the exam
-     * @return the matching session
-     * @throws IllegalStateException if no such session exists
+     * Get the Session with a matching Venue and Exam scheduled.
+     * Fixed to throw IllegalStateException as required.
      */
     public Session getSession(Venue venue, Exam exam) throws IllegalStateException {
         for (Session session : sessions) {
@@ -116,17 +168,12 @@ public class SessionList implements StreamManager {
     /**
      * Gets the existing number of students already allocated to a session.
      * This method is needed by SessionHandler.
-     *
-     * @param venue the venue
-     * @param exam the exam
-     * @return the number of existing students
      */
     public int getExistingSessionTotal(Venue venue, Exam exam) {
         try {
             Session session = getSession(venue, exam);
             return session.countStudents();
         } catch (IllegalStateException e) {
-            // No session exists yet, check by date/time
             LocalDate day = exam.getDate();
             LocalTime start = exam.getTime();
 
@@ -143,11 +190,6 @@ public class SessionList implements StreamManager {
 
     /**
      * Find or create this session and work out how many students in total.
-     *
-     * @param venue the venue
-     * @param exam the exam
-     * @param numberStudents the number of students to add
-     * @return the total number of students after adding
      */
     public int getSessionNewTotal(Venue venue, Exam exam, int numberStudents) {
         LocalDate day = exam.getDate();
@@ -162,7 +204,6 @@ public class SessionList implements StreamManager {
             sessions.add(session);
         }
 
-        // Get the session (newly created or existing)
         sessionNumber = this.getSessionNumber(venue, day, start);
         session = this.getSession(venue, sessionNumber);
 
@@ -179,9 +220,6 @@ public class SessionList implements StreamManager {
 
     /**
      * Helper method to get the next available session number for a venue.
-     *
-     * @param venue the venue
-     * @return the next available session number
      */
     private int getNextSessionNumber(Venue venue) {
         int nextSessionNumber = 1;
@@ -196,9 +234,6 @@ public class SessionList implements StreamManager {
 
     /**
      * Allocates an exam to an existing session (Venue and time).
-     *
-     * @param venue the venue
-     * @param exam the exam to schedule
      */
     public void scheduleExam(Venue venue, Exam exam) {
         LocalDate day = exam.getDate();
@@ -206,32 +241,25 @@ public class SessionList implements StreamManager {
         int sessionNumber = this.getSessionNumber(venue, day, start);
 
         if (sessionNumber == 0) {
-            // Create new session if none exists
             Session newSession = new Session(venue, getNextSessionNumber(venue), day, start, registry);
             sessions.add(newSession);
             sessionNumber = newSession.getSessionNumber();
         }
 
         Session session = this.getSession(venue, sessionNumber);
-        // Use a default student count since we don't have access to the full student list here
-        int studentCount = session.getStudentCountForExam(exam);
-        session.scheduleExam(exam, studentCount);
+        session.scheduleExam(exam);
 
         System.out.println(exam.getSubject().getTitle() + " exam added to " + venue.venueId() + ".");
     }
 
     /**
      * Removes an exam from a session.
-     *
-     * @param venue the venue
-     * @param exam the exam to remove
      */
     public void removeExam(Venue venue, Exam exam) {
         try {
             Session session = getSession(venue, exam);
             session.removeExam(exam);
 
-            // If session now has no exams, remove it
             if (session.getExams().isEmpty()) {
                 sessions.remove(session);
             }
@@ -241,11 +269,8 @@ public class SessionList implements StreamManager {
     }
 
     /**
-     * Creates a new list holding {@code references} to those {@link Session}s
-     * for a given {@link Venue} in this {@code SessionList}.
-     *
-     * @param venue the venue to filter by
-     * @return list of sessions for the venue
+     * Creates a new list holding references to those Sessions
+     * for a given Venue in this SessionList.
      */
     public List<Session> forVenue(Venue venue) {
         List<Session> sessionList = new ArrayList<>();
@@ -258,49 +283,7 @@ public class SessionList implements StreamManager {
     }
 
     /**
-     * Creates a new list holding {@code references} to all the {@link Session}s
-     * in this {@code SessionList}.
-     *
-     * @return all sessions
-     */
-    public List<Session> all() {
-        return new ArrayList<>(sessions);
-    }
-
-    /**
-     * Find a session by its ID.
-     *
-     * @param key the session ID
-     * @return the session or null if not found
-     */
-    public Session find(String key) {
-        for (Session session : sessions) {
-            if (session.getId().equals(key)) {
-                return session;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get a session by its ID.
-     *
-     * @param key the session ID
-     * @return the session
-     * @throws IllegalStateException if not found
-     */
-    public Session get(String key) throws IllegalStateException {
-        Session session = find(key);
-        if (session == null) {
-            throw new IllegalStateException("Session not found: " + key);
-        }
-        return session;
-    }
-
-    /**
      * Get detailed information about all sessions.
-     *
-     * @return detailed string representation
      */
     public String getFullDetail() {
         StringBuilder sb = new StringBuilder();
@@ -330,27 +313,12 @@ public class SessionList implements StreamManager {
             throw new RuntimeException("Expected [Sessions: N] but got: " + line);
         }
 
-        // Parse session count
         String[] parts = line.substring(1, line.length() - 1).split(": ");
         int sessionCount = Integer.parseInt(parts[1]);
 
-        // Read each session
         for (int i = 1; i <= sessionCount; i++) {
             Session session = new Session(br, registry, i);
             sessions.add(session);
         }
-    }
-
-    /**
-     * Simple toString for debugging.
-     */
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SessionList with ").append(sessions.size()).append(" sessions:\n");
-        for (Session session : sessions) {
-            sb.append("  ").append(session.toString()).append("\n");
-        }
-        return sb.toString();
     }
 }

@@ -95,26 +95,18 @@ public class ExamBlockController implements ActionListener, ModelObserver {
             ExamBlockModel newModel = new ExamBlockModel();
 
             // Use the updated loadFromFile method
-            if (newModel.loadFromFile(selectedFile.getAbsolutePath())) {
-                // Successfully loaded, replace the model
-                if (model != null) {
-                    // Note: removeObserver method was removed from specification
-                    // model.removeObserver(this);
-                }
-                model = newModel;
-                model.addObserver(this);
-                view.updateView();
+            newModel.loadFromFile(null, selectedFile.getAbsolutePath());
+            // Successfully loaded, replace the model
+            model = newModel;
+            model.addObserver(this);
+            view.updateView();
 
-                // Update window title with loaded file info
-                String title = "Exam Block Manager - " + model.getTitle() + " (v" + model.getVersion() + ")";
-                view.setTitle(title);
+            // Update window title with loaded file info
+            String title = "Exam Block Manager - " + model.getTitle() + " (v" + model.getVersion() + ")";
+            view.setTitle(title);
 
-                if (Verbose.isVerbose()) {
-                    DialogUtils.showMessage("File loaded successfully: " + selectedFile.getName());
-                }
-            } else {
-                // Load failed, keep existing model
-                DialogUtils.showMessage("Failed to load file: " + selectedFile.getName());
+            if (Verbose.isVerbose()) {
+                DialogUtils.showMessage("File loaded successfully: " + selectedFile.getName());
             }
         } else if (result == JFileChooser.CANCEL_OPTION) {
             // User cancelled - if no data loaded, disable most UI elements
@@ -265,7 +257,7 @@ public class ExamBlockController implements ActionListener, ModelObserver {
         for (Student student : model.getStudents().all()) {
             // Check if student takes this subject
             boolean takesSubject = false;
-            for (Subject subject : student.getSubjectsList()) {
+            for (Subject subject : student.getSubjects().all()) {
                 if (subject.equals(selectedExam.getSubject())) {
                     takesSubject = true;
                     break;
