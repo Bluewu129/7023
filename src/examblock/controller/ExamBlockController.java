@@ -1,22 +1,23 @@
 package examblock.controller;
 
+import examblock.given.SessionHandler;
 import examblock.model.*;
 import examblock.view.ExamBlockView;
-import examblock.view.components.*;
-import examblock.given.SessionHandler;
+import examblock.view.components.DialogUtils;
+import examblock.view.components.FileChooser;
+import examblock.view.components.Verbose;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import examblock.view.components.Verbose;
 
 /**
  * Main controller to coordinate between model and view
@@ -47,6 +48,8 @@ public class ExamBlockController {
         setupMenus();
         initializeView();
         view.display();
+
+        // Show initial file dialog on startup - required by workflow step 1
         showInitialFileDialog();
     }
 
@@ -57,6 +60,8 @@ public class ExamBlockController {
         view.addFinaliseButtonListener(new FinaliseButtonListener());
         view.addAddButtonListener(new AddButtonListener());
         view.addClearButtonListener(new ClearButtonListener());
+
+        // Enhanced button state management - listen to selection changes
         view.getExamTable().getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 updateButtonStates();
@@ -69,8 +74,10 @@ public class ExamBlockController {
 
     /**
      * Initialize the view with current model data
+     * Implements proper button state management as per workflow requirements
      */
     private void initializeView() {
+        // Initially disable all action buttons - only File/Load and File/Exit should be enabled
         view.getAddButton().setEnabled(false);
         view.getClearButton().setEnabled(false);
         view.getFinaliseButton().setEnabled(false);
@@ -127,7 +134,8 @@ public class ExamBlockController {
     }
 
     /**
-     * Show initial file dialog on startup
+     * Show initial file dialog on startup - implements workflow step 1
+     * The program should show the "File Open" dialog box on startup
      */
     private void showInitialFileDialog() {
         loadFile();
@@ -167,7 +175,7 @@ public class ExamBlockController {
                 model.loadFromFile(model.getRegistry(), selectedFile.getAbsolutePath());
                 updateViewFromModel();
                 updateWindowTitle();
-                updateButtonStates();
+                updateButtonStates(); // Update button states after loading data
             } catch (Exception e) {
                 DialogUtils.showMessage("Error loading file: " + e.getMessage());
             }
@@ -243,7 +251,8 @@ public class ExamBlockController {
     }
 
     /**
-     * Update button enabled states based on selections
+     * Enhanced button state management based on selections
+     * Implements proper button enabling/disabling as per workflow requirements
      */
     private void updateButtonStates() {
         boolean examSelected = view.getSelectedExamRows() != null;
@@ -254,8 +263,13 @@ public class ExamBlockController {
         boolean sessionSelected = selectedTreeNode != null
                 && view.getSessionFromSessionNodeMap(selectedTreeNode) != null;
 
+        // Add button: enabled when both exam and (venue or session) are selected
         view.getAddButton().setEnabled(examSelected && (venueSelected || sessionSelected));
+
+        // Clear button: enabled when any selection exists
         view.getClearButton().setEnabled(examSelected || selectedTreeNode != null);
+
+        // Finalise button: enabled when sessions exist
         view.getFinaliseButton().setEnabled(model.getSessions().size() > 0);
     }
 
@@ -282,18 +296,18 @@ public class ExamBlockController {
     }
 
     /**
-     * Save finalisation report to file
+     * Save finalisation report to file with timestamp
+     * Implements automatic report saving as per workflow requirements
      */
     private void saveFinaliseReport() {
         try {
-            String dateNow = new SimpleDateFormat("yyyy-MM-dd'T'HH.mm.ss")
-                    .format(new Date());
-            String fileName = model.getTitle()
-                    + " (v" + model.getVersion() + ") "
-                    + dateNow
-                    + "." + CSSE7023.FileType.EFR.getExtension();
+            // Generate timestamp-based filename as per workflow: ExamBlockReport-YYYY-MM-DD_HH-MM-SS.efr
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+            String fileName = "ExamBlockReport-" + timestamp + ".efr";
 
             String reportContent = generateFinalisationReport();
+
+            // Save in same directory as data file, or current directory if no data file
             String dataFileDir = ".";
             if (!model.getFilename().isEmpty()) {
                 File dataFile = new File(model.getFilename());
@@ -318,7 +332,9 @@ public class ExamBlockController {
         }
     }
 
-
+    /**
+     * Show desk allocations viewer
+     */
     private void showDeskAllocations() {
         StringBuilder sb = new StringBuilder();
         model.getVenues().writeAllocations(sb, model.getSessions());
@@ -330,6 +346,7 @@ public class ExamBlockController {
 
     /**
      * Finalise button listener
+     * Enhanced with proper confirmation dialog and auto-save functionality
      * [6] ActionListener organization in MVC pattern.
      */
     private class FinaliseButtonListener implements ActionListener {
@@ -340,10 +357,12 @@ public class ExamBlockController {
                 return;
             }
 
+            // Allocate students to desks first
             model.getVenues().allocateStudents(model.getSessions(),
                     model.getExams(),
                     model.getStudents());
 
+            // Show file save dialog for finalised data
             FileChooser fileChooser = new FileChooser(model.getTitle(),
                     model.getVersion(),
                     model.getVersion() + 0.1);
@@ -359,9 +378,13 @@ public class ExamBlockController {
                     model.setFilename(selectedFile);
                     model.setTitle(title);
                     updateWindowTitle();
+
+                    // Automatically save finalisation report with timestamp
                     saveFinaliseReport();
+
                     updateViewFromModel();
 
+                    // Show report viewer after finalisation
                     String report = generateFinalisationReport();
                     DialogUtils.showTextViewer(report,
                             "Exam Block Viewer",
@@ -373,7 +396,7 @@ public class ExamBlockController {
     }
 
     /**
-     * Add button listener
+     * Add button listener with enhanced confirmation dialog
      * [6] Event handling in controller layer.
      */
     private class AddButtonListener implements ActionListener {
@@ -395,22 +418,25 @@ public class ExamBlockController {
             Session existingSession = view.getSessionFromSessionNodeMap(selectedNode);
 
             if (venue != null) {
+                // Creating new session in venue
                 int studentsForThisVenue;
                 if (venue.isAara()) {
                     studentsForThisVenue = model.getStudents()
-                                    .countStudents(selectedExam.getSubject(), true);
+                            .countStudents(selectedExam.getSubject(), true);
                 } else {
                     studentsForThisVenue = model.getStudents()
-                                    .countStudents(selectedExam.getSubject(), false);
+                            .countStudents(selectedExam.getSubject(), false);
                 }
                 int totalInSession = model.getSessions().getSessionNewTotal(venue,
                         selectedExam, studentsForThisVenue);
+
                 if (!venue.willFit(totalInSession)) {
                     view.removeAllSelections();
                     updateButtonStates();
                     return;
                 }
 
+                // Enhanced confirmation dialog as per workflow requirements
                 String message = "CONFIRM scheduling the " + selectedExam
                         .getSubject().getTitle() + " exam into " + venue.venueId();
 
@@ -420,17 +446,17 @@ public class ExamBlockController {
                         LocalDate day = selectedExam.getDate();
                         LocalTime time = selectedExam.getTime();
                         int sessionNumber = model.getSessions()
-                                        .getSessionNumber(venue, day, time);
+                                .getSessionNumber(venue, day, time);
 
                         if (sessionNumber == 0) {
                             model.getSessions().getSessionNewTotal(venue,
                                     selectedExam, studentsForThisVenue);
                             sessionNumber = model.getSessions()
-                                            .getSessionNumber(venue, day, time);
+                                    .getSessionNumber(venue, day, time);
                         }
 
                         Session session = model.getSessions()
-                                        .getSession(venue, sessionNumber);
+                                .getSession(venue, sessionNumber);
                         session.scheduleExam(selectedExam);
                         updateViewFromModel();
 
@@ -441,14 +467,15 @@ public class ExamBlockController {
                 }
 
             } else if (existingSession != null) {
+                // Adding to existing session
                 Venue sessionVenue = existingSession.getVenue();
                 int studentsForThisExam;
                 if (sessionVenue.isAara()) {
                     studentsForThisExam = model.getStudents()
-                                    .countStudents(selectedExam.getSubject(), true);
+                            .countStudents(selectedExam.getSubject(), true);
                 } else {
                     studentsForThisExam = model.getStudents()
-                                    .countStudents(selectedExam.getSubject(), false);
+                            .countStudents(selectedExam.getSubject(), false);
                 }
                 int currentStudents = existingSession.countStudents();
                 int totalStudents = currentStudents + studentsForThisExam;
@@ -459,6 +486,7 @@ public class ExamBlockController {
                     return;
                 }
 
+                // Enhanced confirmation dialog for adding to existing session
                 String message = "CONFIRM adding the "
                         + selectedExam.getSubject().getTitle()
                         + " exam to existing session "
@@ -481,6 +509,7 @@ public class ExamBlockController {
                 DialogUtils.showMessage("Please select a venue or existing session.");
             }
 
+            // Clear selections and update button states after operation
             view.removeAllSelections();
             updateButtonStates();
         }
@@ -488,12 +517,13 @@ public class ExamBlockController {
 
     /**
      * Clear button listener
+     * Enhanced to properly update button states after clearing
      */
     private class ClearButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             view.removeAllSelections();
-            updateButtonStates();
+            updateButtonStates(); // Update button states after clearing selections
         }
     }
 }

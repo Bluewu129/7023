@@ -2,7 +2,6 @@ package examblock.model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -184,20 +183,14 @@ public class SessionList extends ListManager<Session> {
      * @return the total number of students in the session, or zero if there is no session.
      */
     public int getExistingSessionTotal(Venue venue, Exam exam) {
-        LocalDate day = exam.getDate();
-        LocalTime start = exam.getTime();
-
-        int sessionNumber = this.getSessionNumber(venue, day, start);
-        if (sessionNumber == 0) {
-            return 0;
+        int total = 0;
+        for (Session session : getItems()) {
+            if (session.getVenue().venueId().equals(venue.venueId()) &&
+                    session.getExams().contains(exam)) {
+                total += session.countStudents();
+            }
         }
-
-        try {
-            Session session = this.getSession(venue, sessionNumber);
-            return session.countStudents();
-        } catch (IllegalStateException e) {
-            return 0;
-        }
+        return total;
     }
 
     /**
@@ -246,13 +239,9 @@ public class SessionList extends ListManager<Session> {
      * @return A new list holding references to all the sessions in this sessionList.
      */
     public List<Session> forVenue(Venue venue) {
-        List<Session> sessionList = new ArrayList<Session>();
-        for (Session session : this.getItems()) {
-            if (session.getVenue().venueId().equals(venue.venueId())) {
-                sessionList.add(session);
-            }
-        }
-        return sessionList;
+        return getItems().stream()
+                .filter(session -> session.getVenue().venueId().equals(venue.venueId()))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     /**
