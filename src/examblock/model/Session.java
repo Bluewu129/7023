@@ -1,7 +1,5 @@
 package examblock.model;
 
-import examblock.view.components.Verbose;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -383,7 +381,8 @@ public class Session implements StreamManager, ManageableListItem {
                                                             luiField.setAccessible(true);
                                                             luiField.set(desk, lui);
                                                         } catch (Exception e) {
-                                                            // default message
+                                                            System.out.println("Error setting desk fields: " 
+                                                                    + e.getMessage());
                                                         }
                                                     }
 
@@ -394,13 +393,13 @@ public class Session implements StreamManager, ManageableListItem {
                                                 }
                                             }
                                         } catch (NumberFormatException e) {
-                                            // default message
+                                            System.out.println("Invalid number");
                                         }
                                     }
                                 }
                             }
                         } catch (NumberFormatException e) {
-                            // default message
+                            System.out.println("Invalid number");
                         }
                     }
                 }

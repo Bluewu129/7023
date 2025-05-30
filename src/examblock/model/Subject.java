@@ -49,7 +49,8 @@ public class Subject implements StreamManager, ManageableListItem {
      * @throws IOException on stream reading failures
      * @throws RuntimeException on data format or logic errors
      */
-    public Subject(BufferedReader br, Registry registry, int nthItem) throws IOException, RuntimeException {
+    public Subject(BufferedReader br, Registry registry, int nthItem) 
+            throws IOException, RuntimeException {
         this.registry = registry;
         this.title = "";
         this.description = "";
@@ -91,7 +92,8 @@ public class Subject implements StreamManager, ManageableListItem {
      * @throws RuntimeException on data format or consistency errors
      */
     @Override
-    public void streamIn(BufferedReader br, Registry registry, int nthItem) throws IOException, RuntimeException {
+    public void streamIn(BufferedReader br, Registry registry, int nthItem) 
+            throws IOException, RuntimeException {
         // Parse subject header: "1. SUBJECT_TITLE"
         String heading = CSSE7023.getLine(br);
         if (heading == null) {
@@ -103,7 +105,8 @@ public class Subject implements StreamManager, ManageableListItem {
             throw new RuntimeException("Invalid subject format: " + heading);
         }
 
-        int index = CSSE7023.toInt(bits[0], "Number format exception parsing Subject " + nthItem + " header");
+        int index = CSSE7023.toInt(bits[0], 
+                "Number format exception parsing Subject " + nthItem + " header");
         if (index != nthItem) {
             throw new RuntimeException("Subject index out of sync!");
         }

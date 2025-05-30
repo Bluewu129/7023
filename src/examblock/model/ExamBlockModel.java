@@ -57,7 +57,8 @@ public class ExamBlockModel {
 
     /**
      * Initializes a new exam block model with default values and empty collections.
-     * Sets up registry pattern for centralized object management and observer list for notifications.
+     * Sets up registry pattern for centralized object 
+     * management and observer list for notifications.
      */
     public ExamBlockModel() {
         this.title = DEFAULT_TITLE;
@@ -356,7 +357,8 @@ public class ExamBlockModel {
 
                 System.out.println("Available subjects after loading:");
                 for (Subject s : registry.getAll(Subject.class)) {
-                    System.out.println("  - ID: '" + s.getId() + "', Title: '" + s.getTitle() + "'");
+                    System.out.println("  - ID: '" + s.getId() 
+                            + "', Title: '" + s.getTitle() + "'");
                 }
 
                 System.out.println("=== Loading Units ===");

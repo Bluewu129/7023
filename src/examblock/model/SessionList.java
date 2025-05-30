@@ -185,8 +185,8 @@ public class SessionList extends ListManager<Session> {
     public int getExistingSessionTotal(Venue venue, Exam exam) {
         int total = 0;
         for (Session session : getItems()) {
-            if (session.getVenue().venueId().equals(venue.venueId()) &&
-                    session.getExams().contains(exam)) {
+            if (session.getVenue().venueId().equals(venue.venueId()) 
+                    && session.getExams().contains(exam)) {
                 total += session.countStudents();
             }
         }

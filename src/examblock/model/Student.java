@@ -8,55 +8,79 @@ import java.io.IOException;
 /**
  * Represents a Year 12 student with comprehensive personal and academic information.
  * Manages student subjects, units, and exam assignments while maintaining data integrity.
- * Supports both standard students and those requiring AARA (Access Arrangements and Reasonable Adjustments).
+ * Supports both standard students and those requiring AARA 
+ * (Access Arrangements and Reasonable Adjustments).
  */
 public class Student implements StreamManager, ManageableListItem {
 
-    /** Pattern for validating name fields - allows letters, spaces, hyphens, and apostrophes only */
+    /**
+     * Pattern for validating name fields - allows letters, spaces, hyphens, and apostrophes only
+     */
     private static final String NAME_VALIDATION_PATTERN = "[a-zA-Z\\s\\-']+";
 
-    /** Student's unique 10-digit Learner Unique Identifier */
+    /**
+     * Student's unique 10-digit Learner Unique Identifier
+     */
     private Long lui;
 
-    /** Student's given name(s) as a single space-separated string */
+    /**
+     * Student's given name(s) as a single space-separated string
+     */
     private String given;
 
-    /** Student's family name */
+    /**
+     * Student's family name
+     */
     private String family;
 
-    /** Student's date of birth */
+    /**
+     * Student's date of birth
+     */
     private LocalDate dob;
 
-    /** Student's house colour assignment */
+    /**
+     * Student's house colour assignment
+     */
     private String house;
 
-    /** Whether student requires Access Arrangements and Reasonable Adjustments */
+    /**
+     * Whether student requires Access Arrangements and Reasonable Adjustments
+     */
     private Boolean aara;
 
-    /** Collection of subjects this student is enrolled in */
+    /**
+     * Collection of subjects this student is enrolled in
+     */
     private final SubjectList subjects;
 
-    /** Collection of current units this student is taking */
+    /**
+     * Collection of current units this student is taking
+     */
     private final UnitList units;
 
-    /** Collection of exams this student is scheduled for in current exam block */
+    /**
+     * Collection of exams this student is scheduled for in current exam block
+     */
     private final ExamList exams;
 
-    /** Reference to global registry for object management */
+    /**
+     * Reference to global registry for object management
+     */
     private Registry registry;
 
     /**
      * Creates a new student with standard (non-AARA) configuration.
      * Names are automatically sanitized to remove invalid characters and normalize spacing.
      *
-     * @param lui unique 10-digit Learner Unique Identifier (must be unique across entire cohort)
+     * @param lui        unique 10-digit Learner Unique Identifier (
+     *                   must be unique across entire cohort)
      * @param givenNames student's given names (alphabetic characters, hyphens, apostrophes only)
      * @param familyName student's family name (same constraints as given names)
-     * @param day birth day (must be valid for given month and year)
-     * @param month birth month (1-12 inclusive)
-     * @param year birth year (1965-2015 inclusive for Year 12 students)
-     * @param house student's house color (Blue, Green, Red, White, or Yellow)
-     * @param registry global registry for centralized object management
+     * @param day        birth day (must be valid for given month and year)
+     * @param month      birth month (1-12 inclusive)
+     * @param year       birth year (1965-2015 inclusive for Year 12 students)
+     * @param house      student's house color (Blue, Green, Red, White, or Yellow)
+     * @param registry   global registry for centralized object management
      */
     public Student(Long lui, String givenNames, String familyName, int day, int month, int year,
                    String house, Registry registry) {
@@ -67,15 +91,15 @@ public class Student implements StreamManager, ManageableListItem {
      * Creates a new student with specified AARA requirements.
      * Overloaded constructor allowing explicit specification of access arrangement needs.
      *
-     * @param lui unique 10-digit Learner Unique Identifier
+     * @param lui        unique 10-digit Learner Unique Identifier
      * @param givenNames student's given names
      * @param familyName student's family name
-     * @param day birth day
-     * @param month birth month (1-12)
-     * @param year birth year (1965-2015)
-     * @param house student's house color
-     * @param aara true if student requires Access Arrangements and Reasonable Adjustments
-     * @param registry global registry for object management
+     * @param day        birth day
+     * @param month      birth month (1-12)
+     * @param year       birth year (1965-2015)
+     * @param house      student's house color
+     * @param aara       true if student requires Access Arrangements and Reasonable Adjustments
+     * @param registry   global registry for object management
      */
     public Student(Long lui, String givenNames, String familyName, int day, int month, int year,
                    String house, Boolean aara, Registry registry) {
@@ -99,13 +123,14 @@ public class Student implements StreamManager, ManageableListItem {
      * Creates a student by deserializing from a text stream.
      * Used for loading student data from files with proper error handling.
      *
-     * @param br BufferedReader opened and positioned at student data
+     * @param br       BufferedReader opened and positioned at student data
      * @param registry global object registry for resolving subject references
-     * @param nthItem expected index of this student in the serialization stream
-     * @throws IOException on stream reading failures
+     * @param nthItem  expected index of this student in the serialization stream
+     * @throws IOException      on stream reading failures
      * @throws RuntimeException on data format or logic errors
      */
-    public Student(BufferedReader br, Registry registry, int nthItem) throws IOException, RuntimeException {
+    public Student(BufferedReader br, Registry registry, int nthItem) 
+            throws IOException, RuntimeException {
         this.subjects = new SubjectList(registry);
         this.units = new UnitList(registry);
         this.exams = new ExamList(registry);
@@ -152,18 +177,24 @@ public class Student implements StreamManager, ManageableListItem {
      * Writes student data to output stream in structured format.
      * Format includes uppercase header, detailed information line, and subject enrollments.
      *
-     * @param bw writer already opened at current file position
+     * @param bw      writer already opened at current file position
      * @param nthItem student's position in the serialization stream for consistency checks
      * @throws IOException on stream writing failures
      */
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
         // Write header: "1. LIAM ALEXANDER SMITH"
-        bw.write(nthItem + ". " + (given + " " + family).toUpperCase().trim() + System.lineSeparator());
+        bw.write(nthItem + ". " + (given + " " 
+                + family).toUpperCase().trim() + System.lineSeparator());
 
         // Write detailed student information
-        bw.write("LUI: " + lui + ", Family Name: " + family + ", Given Name(s): " + given +
-                ", Date of Birth: " + dob + ", House: " + house + ", AARA: " + aara + System.lineSeparator());
+        bw.write("LUI: " + lui + ", Family Name: " 
+                + family 
+                + ", Given Name(s): " 
+                + given 
+                +
+                ", Date of Birth: " + dob + ", House: "
+                + house + ", AARA: " + aara + System.lineSeparator());
 
         // Write subject enrollments if any exist
         if (subjects != null && !subjects.all().isEmpty()) {
@@ -184,14 +215,15 @@ public class Student implements StreamManager, ManageableListItem {
      * Reads student data from input stream with comprehensive error handling.
      * Parses header, detailed information, and subject enrollments while resolving references.
      *
-     * @param br reader already opened at student data position
+     * @param br       reader already opened at student data position
      * @param registry global object registry for resolving subject references
-     * @param nthItem expected student index for consistency validation
-     * @throws IOException on stream reading failures
+     * @param nthItem  expected student index for consistency validation
+     * @throws IOException      on stream reading failures
      * @throws RuntimeException on data format or consistency errors
      */
     @Override
-    public void streamIn(BufferedReader br, Registry registry, int nthItem) throws IOException, RuntimeException {
+    public void streamIn(BufferedReader br, Registry registry, int nthItem) 
+            throws IOException, RuntimeException {
         // Parse student header: "1. LIAM ALEXANDER SMITH"
         String heading = CSSE7023.getLine(br);
         if (heading == null) {
@@ -202,7 +234,8 @@ public class Student implements StreamManager, ManageableListItem {
             throw new RuntimeException("Invalid student format: " + heading);
         }
 
-        int index = CSSE7023.toInt(bits[0], "Number format exception parsing Student " + nthItem + " header");
+        int index = CSSE7023.toInt(bits[0], 
+                "Number format exception parsing Student " + nthItem + " header");
         if (index != nthItem) {
             throw new RuntimeException("Student index out of sync!");
         }
@@ -268,19 +301,32 @@ public class Student implements StreamManager, ManageableListItem {
                             this.subjects.getItems().add(subject);
                         }
                     } else {
-                        System.err.println("WARNING: Subject '" + subjectName + "' not found in registry for student " + this.lui);
+                        System.err.println("WARNING: Subject '" + subjectName 
+                                + "' not found in registry for student " + this.lui);
                     }
                 }
             }
         }
 
         // Set default values for any missing fields
-        if (this.given == null) this.given = "";
-        if (this.family == null) this.family = "";
-        if (this.house == null) this.house = "";
-        if (this.aara == null) this.aara = false;
-        if (this.dob == null) this.dob = LocalDate.now();
-        if (this.lui == null) this.lui = System.currentTimeMillis();
+        if (this.given == null) {
+            this.given = "";
+        }
+        if (this.family == null) {
+            this.family = "";
+        }
+        if (this.house == null) {
+            this.house = "";
+        }
+        if (this.aara == null) {
+            this.aara = false;
+        }
+        if (this.dob == null) {
+            this.dob = LocalDate.now();
+        }
+        if (this.lui == null) {
+            this.lui = System.currentTimeMillis();
+        }
     }
 
     /**

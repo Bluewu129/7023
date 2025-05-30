@@ -75,7 +75,8 @@ public class SessionHandler {
      */
     public static void finaliseExamBlock(ExamBlockModel model) {
 
-        model.getVenues().allocateStudents(model.getSessions(), model.getExams(), model.getStudents());
+        model.getVenues().allocateStudents(model.getSessions(), 
+                model.getExams(), model.getStudents());
 
         // Get the save filename first.
         if (!model.saveToFile(model.getRegistry(), null, model.getTitle(), model.getVersion())) {

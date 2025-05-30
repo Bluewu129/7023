@@ -95,7 +95,8 @@ public class ExamBlockView implements ModelObserver {
 
     /**
      * Initializes the complete view interface with all components and data mappings.
-     * Creates main window, configures layout, sets up UI components, and establishes parent dialogs.
+     * Creates main window, configures layout, sets up UI components, 
+     * and establishes parent dialogs.
      *
      * @param registry the global registry for object management integration
      */
@@ -149,7 +150,8 @@ public class ExamBlockView implements ModelObserver {
 
     /**
      * Creates the top control panel with exam selection, session navigation, and action buttons.
-     * Implements three-column layout for workflow steps: Select Exam, Select Session/Venue, Take Action.
+     * Implements three-column layout for workflow steps: Select Exam, 
+     * Select Session/Venue, Take Action.
      *
      * @return configured top panel with all control components
      */
@@ -202,12 +204,18 @@ public class ExamBlockView implements ModelObserver {
      */
     public JPanel createBottomPanel() {
         // Create tables for each data type with appropriate column structures
-        JTable subjectsTable = new JTable(new DefaultTableModel(new String[]{"Title", "Description"}, 0));
-        JTable examsTable = new JTable(new DefaultTableModel(new String[]{"Subject", "Type", "Paper", "Subtitle", "Units", "Date", "Time"}, 0));
-        JTable unitsTable = new JTable(new DefaultTableModel(new String[]{"Subject", "UnitID", "Title"}, 0));
-        JTable studentsTable = new JTable(new DefaultTableModel(new String[]{"Full Name", "AARA", "Date of Birth", "Subjects"}, 0));
-        JTable roomsTable = new JTable(new DefaultTableModel(new String[]{"Room ID"}, 0));
-        JTable venuesTable = new JTable(new DefaultTableModel(new String[]{"Venue", "Rooms", "Rows", "Col", "Desks", "AARA"}, 0));
+        JTable subjectsTable = new JTable(new DefaultTableModel(
+            new String[]{"Title", "Description"}, 0));
+        JTable examsTable = new JTable(new DefaultTableModel(
+            new String[]{"Subject", "Type", "Paper", "Subtitle", "Units", "Date", "Time"}, 0));
+        JTable unitsTable = new JTable(new DefaultTableModel(
+            new String[]{"Subject", "UnitID", "Title"}, 0));
+        JTable studentsTable = new JTable(new DefaultTableModel(
+            new String[]{"Full Name", "AARA", "Date of Birth", "Subjects"}, 0));
+        JTable roomsTable = new JTable(new DefaultTableModel(
+            new String[]{"Room ID"}, 0));
+        JTable venuesTable = new JTable(new DefaultTableModel(
+            new String[]{"Venue", "Rooms", "Rows", "Col", "Desks", "AARA"}, 0));
 
         // Add all tabs to the tabbed pane with descriptive labels
         tabbedPane.addTab("Subjects", new JScrollPane(subjectsTable));
@@ -253,11 +261,11 @@ public class ExamBlockView implements ModelObserver {
                 }
 
                 Object[] rowData = {
-                        exam.getSubject().getTitle(),
-                        exam.getDate().toString(),
-                        exam.getTime().toString(),
-                        aaraCount,
-                        nonAaraCount
+                    exam.getSubject().getTitle(),
+                    exam.getDate().toString(),
+                    exam.getTime().toString(),
+                    aaraCount,
+                    nonAaraCount
                 };
                 examTableModel.addRow(rowData);
                 examMap.put(i, exam);
@@ -267,27 +275,26 @@ public class ExamBlockView implements ModelObserver {
 
     /**
      * Updates the session tree with current session and venue data.
-     * Rebuilds complete tree structure with detailed session information including desk availability.
+     * Rebuilds complete tree structure with detailed session information 
+     * including desk availability.
      * Organizes existing sessions and available venues for new session creation.
      *
      * @param sessions current list of scheduled sessions
      * @param venues   current list of available venues
      */
-    public void updateTree(SessionList sessions, VenueList venues) {
+    public void updateTree(SessionList sessions, 
+                           VenueList venues) {
         sessionRoot.removeAllChildren();
         venueRoot.removeAllChildren();
         sessionNodeMap.clear();
         venueNodeMap.clear();
         examNodeMap.clear();
-
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
         root.removeAllChildren();
-
         if (sessions != null && sessions.size() > 0) {
             root.add(sessionRoot);
         }
         root.add(venueRoot);
-
         if (sessions != null && sessions.size() > 0) {
             sessionRoot.setUserObject("Existing sessions (" + sessions.size() + ")");
 
@@ -297,63 +304,70 @@ public class ExamBlockView implements ModelObserver {
                 int totalDesks = session.getVenue().deskCount();
                 int availableDesks = totalDesks - usedDesks;
 
-                String sessionDisplay = session.getDate().toString() + " at " +
-                        session.getTime().toString() + " in " +
-                        session.getVenue().venueId() +
-                        " (" + availableDesks + " of " + totalDesks + " desks available)";
-
+                String sessionDisplay = session.getDate().toString() 
+                        + " at " 
+                        + session.getTime().toString() 
+                        + " in " 
+                        + session.getVenue().venueId() 
+                        + " (" + availableDesks + " of " 
+                        + totalDesks + " desks available)";
                 DefaultMutableTreeNode sessionNode = new DefaultMutableTreeNode(sessionDisplay);
                 sessionRoot.add(sessionNode);
                 addSessionToSessionNodeMap(sessionNode, session);
-
                 java.util.List<Exam> sessionExams = session.getExams();
                 if (sessionExams != null && sessionExams.size() > 0) {
-                    DefaultMutableTreeNode examsNode = new DefaultMutableTreeNode("Exams (" + sessionExams.size() + ")");
+                    DefaultMutableTreeNode examsNode = new DefaultMutableTreeNode(
+                            "Exams (" + sessionExams.size() + ")");
                     sessionNode.add(examsNode);
-
                     for (Exam exam : sessionExams) {
                         int examStudents = 0;
                         if (model != null && model.getStudents() != null) {
                             boolean isAara = session.getVenue().isAara();
-                            examStudents = model.getStudents().countStudents(exam.getSubject(), isAara);
+                            examStudents = model.getStudents().countStudents(
+                                    exam.getSubject(), isAara);
                         }
-
-                        String examDisplay = exam.getSubject().getTitle() + " (" + examStudents + " students)";
+                        String examDisplay = exam.getSubject().getTitle() 
+                                + " (" + examStudents + " students)";
                         DefaultMutableTreeNode examNode = new DefaultMutableTreeNode(examDisplay);
                         examsNode.add(examNode);
                         examNodeMap.put(examNode, exam);
-
                         boolean isSessionFinalised = false;
                         java.util.List<Desk> examDesks = new java.util.ArrayList<>();
-
                         if (session.desks != null && session.getVenue() != null) {
                             int rows = session.getVenue().getRows();
                             int columns = session.getVenue().getColumns();
 
                             for (int row = 0; row < rows; row++) {
                                 for (int col = 0; col < columns; col++) {
-                                    if (session.desks[row][col] != null &&
-                                            session.desks[row][col].deskFamilyName() != null &&
-                                            !session.desks[row][col].deskFamilyName().trim().isEmpty()) {
-
+                                    if (session.desks[row][col] != null
+                                            &&
+                                            session.desks[row][col].deskFamilyName() != null 
+                                            &&
+                                            !session.desks[row][col]
+                                                    .deskFamilyName().trim().isEmpty()) {
                                         String deskExam = session.desks[row][col].deskExam();
-                                        if (deskExam != null && deskExam.equals(exam.getShortTitle())) {
+                                        if (deskExam != null && deskExam.equals(
+                                                exam.getShortTitle())) {
                                             examDesks.add(session.desks[row][col]);
                                             isSessionFinalised = true;
                                         }
                                     }
                                 }
                             }
-                            examDesks.sort((d1, d2) -> Integer.compare(d1.deskNumber(), d2.deskNumber()));
+                            examDesks.sort((d1, d2) -> {
+                                return Integer.compare(d1.deskNumber(), d2.deskNumber());
+                            });
                         }
-
                         if (isSessionFinalised) {
                             for (Desk desk : examDesks) {
-                                String deskDisplay = "Desk " + desk.deskNumber() + " " +
-                                        desk.deskLui() + " " +
-                                        desk.deskFamilyName() + ", " +
-                                        desk.deskGivenAndInit();
-                                DefaultMutableTreeNode deskNode = new DefaultMutableTreeNode(deskDisplay);
+                                String deskDisplay = "Desk " + desk.deskNumber() 
+                                        + " " 
+                                        + desk.deskLui() 
+                                        + " " 
+                                        + desk.deskFamilyName() + ", " 
+                                        + desk.deskGivenAndInit();
+                                DefaultMutableTreeNode deskNode = new 
+                                        DefaultMutableTreeNode(deskDisplay);
                                 examNode.add(deskNode);
                             }
                         }
@@ -361,22 +375,18 @@ public class ExamBlockView implements ModelObserver {
                 }
             }
         }
-
         if (venues != null) {
             for (int i = 0; i < venues.size(); i++) {
                 Venue venue = venues.all().get(i);
 
-                String venueDisplay = venue.venueId() + " (" + venue.deskCount() +
-                        (venue.isAara() ? " AARA" : " Non-AARA") + " desks)";
-
+                String venueDisplay = venue.venueId() + " (" + venue.deskCount() 
+                        + (venue.isAara() ? " AARA" : " Non-AARA") + " desks)";
                 DefaultMutableTreeNode venueNode = new DefaultMutableTreeNode(venueDisplay);
                 venueRoot.add(venueNode);
                 addVenueToVenueNodeMap(venueNode, venue);
             }
         }
-
         ((DefaultTreeModel) tree.getModel()).reload();
-
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.expandRow(i);
         }
@@ -421,7 +431,8 @@ public class ExamBlockView implements ModelObserver {
                 String examType = "INTERNAL";
                 if (exam.getClass().getDeclaredFields().length > 0) {
                     try {
-                        java.lang.reflect.Field examTypeField = exam.getClass().getDeclaredField("examType");
+                        java.lang.reflect.Field examTypeField = exam.getClass()
+                                .getDeclaredField("examType");
                         examTypeField.setAccessible(true);
                         Object examTypeObj = examTypeField.get(exam);
                         if (examTypeObj != null) {
@@ -446,7 +457,8 @@ public class ExamBlockView implements ModelObserver {
 
                 String subtitle = "";
                 try {
-                    java.lang.reflect.Field subtitleField = exam.getClass().getDeclaredField("subtitle");
+                    java.lang.reflect.Field subtitleField = exam.getClass()
+                            .getDeclaredField("subtitle");
                     subtitleField.setAccessible(true);
                     Object subtitleObj = subtitleField.get(exam);
                     if (subtitleObj != null && !subtitleObj.toString().trim().isEmpty()) {
@@ -469,13 +481,13 @@ public class ExamBlockView implements ModelObserver {
                 }
 
                 model.addRow(new Object[]{
-                        exam.getSubject().getTitle(),
-                        examType,
-                        paper,
-                        subtitle,
-                        unit,
-                        exam.getDate().toString(),
-                        exam.getTime().toString()
+                    exam.getSubject().getTitle(),
+                    examType,
+                    paper,
+                    subtitle,
+                    unit,
+                    exam.getDate().toString(),
+                    exam.getTime().toString()
                 });
             }
         }
@@ -511,7 +523,8 @@ public class ExamBlockView implements ModelObserver {
 
                 String description = "";
                 try {
-                    java.lang.reflect.Field descField = unit.getClass().getDeclaredField("description");
+                    java.lang.reflect.Field descField = unit.getClass()
+                            .getDeclaredField("description");
                     descField.setAccessible(true);
                     Object descObj = descField.get(unit);
                     if (descObj != null) {
@@ -522,10 +535,10 @@ public class ExamBlockView implements ModelObserver {
                 }
 
                 model.addRow(new Object[]{
-                        unit.getSubject().getTitle(),
-                        unit.id().toString(),
-                        unitTitle,
-                        description
+                    unit.getSubject().getTitle(),
+                    unit.id().toString(),
+                    unitTitle,
+                    description
                 });
             }
         }
@@ -541,7 +554,8 @@ public class ExamBlockView implements ModelObserver {
         JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(3);
         JTable table = (JTable) scrollPane.getViewport().getView();
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setColumnIdentifiers(new String[]{"LUI", "Full Name", "AARA", "Date of Birth", "Subjects"});
+        model.setColumnIdentifiers(new String[]{"LUI", "Full Name", 
+            "AARA", "Date of Birth", "Subjects"});
 
         model.setRowCount(0);
         if (students != null) {
@@ -559,15 +573,16 @@ public class ExamBlockView implements ModelObserver {
                     }
                 }
 
-                String displayName = student.familyName().toUpperCase() + ", " + student.givenNames();
+                String displayName = student.familyName().toUpperCase() 
+                        + ", " + student.givenNames();
                 String aaraDisplay = student.isAara() ? "Yes" : "";
 
                 model.addRow(new Object[]{
-                        student.getLui(),
-                        displayName,
-                        aaraDisplay,
-                        student.getDob().toString(),
-                        subjectsStr.toString()
+                    student.getLui(),
+                    displayName,
+                    aaraDisplay,
+                    student.getDob().toString(),
+                    subjectsStr.toString()
                 });
             }
         }
@@ -579,7 +594,7 @@ public class ExamBlockView implements ModelObserver {
      *
      * @param venues new VenueList to display
      */
-    public void updateVenuePage(VenueList venues) {
+    public void updateVenuPage(VenueList venues) {
         JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(5);
         JTable table = (JTable) scrollPane.getViewport().getView();
         DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -712,8 +727,15 @@ public class ExamBlockView implements ModelObserver {
      * Resets interface to unselected state.
      */
     public void removeAllSelections() {
-        examTable.clearSelection();
-        tree.clearSelection();
+        // Clear exam table selection
+        if (examTable != null) {
+            examTable.clearSelection();
+        }
+
+        // Clear tree selection  
+        if (tree != null) {
+            tree.clearSelection();
+        }
     }
 
     /**
@@ -724,9 +746,11 @@ public class ExamBlockView implements ModelObserver {
      */
     public boolean hasUnfinalisedSessions() {
         for (int i = 0; i < sessionRoot.getChildCount(); i++) {
-            DefaultMutableTreeNode sessionNode = (DefaultMutableTreeNode) sessionRoot.getChildAt(i);
+            DefaultMutableTreeNode sessionNode = (DefaultMutableTreeNode) 
+                    sessionRoot.getChildAt(i);
             for (int j = 0; j < sessionNode.getChildCount(); j++) {
-                DefaultMutableTreeNode examNode = (DefaultMutableTreeNode) sessionNode.getChildAt(j);
+                DefaultMutableTreeNode examNode = (DefaultMutableTreeNode) 
+                        sessionNode.getChildAt(j);
                 if (examNode.getChildCount() == 0) {
                     return true;
                 }
@@ -760,7 +784,7 @@ public class ExamBlockView implements ModelObserver {
                 updateStudentPage(model.getStudents());
                 break;
             case "venues":
-                updateVenuePage(model.getVenues());
+                updateVenuPage(model.getVenues());
                 break;
             case "rooms":
                 updateRoomPage(model.getRooms());
@@ -955,7 +979,8 @@ public class ExamBlockView implements ModelObserver {
      * Document listener implementation for form field change detection.
      * Provides simplified interface for monitoring text field modifications.
      */
-    public abstract static class SimpleDocumentListener implements javax.swing.event.DocumentListener {
+    public abstract static class SimpleDocumentListener 
+            implements javax.swing.event.DocumentListener {
 
         /**
          * Called when text is inserted into the document.
