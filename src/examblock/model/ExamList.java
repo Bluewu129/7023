@@ -1,68 +1,75 @@
 package examblock.model;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * A collection object for holding and managing {@link Exam}s.
+ * A collection object for holding and managing Exams.
  */
-public class ExamList {
-
-    /** This instance's list of exams. */
-    private final List<Exam> exams;
+public class ExamList extends ListManager<Exam> implements StreamManager {
 
     /**
-     * Constructs an empty list of {@link Exam}s.
+     * Constructs an empty list of Exams with the registry.
+     *
+     * @param registry - registry
      */
-    public ExamList() {
-        exams = new ArrayList<>();
+    public ExamList(Registry registry) {
+        super(Exam::new, registry, Exam.class);
     }
 
     /**
-     * Adds an {@link Exam} to this list of {@link Exam}s.
+     * Finds an item by a key (e.g., ID).
      *
-     * @param exam - the exam object being added to this list.
+     * @param key - the text used to identify the item
+     * @return the item if found or null
      */
-    public void add(Exam exam) {
-        exams.add(exam);
+    @Override
+    public Exam find(String key) {
+        Optional<Exam> exam = all().stream()
+                .filter(e -> e.getId().equals(key))
+                .findFirst();
+
+        return exam.orElse(null);
     }
 
     /**
-     * Removes a given {@link Exam} from this {@code ExamList}.
+     * Finds an item by a key (e.g., ID).
      *
-     * @param exam - the subject to remove from this list.
+     * @param key - the text used to identify the item
+     * @return the item if found
+     * @throws IllegalStateException - if no item is found
      */
-    public void removeExam(Exam exam) {
-        exams.remove(exam);
+    @Override
+    public Exam get(String key) throws IllegalStateException {
+        Exam exam = find(key);
+        if (exam == null) {
+            throw new IllegalStateException("No exam found with key: " + key);
+        }
+        return exam;
     }
 
     /**
-     * Get the first {@link Exam} with a matching {@link Subject} {@code title}.
+     * Get the first Exam with a matching Subject title.
      *
-     * @param title the {@code title} of the {@link Exam}'s {@link Subject} to be found.
-     * @return first {@link Exam} with a matching {@link Subject} {@code title}, if it exists.
+     * @param title - the title of the Exam's Subject to be found.
+     * @return first Exam with a matching Subject title, if it exists.
      * @throws IllegalStateException - throw an IllegalStateException if it can't
      *         find a matching exam as that indicates there is a misalignment of
      *         the executing state and the complete list of possible exams.
      */
     public Exam bySubjectTitle(String title) throws IllegalStateException {
-        for (Exam exam : this.exams) {
-            if (exam.getSubject().getTitle().equals(title)) {
-                return exam;
-            }
-        }
-        throw new IllegalStateException("No such exam!");
-    }
+        Optional<Exam> exam = all().stream()
+                .filter(e -> e.getSubject().getTitle().equals(title))
+                .findFirst();
 
-    /**
-     * Creates a new {@code List} holding {@code references} to all the {@link Exam}s
-     * managed by this {@code ExamList} and returns it.
-     *
-     * @return a new {@code List} holding {@code references} to all the {@link Exam}s
-     * managed by this {@code ExamList}.
-     */
-    public List<Exam> all() {
-        return new ArrayList<>(this.exams);
+        if (exam.isPresent()) {
+            return exam.get();
+        }
+        throw new IllegalStateException("No such exam with subject title: " + title);
     }
 
     /**
@@ -74,7 +81,7 @@ public class ExamList {
         StringBuilder examStrings = new StringBuilder();
         examStrings.append("Exams:\n");
         int counter = 1;
-        for (Exam exam : exams) {
+        for (Exam exam : all()) {
             examStrings.append(counter);
             examStrings.append(". ");
             examStrings.append(exam.getFullDetail());
@@ -82,6 +89,25 @@ public class ExamList {
             counter += 1;
         }
         return examStrings.toString();
+    }
+
+    /**
+     * Finds an exam given it's short title
+     *
+     * @param shortTitle - the exam to find
+     * @return the exam matching the short title, which looks like this:
+     * "Year 12 Internal Assessment The Exam Name Paper N"
+     * @throws IllegalStateException - if the exam can't be found
+     */
+    public Exam byShortTitle(String shortTitle) throws IllegalStateException {
+        Optional<Exam> exam = all().stream()
+                .filter(e -> e.getShortTitle().equals(shortTitle))
+                .findFirst();
+
+        if (exam.isPresent()) {
+            return exam.get();
+        }
+        throw new IllegalStateException("No exam found with short title: " + shortTitle);
     }
 
     /**
@@ -93,11 +119,10 @@ public class ExamList {
     public String toString() {
         StringBuilder examStrings = new StringBuilder();
         int counter = 1;
-        for (Exam exam : exams) {
+        for (Exam exam : all()) {
             examStrings.append(counter);
             examStrings.append(". ");
             examStrings.append(exam.toString());
-            // examStrings.append(exam.getFullDetail());
             examStrings.append("\n");
             counter += 1;
         }

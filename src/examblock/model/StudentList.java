@@ -1,44 +1,69 @@
 package examblock.model;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A collection object for holding and managing {@link Student}s.
  */
-public class StudentList {
-
-    /** This instance's list of students. */
-    private final List<Student> students;
+public class StudentList extends ListManager<Student> implements StreamManager {
 
     /**
-     * Constructs an empty list of {@link Student}s.
+     * Constructs a StudentList with registry.
+     *
+     * @param registry - registry
      */
-    public StudentList() {
-        this.students = new ArrayList<>();
+    public StudentList(Registry registry) {
+        super(Student::new, registry, Student.class);
     }
 
     /**
-     * Adds a {@link Student} to this list of {@link Student}s.
+     * Finds an item by a key (e.g., ID).
      *
-     * @param student - the student object being added to this list.
+     * @param key - the text used to identify the item
+     * @return the item if found or null
      */
-    public void add(Student student) {
-        this.students.add(student);
+    @Override
+    public Student find(String key) {
+        for (Student student : super.all()) {
+            if (student.getId().equals(key)) {
+                return student;
+            }
+        }
+        return null;
     }
 
     /**
-     * Get the {@link Student} with a matching {@code LUI}.
+     * Finds an item by a key (e.g., ID).
      *
-     * @param lui - the {@code LUI} of the {@link Student} to be found.
-     * @return {@link Student} with a matching {@code LUI}, if it exists.
+     * @param key - the text used to identify the item
+     * @return the item if found
+     * @throws IllegalStateException - if no item is found
+     */
+    @Override
+    public Student get(String key) throws IllegalStateException {
+        Student student = find(key);
+        if (student == null) {
+            throw new IllegalStateException("No student found with key: " + key);
+        }
+        return student;
+    }
+
+    /**
+     * Get the Student with a matching LUI.
+     *
+     * @param lui - the LUI of the Student to be found.
+     * @return Student with a matching LUI, if it exists.
      * @throws IllegalStateException - throw an IllegalStateException if it can't
      *         find a matching student as that indicates there is a misalignment of
      *         the executing state and the complete list of possible students.
      */
     public Student byLui(Long lui) throws IllegalStateException {
-        for (Student student : this.students) {
-            if (student.getLui() == lui) {
+        for (Student student : super.all()) {
+            if (student.getLui().equals(lui)) {
                 return student;
             }
         }
@@ -46,18 +71,7 @@ public class StudentList {
     }
 
     /**
-     * Creates a new {@code List} holding {@code references} to all the {@link Student}s
-     * managed by this {@code StudentList} and returns it.
-     *
-     * @return a new {@code List} holding {@code references} to all the {@link Student}s
-     * managed by this {@code StudentList}.
-     */
-    public List<Student> all() {
-        return new ArrayList<>(this.students);
-    }
-
-    /**
-     * Counts the number of either non-AARA or AARA students taking a particular {@link Subject}.
+     * Counts the number of either non-AARA or AARA students taking a particular Subject.
      *
      * @param subject the subject to be found.
      * @param aara true to count AARA students or false to count non-AARA students.
@@ -65,11 +79,11 @@ public class StudentList {
      */
     public int countStudents(Subject subject, boolean aara) {
         int count = 0;
-        for (Student student : this.students) {
+        for (Student student : super.all()) {
             if (student.isAara() == aara) {
                 List<Subject> subjects = student.getSubjects().all();
                 for (Subject check : subjects) {
-                    if (check == subject) {
+                    if (check.equals(subject)) {
                         count++;
                     }
                 }
@@ -93,7 +107,7 @@ public class StudentList {
                 """;
 
         StringBuilder studentStrings = new StringBuilder();
-        for (Student student : this.students) {
+        for (Student student : super.all()) {
             studentStrings.append(student.getFullDetail());
             studentStrings.append("\n");
         }
@@ -116,7 +130,7 @@ public class StudentList {
                 """;
 
         StringBuilder studentStrings = new StringBuilder();
-        for (Student student : this.students) {
+        for (Student student : super.all()) {
             studentStrings.append(student.toString());
         }
         return studentStrings.toString();

@@ -1,68 +1,73 @@
 package examblock.model;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A collection object for holding and managing {@link Subject}s.
  */
-public class SubjectList {
-
-    /** This instance's list of subjects. */
-    private final List<Subject> subjects;
+public class SubjectList extends ListManager<Subject> implements StreamManager {
 
     /**
-     * Constructs an empty list of {@link Subject}s.
+     * Constructs a SubjectList with registry.
+     *
+     * @param registry - registry
      */
-    public SubjectList() {
-        subjects = new ArrayList<>();
+    public SubjectList(Registry registry) {
+        super(Subject:: new, registry, Subject.class);
     }
 
     /**
-     * Adds a {@link Subject} to this list of {@link Subject}s.
+     * Finds an item by a key (e.g., ID).
      *
-     * @param subject - the subject object being added to this list.
+     * @param key - the text used to identify the item
+     * @return the item if found or null
      */
-    public void addSubject(Subject subject) {
-        subjects.add(subject);
+    @Override
+    public Subject find(String key) {
+        for (Subject subject : super.all()) {
+            if (subject.getId().equals(key)) {
+                return subject;
+            }
+        }
+        return null;
     }
 
     /**
-     * Removes a given {@link Subject} from the {@code SubjectList}.
+     * Finds an item by a key (e.g., ID).
      *
-     * @param subject - the subject to remove from this list.
+     * @param key - the text used to identify the item
+     * @return the item if found
+     * @throws IllegalStateException - if no item is found
      */
-    public void removeSubject(Subject subject) {
-        subjects.remove(subject);
+    @Override
+    public Subject get(String key) throws IllegalStateException {
+        Subject subject = find(key);
+        if (subject == null) {
+            throw new IllegalStateException("No subject found with key: " + key);
+        }
+        return subject;
     }
 
     /**
-     * Get the first {@link Subject} with a matching {@code title}.
+     * Get the first Subject with a matching title.
      *
-     * @param title the {@code title} of the {@link Subject} to be found.
-     * @return The first {@link Subject} with a matching {@code title}, if it exists.
+     * @param title the title of the Subject to be found.
+     * @return The first Subject with a matching title, if it exists.
      * @throws IllegalStateException throw an IllegalStateException if it can't
      *         find a matching subject as that indicates there is a misalignment of
      *         the executing state and the complete list of possible subjects.
      */
     public Subject byTitle(String title) throws IllegalStateException {
-        for (Subject subject : this.subjects) {
+        for (Subject subject : super.all()) {
             if (subject.getTitle().equals(title)) {
                 return subject;
             }
         }
         throw new IllegalStateException("No such subject!");
-    }
-
-    /**
-     * Creates a new {@code List} holding {@code references} to all the {@link Subject}s
-     * managed by this {@code SubjectList} and returns it.
-     *
-     * @return a new {@code List} holding {@code references} to all the {@link Subject}s
-     * managed by this {@code SubjectList}.
-     */
-    public List<Subject> all() {
-        return new ArrayList<>(this.subjects);
     }
 
     /**
@@ -74,7 +79,7 @@ public class SubjectList {
 
         StringBuilder subjectStrings = new StringBuilder();
         int counter = 1;
-        for (Subject subject : this.subjects) {
+        for (Subject subject : super.all()) {
             subjectStrings.append(counter);
             subjectStrings.append(". ");
             subjectStrings.append(subject.getFullDetail());
@@ -93,7 +98,7 @@ public class SubjectList {
 
         StringBuilder subjectStrings = new StringBuilder();
         int counter = 1;
-        for (Subject subject : this.subjects) {
+        for (Subject subject : super.all()) {
             subjectStrings.append(counter);
             subjectStrings.append(". ");
             subjectStrings.append(subject.toString());

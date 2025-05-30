@@ -19,7 +19,6 @@ public class RoomList extends ListManager<Room> {
      * @param registry registry
      */
     public RoomList(Registry registry) {
-        //
         super(Room::new, registry, Room.class);
     }
 
