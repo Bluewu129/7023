@@ -7,54 +7,61 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The M in the MVC model - this is the source of truth for all the data in the app
- * [5] Observer pattern for model-view communication.
+ * Core data model representing the complete state of an exam block system.
+ * Implements the Model component of MVC architecture with observer pattern support.
+ * Manages all entity collections and provides comprehensive file persistence capabilities.
  */
 public class ExamBlockModel {
 
-    /** The title of this exam block */
+    /** Default title for new exam block instances */
+    private static final String DEFAULT_TITLE = "ExamBlock Data 2025";
+
+    /** Default version number for new exam block instances */
+    private static final double DEFAULT_VERSION = 1.0;
+
+    /** Title of this exam block */
     private String title;
 
-    /** The version number of this exam block */
+    /** Version number of this exam block */
     private double version;
 
-    /** The filename currently associated with this model */
+    /** Currently associated filename for this model */
     private String filename;
 
-    /** The global registry for all objects */
+    /** Central registry for all managed objects using registry pattern */
     private Registry registry;
 
-    /** List of observers to notify when data changes */
+    /** Collection of observers for model change notifications */
     private List<ModelObserver> observers;
 
-    /** The list of subjects */
+    /** Managed collection of academic subjects */
     private SubjectList subjects;
 
-    /** The list of units */
+    /** Managed collection of subject units */
     private UnitList units;
 
-    /** The list of students */
+    /** Managed collection of students */
     private StudentList students;
 
-    /** The list of exams */
+    /** Managed collection of exams */
     private ExamList exams;
 
-    /** The list of rooms */
+    /** Managed collection of rooms */
     private RoomList rooms;
 
-    /** The list of venues */
+    /** Managed collection of exam venues */
     private VenueList venues;
 
-    /** The list of sessions */
+    /** Managed collection of exam sessions */
     private SessionList sessions;
 
     /**
-     * Constructor
-     * [2] Registry pattern - centralized object storage and lookup mechanism.
+     * Initializes a new exam block model with default values and empty collections.
+     * Sets up registry pattern for centralized object management and observer list for notifications.
      */
     public ExamBlockModel() {
-        this.title = "ExamBlock Data 2025";
-        this.version = 1.0;
+        this.title = DEFAULT_TITLE;
+        this.version = DEFAULT_VERSION;
         this.filename = "";
         this.registry = new RegistryImpl();
         this.observers = new ArrayList<>();
@@ -68,9 +75,11 @@ public class ExamBlockModel {
     }
 
     /**
-     * Add an observer
-     *[5] Generic observer pattern for loose coupling between model and view.
-     * @param observer - the new observer to be called on update
+     * Registers an observer for model change notifications.
+     * Implements generic observer pattern for loose coupling between model and view.
+     * Prevents duplicate registrations of the same observer instance.
+     *
+     * @param observer the observer to register for model change notifications
      */
     public void addObserver(ModelObserver observer) {
         if (observer != null && !observers.contains(observer)) {
@@ -79,9 +88,10 @@ public class ExamBlockModel {
     }
 
     /**
-     * Notify observers that data has changed
-     *[5] Observer pattern for notifying view of model changes.
-     * @param property - a string naming the property
+     * Notifies all registered observers of model state changes.
+     * Used to maintain view synchronization when model data is modified.
+     *
+     * @param property descriptive name of the changed property
      */
     public void notifyObservers(String property) {
         for (ModelObserver observer : observers) {
@@ -90,81 +100,81 @@ public class ExamBlockModel {
     }
 
     /**
-     * get the most up-to-date ExamList from the source of truth, the registry
+     * Retrieves the most current exam list from the registry source of truth.
      *
-     * @return the ExamList
+     * @return the managed exam collection
      */
     public ExamList getExams() {
         return exams;
     }
 
     /**
-     * get the most up-to-date VenueList from the source of truth, the registry
+     * Retrieves the most current venue list from the registry source of truth.
      *
-     * @return the VenueList
+     * @return the managed venue collection
      */
     public VenueList getVenues() {
         return venues;
     }
 
     /**
-     * get the most up-to-date RoomList from the source of truth, the registry
+     * Retrieves the most current room list from the registry source of truth.
      *
-     * @return the RoomList
+     * @return the managed room collection
      */
     public RoomList getRooms() {
         return rooms;
     }
 
     /**
-     * get the most up-to-date StudentList from the source of truth, the registry
+     * Retrieves the most current student list from the registry source of truth.
      *
-     * @return the StudentList
+     * @return the managed student collection
      */
     public StudentList getStudents() {
         return students;
     }
 
     /**
-     * get the most up-to-date SessionList from the source of truth, the registry
+     * Retrieves the most current session list from the registry source of truth.
      *
-     * @return the SessionList
+     * @return the managed session collection
      */
     public SessionList getSessions() {
         return sessions;
     }
 
     /**
-     * get the most up-to-date SubjectList from the source of truth, the registry
+     * Retrieves the most current subject list from the registry source of truth.
      *
-     * @return the SubjectList
+     * @return the managed subject collection
      */
     public SubjectList getSubjects() {
         return subjects;
     }
 
     /**
-     * get the most up-to-date UnitList from the source of truth, the registry
+     * Retrieves the most current unit list from the registry source of truth.
      *
-     * @return the UnitList
+     * @return the managed unit collection
      */
     public UnitList getUnits() {
         return units;
     }
 
     /**
-     * return the Exam Block title
+     * Gets the current exam block title.
      *
-     * @return the Exam Block title
+     * @return the exam block title
      */
     public String getTitle() {
         return title;
     }
 
     /**
-     * change the title of an Exam Block. Observers advised
+     * Updates the exam block title and notifies observers of the change.
      *
-     * @param title - to change
+     * @param title the new title for this exam block
      */
     public void setTitle(String title) {
         this.title = title;
@@ -172,42 +182,42 @@ public class ExamBlockModel {
     }
 
     /**
-     * get the current version number
+     * Gets the current version number.
      *
-     * @return the version number
+     * @return the current version number
      */
     public double getVersion() {
         return version;
     }
 
     /**
-     * change the version of the Exam Block. Observers advised
+     * Updates the version number with validation to ensure version progression.
+     * Only accepts versions greater than the current version to maintain version integrity.
      *
-     * @param version - the new version. Has to be greater than the current version
+     * @param version the new version number (must be greater than current version)
      */
     public void setVersion(double version) {
         if (version > this.version) {
             this.version = version;
             notifyObservers("version_changed");
         } else {
-            System.out.println("New version must be "
-                    + "greater than current version " + this.version);
+            System.out.println("New version must be greater than current version " + this.version);
         }
     }
 
     /**
-     * get the currently loaded filename
+     * Gets the currently associated filename.
      *
-     * @return filename
+     * @return the current filename
      */
     public String getFilename() {
         return filename;
     }
 
     /**
-     * change the filename. Observers advised
+     * Updates the associated filename and notifies observers of the change.
      *
-     * @param filename - new filename
+     * @param filename the new filename for this exam block
      */
     public void setFilename(String filename) {
         this.filename = filename;
@@ -215,38 +225,31 @@ public class ExamBlockModel {
     }
 
     /**
-     * returns the registry
+     * Provides access to the central registry for object management.
      *
-     * @return the registry
+     * @return the registry instance
      */
     public Registry getRegistry() {
         return registry;
     }
 
     /**
-     * Save a registry to disk. This file format has to match the format expected by loadFromFile.
-     * If the file cannot be successfully saved, log a message to the console and return false.
+     * Persists registry data to disk using structured file format.
+     * Creates comprehensive data file containing title, version, and all entity collections.
+     * Handles file I/O exceptions gracefully and provides user feedback.
      *
-     * Typically, the data file structure looks like this, although you're free to design your own.
-     * • Title: ExamBlock Data 2025
-     * • Version: 1.0
-     * • [Begin]
-     * • subjects (see SubjectList, Subject)
-     * • units (see UnitList, Unit)
-     * • students (see StudentList, Student)
-     * • exams (see ExamList, Exam)
-     * • rooms (see RoomList, Room)
-     * • venues (see VenueList, Venue)
-     * • sessions (see SessionList, Session)
-     * • [End]
+     * File structure format:
+     * - Title: [exam block title]
+     * - Version: [version number]
+     * - [Begin]
+     * - [Entity collections in defined order]
+     * - [End]
      *
-     * [8] File I/O exception handling and error recovery.
-     *
-     * @param registry - the registry to save
-     * @param filename - the filename to save to. If null, a dialog is shown to ask for a filename.
-     * @param title - the Exam Block title
-     * @param version - the current version number
-     * @return true is file saved, otherwise false
+     * @param registry the registry containing all entities to save
+     * @param filename target filename for saving, null prompts user dialog
+     * @param title the exam block title for the file
+     * @param version the version number for this save operation
+     * @return true if save operation successful, false otherwise
      */
     public boolean saveToFile(Registry registry, String filename, String title, double version) {
         try {
@@ -293,34 +296,33 @@ public class ExamBlockModel {
     }
 
     /**
-     * Load a registry from disk. This version will prompt the user for a file to load.
-     * For the details of the file format, see loadFromFile(Registry, String).
+     * Prompts user for filename when no specific file is provided.
+     * Used when load operation is initiated without a target file.
      */
     public void loadFromFile() {
         System.out.println("Please specify a filename to load from.");
     }
 
     /**
-     * Load a registry from disk. This file format has to match the format written by saveToFile.
-     * If the file cannot be loaded due to an IOException or RuntimeException, terminates the app.
+     * Loads complete registry data from a structured data file.
+     * Reconstructs all entity collections and updates registry accordingly.
+     * Terminates application on IOException or RuntimeException as per specification.
      *
-     * Typically, the data file structure looks like this, although you're free to design your own.
-     * • Title: ExamBlock Data 2025
-     * • Version: 1.0
-     * • [Begin]
-     * • subjects (see SubjectList, Subject)
-     * • units (see UnitList, Unit)
-     * • students (see StudentList, Student)
-     * • exams (see ExamList, Exam)
-     * • rooms (see RoomList, Room)
-     * • venues (see VenueList, Venue)
-     * • sessions (see SessionList, Session)
-     * • [End]
+     * Expected file structure:
+     * - Title: [exam block title]
+     * - Version: [version number]
+     * - [Begin]
+     * - subjects (see SubjectList, Subject)
+     * - units (see UnitList, Unit)
+     * - students (see StudentList, Student)
+     * - exams (see ExamList, Exam)
+     * - rooms (see RoomList, Room)
+     * - venues (see VenueList, Venue)
+     * - sessions (see SessionList, Session)
+     * - [End]
      *
-     * [8] Exception handling in file I/O operations.
-     *
-     * @param registry - the registry to fill
-     * @param filename - the filename to load from
+     * @param registry the registry to populate with loaded entities
+     * @param filename the source filename to load from
      */
     public void loadFromFile(Registry registry, String filename) {
         try {
@@ -350,48 +352,47 @@ public class ExamBlockModel {
                 System.out.println("=== Loading Subjects ===");
                 subjects = new SubjectList(registry);
                 subjects.streamIn(br, registry, 0);
-                System.out.println("Loaded " + subjects.size() + " subjects"); //test
+                System.out.println("Loaded " + subjects.size() + " subjects");
 
                 System.out.println("Available subjects after loading:");
                 for (Subject s : registry.getAll(Subject.class)) {
-                    System.out.println("  - ID: '" + s.getId() + "', Title: '"
-                            + s.getTitle() + "'");
+                    System.out.println("  - ID: '" + s.getId() + "', Title: '" + s.getTitle() + "'");
                 }
 
                 System.out.println("=== Loading Units ===");
                 units = new UnitList(registry);
                 units.streamIn(br, registry, 0);
-                System.out.println("Loaded " + units.size() + " units"); //test
+                System.out.println("Loaded " + units.size() + " units");
 
                 System.out.println("=== Loading Students ===");
                 students = new StudentList(registry);
                 students.streamIn(br, registry, 0);
-                System.out.println("Loaded " + students.size() + " students"); //test
+                System.out.println("Loaded " + students.size() + " students");
 
                 System.out.println("=== Loading Exams ===");
                 exams = new ExamList(registry);
                 exams.streamIn(br, registry, 0);
-                System.out.println("Loaded " + exams.size() + " exams"); //test
+                System.out.println("Loaded " + exams.size() + " exams");
 
                 System.out.println("=== Loading Rooms ===");
                 rooms = new RoomList(registry);
                 rooms.streamIn(br, registry, 0);
-                System.out.println("Loaded " + rooms.size() + " rooms"); //test
+                System.out.println("Loaded " + rooms.size() + " rooms");
 
                 System.out.println("=== Loading Venues ===");
                 venues = new VenueList(registry);
                 venues.streamIn(br, registry, 0);
-                System.out.println("Loaded " + venues.size() + " venues"); //test
+                System.out.println("Loaded " + venues.size() + " venues");
 
                 System.out.println("=== Loading Sessions ===");
                 sessions = new SessionList(registry);
                 sessions.streamIn(br, registry, 0);
-                System.out.println("Loaded " + sessions.size() + " sessions"); //test
+                System.out.println("Loaded " + sessions.size() + " sessions");
 
-                // End
+                // Validate end marker with warning if missing
                 String endLine = CSSE7023.getLine(br);
                 if (endLine == null || !endLine.equals("[End]")) {
-                    System.out.println("Warning: missing [End] marker in file"); //test
+                    System.out.println("Warning: missing [End] marker in file");
                 }
 
                 System.out.println("Successfully loaded all data from " + filename);

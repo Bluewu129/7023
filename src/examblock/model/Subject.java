@@ -5,34 +5,29 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 /**
- * An object describing a single Year 12 Subject.
+ * Represents a Year 12 academic subject with title and comprehensive description.
+ * Maintains data integrity through automatic title and description sanitization.
+ * Serves as core entity for organizing exams, units, and student enrollments.
  */
 public class Subject implements StreamManager, ManageableListItem {
 
-    /** The Subject title (immutable). */
+    /** Subject title - immutable after creation and sanitization */
     private String title;
-    /** The Subject description (immutable). */
+
+    /** Subject description - immutable after creation and sanitization */
     private String description;
-    /** The registry reference. */
+
+    /** Reference to global registry for object management */
     private Registry registry;
 
     /**
-     * Constructs a new Year 12 Subject object.
-     * Consists of a {@code title} that may be multiple capitalised words,
-     * including numbers (in words or digits) and/or Roman numerals (I,IV, etc.),
-     * each separated by a SINGLE space, with NO leading or trailing spaces and
-     * no trailing full stop (.), but other internal punctuation may be present -
-     * ({@code title}s supplied with multiple spaces or leading or trailing spaces
-     * must be rectified); AND a {@code description}, in whole English sentences,
-     * each beginning with a capital letter and finishing with a full stop.
+     * Creates a new subject with automatic title and description sanitization.
+     * Title may contain multiple capitalized words, numbers, and Roman numerals.
+     * Description should be complete sentences with proper punctuation.
      *
-     * @param title the string title of this subject,
-     *              consisting of one or more capitalised words
-     *              separated by one or more spaces or other punctuation.
-     * @param description the string description of this subject, in whole sentences,
-     *                    each beginning with a capital and finishing with a full stop,
-     *                    with words separated by one or more spaces or other punctuation.
-     * @param registry the global object registry, needed to resolve textual Subject names
+     * @param title subject title (capitalized words separated by single spaces)
+     * @param description subject description (complete sentences with periods)
+     * @param registry global registry for centralized object management
      */
     public Subject(String title, String description, Registry registry) {
         this.title = sanitiseTitle(title);
@@ -45,17 +40,16 @@ public class Subject implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Constructs a Subject by reading a description from a text stream
+     * Creates a subject by deserializing from a text stream.
+     * Used for loading subject data from files with comprehensive error handling.
      *
-     * @param br BufferedReader opened and ready to read from
-     * @param registry the global object registry, needed to resolve textual Subject names
-     * @param nthItem the index number of this serialized object
-     * @throws IOException on any read failure
-     * @throws RuntimeException on any logic related issues
+     * @param br BufferedReader opened and positioned at subject data
+     * @param registry global object registry for object management
+     * @param nthItem expected index of this subject in the serialization stream
+     * @throws IOException on stream reading failures
+     * @throws RuntimeException on data format or logic errors
      */
-    public Subject(BufferedReader br, Registry registry, int nthItem)
-            throws IOException, RuntimeException {
-
+    public Subject(BufferedReader br, Registry registry, int nthItem) throws IOException, RuntimeException {
         this.registry = registry;
         this.title = "";
         this.description = "";
@@ -68,21 +62,16 @@ public class Subject implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Used to write data to the disk.
+     * Writes subject data to output stream in standardized format.
      *
-     * The format of the text written to the stream must be matched exactly by streamIn, so it
-     * is very important to format the output as described.
+     * Format structure:
+     * 1. SUBJECT_TITLE_UPPERCASE
+     * Subject Title in Proper Case  
+     * "Complete subject description with proper punctuation."
      *
-     * 1. ACCOUNTING
-     * Accounting
-     * "The study of the management of financial resources of the public sector, businesses,
-     * and individuals."
-     *
-     * @param bw writer, already opened. Your data should be written at the current
-     *           file position
-     * @param nthItem a number representing this item's position in the stream. Used for sanity
-     *                checks
-     * @throws IOException on any stream related issues
+     * @param bw writer already opened at current file position
+     * @param nthItem subject's position in serialization stream for consistency checks
+     * @throws IOException on stream writing failures
      */
     @Override
     public void streamOut(BufferedWriter bw, int nthItem) throws IOException {
@@ -92,23 +81,18 @@ public class Subject implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Used to read data from the disk. IOExceptions and RuntimeExceptions must be allowed
-     * to propagate out to the calling method, which co-ordinates the streaming. Any other
-     * exceptions should be converted to RuntimeExceptions and rethrown.
+     * Reads subject data from input stream with format validation.
+     * Handles both quoted and unquoted description formats for flexibility.
      *
-     * For the format of the text in the input stream, refer to the streamOut documentation.
-     *
-     * @param br reader, already opened.
-     * @param registry the global object registry
-     * @param nthItem a number representing this item's position in the stream. Used for sanity
-     *                checks
-     * @throws IOException on any stream related issues
-     * @throws RuntimeException on any logic related issues
+     * @param br reader already opened at subject data position
+     * @param registry global object registry (parameter maintained for interface consistency)
+     * @param nthItem expected subject index for consistency validation
+     * @throws IOException on stream reading failures
+     * @throws RuntimeException on data format or consistency errors
      */
     @Override
-    public void streamIn(BufferedReader br, Registry registry, int nthItem)
-            throws IOException, RuntimeException {
-        // "1. ACCOUNTING"
+    public void streamIn(BufferedReader br, Registry registry, int nthItem) throws IOException, RuntimeException {
+        // Parse subject header: "1. SUBJECT_TITLE"
         String heading = CSSE7023.getLine(br);
         if (heading == null) {
             throw new RuntimeException("EOF reading Subject #" + nthItem);
@@ -119,18 +103,19 @@ public class Subject implements StreamManager, ManageableListItem {
             throw new RuntimeException("Invalid subject format: " + heading);
         }
 
-        int index = CSSE7023.toInt(bits[0], "Number format exception parsing Subject "
-                + nthItem + " header");
+        int index = CSSE7023.toInt(bits[0], "Number format exception parsing Subject " + nthItem + " header");
         if (index != nthItem) {
             throw new RuntimeException("Subject index out of sync!");
         }
 
+        // Parse actual subject title
         String actualTitle = CSSE7023.getLine(br);
         if (actualTitle == null) {
             throw new RuntimeException("EOF reading Subject #" + nthItem + " title");
         }
         this.title = sanitiseTitle(actualTitle.trim());
 
+        // Parse subject description (handle both quoted and unquoted formats)
         String descLine = CSSE7023.getLine(br);
         if (descLine == null) {
             throw new RuntimeException("EOF reading Subject #" + nthItem + " description");
@@ -144,62 +129,22 @@ public class Subject implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Returns a detailed string representation of this subject.
-     * Returns the {@code title} in all uppercase, then on a new line,
-     * the entire text {@code description} inside double quotes.
+     * Sanitizes subject title according to formatting requirements.
+     * Normalizes whitespace to single spaces and removes trailing periods.
+     * Preserves capitalization, numbers, and Roman numerals as specified.
      *
-     * @return a string representation of this subject.
-     */
-    @Override
-    public String getFullDetail() {
-        String title = this.getTitle().toUpperCase();
-        return title
-                + "\n"
-                + '"'
-                + this.getDescription()
-                + '"'
-                + "\n";
-    }
-
-    /**
-     * return an Object[] containing class values suitable for use in the view model
-     *
-     * @return an Object[] containing class values suitable for use in the view model
-     */
-    @Override
-    public Object[] toTableRow() {
-        return new Object[]{title, description
-        };
-    }
-
-    /**
-     * Return a unique string identifying us
-     *
-     * @return a unique string identifying us
-     */
-    @Override
-    public String getId() {
-        return title;
-    }
-
-    /**
-     * Return a string from the input string, following these rules:
-     * - there may be multiple capitalised words,
-     * - including numbers (in words or digits) and/or Roman numerals (I,IV, etc.),
-     * - each separated by a SINGLE space,
-     * - with NO leading or trailing spaces, and
-     * - no trailing full stop (.), but other internal punctuation may be present
-     *
-     * @param text - the string to sanitise
-     * @return the sanitised string
+     * @param text the title text to sanitize
+     * @return cleaned title conforming to formatting standards
      */
     public String sanitiseTitle(String text) {
         if (text == null || text.trim().isEmpty()) {
             return "";
         }
 
+        // Normalize multiple spaces to single spaces and trim boundaries
         String cleaned = text.trim().replaceAll("\\s+", " ");
 
+        // Remove trailing period if present (other internal punctuation preserved)
         if (cleaned.endsWith(".")) {
             cleaned = cleaned.substring(0, cleaned.length() - 1);
         }
@@ -208,20 +153,21 @@ public class Subject implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Return the string description of this subject, in whole sentences,
-     * each beginning with a capital and finishing with a full stop,
-     * with words separated by one or more spaces or other punctuation.
+     * Sanitizes subject description to ensure proper sentence formatting.
+     * Normalizes whitespace and ensures description ends with appropriate punctuation.
      *
-     * @param text - the string to sanitise
-     * @return the sanitised string
+     * @param text the description text to sanitize
+     * @return cleaned description with proper sentence structure
      */
     public String sanitiseDescription(String text) {
         if (text == null || text.trim().isEmpty()) {
             return "";
         }
 
+        // Normalize whitespace to single spaces
         String cleaned = text.trim().replaceAll("\\s+", " ");
 
+        // Ensure description ends with period for proper sentence structure
         if (!cleaned.isEmpty() && !cleaned.endsWith(".")) {
             cleaned += ".";
         }
@@ -230,28 +176,61 @@ public class Subject implements StreamManager, ManageableListItem {
     }
 
     /**
-     * Gets the {@code title} of this subject.
+     * Creates detailed string representation with title and quoted description.
+     * Returns title in uppercase followed by description in quotes on new line.
      *
-     * @return the String title of this subject.
+     * @return formatted detailed representation of this subject
+     */
+    @Override
+    public String getFullDetail() {
+        return title.toUpperCase() + "\n\"" + description + "\"\n";
+    }
+
+    /**
+     * Creates array of values suitable for table display in view components.
+     * Provides core subject information for JTable integration.
+     *
+     * @return array containing title and description for table display
+     */
+    @Override
+    public Object[] toTableRow() {
+        return new Object[]{title, description};
+    }
+
+    /**
+     * Provides unique string identifier for registry lookup.
+     * Uses title as the unique identifier for this subject.
+     *
+     * @return the subject title
+     */
+    @Override
+    public String getId() {
+        return title;
+    }
+
+    /**
+     * Gets the subject title.
+     *
+     * @return the subject title string
      */
     public String getTitle() {
         return title;
     }
 
     /**
-     * Gets the text {@code description} of this subject.
+     * Gets the subject description.
      *
-     * @return the String description of this subject.
+     * @return the subject description string
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * Returns a brief string representation of this subject.
-     * Returns the subject {@code title} in all uppercase.
+     * Creates brief string representation showing title in uppercase.
+     * Used for general toString() purposes and simple displays.
      *
-     * @return the subject title as a String in all uppercase and a newline.
+     * @return subject title in uppercase with newline
      */
     @Override
     public String toString() {
@@ -259,10 +238,11 @@ public class Subject implements StreamManager, ManageableListItem {
     }
 
     /**
-     * class specific equals method
+     * Implements class-specific equality comparison based on title and description.
+     * Two subjects are equal if they have identical title and description fields.
      *
-     * @param o the other object
-     * @return true if they match, field for field, otherwise false
+     * @param o the other object to compare
+     * @return true if objects represent the same subject content
      */
     @Override
     public boolean equals(Object o) {
@@ -277,9 +257,9 @@ public class Subject implements StreamManager, ManageableListItem {
     }
 
     /**
-     * return the hash value of this object
+     * Generates hash code based on title and description for consistent hashing.
      *
-     * @return the hash value of this object
+     * @return hash code derived from title and description
      */
     @Override
     public int hashCode() {

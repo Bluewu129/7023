@@ -12,222 +12,174 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The V in MVC model. Drives and owns the UI
- * [7] Basic GUI setup and component organization.
- * [10] Tabbed pane for organizing multiple views.
- * [11] Tree component for hierarchical data display.
- * [12] Menu system implementation.
+ * Primary view component implementing the View layer of MVC architecture.
+ * Manages complete GUI interface including tables, trees, and tabbed data views.
+ * Provides observer pattern integration for automatic model synchronization.
  */
 public class ExamBlockView implements ModelObserver {
 
     /**
-     * The main application window frame that contains the entire exam block view.
+     * Main application window containing the entire exam block interface
      */
     private JFrame frame;
 
     /**
-     * The main tabbed pane component that organizes different data views into tabs.
-     * Provides easy navigation between different data management interfaces.
-     * [10] Tabbed interface organization.
+     * Tabbed pane organizing different data views for easy navigation between interfaces
      */
     private JTabbedPane tabbedPane;
 
     /**
-     * The table component specifically for displaying and managing exam data.
+     * Table component for displaying and selecting exam data
      */
     private JTable examTable;
 
     /**
-     * The table model that manages data for the exam table.
+     * Table model managing data structure for the exam table
      */
     private DefaultTableModel examTableModel;
 
     /**
-     * The tree component for displaying hierarchical session and venue data.
-     * [11] Hierarchical session display.
+     * Tree component displaying hierarchical session and venue data for navigation
      */
     private JTree tree;
 
     /**
-     * The root node for session data in the tree structure.
+     * Root node for organizing existing session data in tree structure
      */
     private DefaultMutableTreeNode sessionRoot;
 
     /**
-     * The root node for venue data in the tree structure.
+     * Root node for organizing venue data for new session creation
      */
     private DefaultMutableTreeNode venueRoot;
 
     /**
-     * The "Add" button for adding new records to the currently selected tab.
+     * Action button for adding exams to sessions or venues
      */
     private JButton addButton;
 
     /**
-     * The "Clear" button for clearing selections and resetting form fields.
+     * Action button for clearing current selections and resetting interface state
      */
     private JButton clearButton;
 
     /**
-     * The "Finalise" button for completing and finalizing exam configurations.
+     * Action button for finalizing exam configurations and generating reports
      */
     private JButton finaliseButton;
 
     /**
-     * The main data model containing all exam block information.
+     * Reference to the main data model for observer pattern integration
      */
     private ExamBlockModel model;
 
     /**
-     * Mapping from tree nodes to their corresponding session objects.
+     * Mapping from tree nodes to their corresponding session objects for quick access
      */
     private Map<DefaultMutableTreeNode, Session> sessionNodeMap;
 
     /**
-     * Mapping from tree nodes to their corresponding venue objects.
+     * Mapping from tree nodes to their corresponding venue objects for quick access
      */
     private Map<DefaultMutableTreeNode, Venue> venueNodeMap;
 
     /**
-     * Mapping from integer indices to exam objects for quick access.
+     * Mapping from integer indices to exam objects for efficient exam table access
      */
     private Map<Integer, Exam> examMap;
 
     /**
-     * Mapping from tree nodes to their corresponding exam objects.
+     * Mapping from tree nodes to their corresponding exam objects for tree navigation
      */
     private Map<DefaultMutableTreeNode, Exam> examNodeMap;
 
     /**
-     * Document listener implementation
-     */
-    public abstract static class SimpleDocumentListener extends Object
-            implements javax.swing.event.DocumentListener {
-        /**
-         * Constructor
-         */
-        public SimpleDocumentListener() {
-            super();
-        }
-
-        /**
-         * Specified by: insertUpdate in interface DocumentListener
-         * @param e - DocumentEvent
-         */
-        @Override
-        public void insertUpdate(javax.swing.event.DocumentEvent e) {
-            update(e);
-        }
-
-        /**
-         * Specified by: removeUpdate in interface DocumentListener
-         * @param e - DocumentEvent
-         */
-        @Override
-        public void removeUpdate(javax.swing.event.DocumentEvent e) {
-            update(e);
-        }
-
-        /**
-         * Specified by: changedUpdate in interface DocumentListener
-         * @param e - DocumentEvent
-         */
-        @Override
-        public void changedUpdate(javax.swing.event.DocumentEvent e) {
-            update(e);
-        }
-
-        /**
-         * Called when data changes
-         * @param e - the particular event that happened
-         */
-        public abstract void update(javax.swing.event.DocumentEvent e);
-    }
-
-    /**
-     * Constructor
-     * [7] Swing GUI creation and layout setup.
-     * [15] Root pane and frame structure.
-     * @param registry - registry
+     * Initializes the complete view interface with all components and data mappings.
+     * Creates main window, configures layout, sets up UI components, and establishes parent dialogs.
+     *
+     * @param registry the global registry for object management integration
      */
     public ExamBlockView(Registry registry) {
-        // maps
+        // Initialize all node-to-object mapping collections
         sessionNodeMap = new HashMap<>();
         venueNodeMap = new HashMap<>();
         examMap = new HashMap<>();
         examNodeMap = new HashMap<>();
 
-        // frame
+        // Create and configure main application frame
         frame = new JFrame("Exam Block Manager");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 700);
+        frame.setSize(800, 700);
         frame.setLocationRelativeTo(null);
 
-        // buttons
+        // Initialize primary action buttons
         addButton = new JButton("Add");
         clearButton = new JButton("Clear");
         finaliseButton = new JButton("Finalise");
 
-        // exam table
+        // Set up exam table with appropriate column structure and selection model
         String[] examColumns = {"Subject", "Date", "Time", "AARA", "Non"};
         examTableModel = new DefaultTableModel(examColumns, 0);
         examTable = new JTable(examTableModel);
         examTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // tree nodes
+        // Create hierarchical tree structure for session and venue navigation
         sessionRoot = new DefaultMutableTreeNode("Existing sessions");
         venueRoot = new DefaultMutableTreeNode("Create a new session");
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Sessions");
         root.add(sessionRoot);
         root.add(venueRoot);
 
-        // tree
         tree = new JTree(root);
         tree.setRootVisible(true);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
-        // tabbed pane
+        // Initialize tabbed interface for detailed data views
         tabbedPane = new JTabbedPane();
 
-        // dialog parents
+        // Configure dialog utility classes with appropriate parent components
         DialogUtils.setParent(frame);
         FileChooser.setParent(frame);
 
-        // UI
+        // Assemble complete layout using BorderLayout organization
         frame.setLayout(new BorderLayout());
         frame.add(createTopPanel(), BorderLayout.NORTH);
         frame.add(createBottomPanel(), BorderLayout.CENTER);
     }
 
     /**
-     * create the top panel
-     * @return the panel object
+     * Creates the top control panel with exam selection, session navigation, and action buttons.
+     * Implements three-column layout for workflow steps: Select Exam, Select Session/Venue, Take Action.
+     *
+     * @return configured top panel with all control components
      */
     public JPanel createTopPanel() {
         final JPanel topPanel = new JPanel(new BorderLayout());
 
-        // Left - exam selection
+        // Left panel: Exam selection interface with scrollable table
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.setBorder(BorderFactory.createTitledBorder("1. Select an Exam / Unit"));
         JScrollPane examScrollPane = new JScrollPane(examTable);
         examScrollPane.setPreferredSize(new Dimension(400, 200));
         leftPanel.add(examScrollPane, BorderLayout.CENTER);
 
-        // Center - session/venue tree
+        // Center panel: Session/venue navigation with hierarchical tree
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBorder(BorderFactory.createTitledBorder("2. Select a Session / Venue"));
         JScrollPane treeScrollPane = new JScrollPane(tree);
         treeScrollPane.setPreferredSize(new Dimension(300, 200));
         centerPanel.add(treeScrollPane, BorderLayout.CENTER);
 
-        // Right - buttons
+        // Right panel: Action buttons with proper spacing and layout
         JPanel rightPanel = new JPanel(new GridBagLayout());
         rightPanel.setBorder(BorderFactory.createTitledBorder("3. Go"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 15, 10, 15);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
 
         rightPanel.add(finaliseButton, gbc);
         gbc.gridy++;
@@ -243,24 +195,21 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * create the bottom panel
-     * [13] Scroll pane for large data table display.
-     * @return the panel
+     * Creates the bottom data panel with tabbed interface for detailed data views.
+     * Implements scroll pane for large data table display across multiple entity types.
+     *
+     * @return configured bottom panel with tabbed data views
      */
     public JPanel createBottomPanel() {
-        JTable subjectsTable = new JTable(new DefaultTableModel(
-                new String[]{"Title", "Description"}, 0));
-        JTable examsTable = new JTable(new DefaultTableModel(
-                new String[]{"Subject", "Type", "Paper", "Subtitle", "Units", "Date", "Time"}, 0));
-        JTable unitsTable = new JTable(new DefaultTableModel(
-                new String[]{"Subject", "UnitID", "Title"}, 0));
-        JTable studentsTable = new JTable(new DefaultTableModel(
-                new String[]{"Full Name", "AARA", "Date of Birth", "Subjects"}, 0));
-        JTable roomsTable = new JTable(new DefaultTableModel(
-                new String[]{"Room ID"}, 0));
-        JTable venuesTable = new JTable(new DefaultTableModel(
-                new String[]{"Venue", "Rooms", "Rows", "Col", "Desks", "AARA"}, 0));
+        // Create tables for each data type with appropriate column structures
+        JTable subjectsTable = new JTable(new DefaultTableModel(new String[]{"Title", "Description"}, 0));
+        JTable examsTable = new JTable(new DefaultTableModel(new String[]{"Subject", "Type", "Paper", "Subtitle", "Units", "Date", "Time"}, 0));
+        JTable unitsTable = new JTable(new DefaultTableModel(new String[]{"Subject", "UnitID", "Title"}, 0));
+        JTable studentsTable = new JTable(new DefaultTableModel(new String[]{"Full Name", "AARA", "Date of Birth", "Subjects"}, 0));
+        JTable roomsTable = new JTable(new DefaultTableModel(new String[]{"Room ID"}, 0));
+        JTable venuesTable = new JTable(new DefaultTableModel(new String[]{"Venue", "Rooms", "Rows", "Col", "Desks", "AARA"}, 0));
 
+        // Add all tabs to the tabbed pane with descriptive labels
         tabbedPane.addTab("Subjects", new JScrollPane(subjectsTable));
         tabbedPane.addTab("Exams", new JScrollPane(examsTable));
         tabbedPane.addTab("Units", new JScrollPane(unitsTable));
@@ -274,15 +223,19 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * Show the window after construction
+     * Makes the main application window visible to the user.
+     * Called after complete construction and configuration.
      */
     public void display() {
         frame.setVisible(true);
     }
 
     /**
-     * remove old content and load new content
-     * @param exams - new list of exams
+     * Refreshes the exam table with current exam data including student counts.
+     * Clears existing content and repopulates with updated information.
+     * Calculates AARA and non-AARA student counts for each exam subject.
+     *
+     * @param exams the current list of exams to display
      */
     public void updateExamTable(ExamList exams) {
         examTableModel.setRowCount(0);
@@ -293,6 +246,7 @@ public class ExamBlockView implements ModelObserver {
                 Exam exam = exams.all().get(i);
                 int aaraCount = 0;
                 int nonAaraCount = 0;
+
                 if (model != null && model.getStudents() != null) {
                     aaraCount = model.getStudents().countStudents(exam.getSubject(), true);
                     nonAaraCount = model.getStudents().countStudents(exam.getSubject(), false);
@@ -301,7 +255,9 @@ public class ExamBlockView implements ModelObserver {
                 Object[] rowData = {
                         exam.getSubject().getTitle(),
                         exam.getDate().toString(),
-                        exam.getTime().toString(), aaraCount, nonAaraCount
+                        exam.getTime().toString(),
+                        aaraCount,
+                        nonAaraCount
                 };
                 examTableModel.addRow(rowData);
                 examMap.put(i, exam);
@@ -310,12 +266,14 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * update the session tree
-     * @param sessions - sessions
-     * @param venues - venues
+     * Updates the session tree with current session and venue data.
+     * Rebuilds complete tree structure with detailed session information including desk availability.
+     * Organizes existing sessions and available venues for new session creation.
+     *
+     * @param sessions current list of scheduled sessions
+     * @param venues   current list of available venues
      */
     public void updateTree(SessionList sessions, VenueList venues) {
-
         sessionRoot.removeAllChildren();
         venueRoot.removeAllChildren();
         sessionNodeMap.clear();
@@ -339,34 +297,28 @@ public class ExamBlockView implements ModelObserver {
                 int totalDesks = session.getVenue().deskCount();
                 int availableDesks = totalDesks - usedDesks;
 
-                String sessionDisplay = session.getDate().toString() + " at "
-                        + session.getTime().toString() + " in "
-                        + session.getVenue().venueId()
-                        + " (" + availableDesks + " of " + totalDesks + " desks available)";
+                String sessionDisplay = session.getDate().toString() + " at " +
+                        session.getTime().toString() + " in " +
+                        session.getVenue().venueId() +
+                        " (" + availableDesks + " of " + totalDesks + " desks available)";
 
                 DefaultMutableTreeNode sessionNode = new DefaultMutableTreeNode(sessionDisplay);
                 sessionRoot.add(sessionNode);
-                addSessionToSessionNodeMap(
-                        sessionNode, session);
+                addSessionToSessionNodeMap(sessionNode, session);
 
                 java.util.List<Exam> sessionExams = session.getExams();
-                if (sessionExams != null
-                        && sessionExams.size() > 0) {
-
-                    DefaultMutableTreeNode examsNode = new DefaultMutableTreeNode(
-                            "Exams (" + sessionExams.size() + ")");
+                if (sessionExams != null && sessionExams.size() > 0) {
+                    DefaultMutableTreeNode examsNode = new DefaultMutableTreeNode("Exams (" + sessionExams.size() + ")");
                     sessionNode.add(examsNode);
 
                     for (Exam exam : sessionExams) {
                         int examStudents = 0;
                         if (model != null && model.getStudents() != null) {
                             boolean isAara = session.getVenue().isAara();
-                            examStudents = model.getStudents().countStudents(
-                                    exam.getSubject(), isAara);
+                            examStudents = model.getStudents().countStudents(exam.getSubject(), isAara);
                         }
 
-                        String examDisplay = exam.getSubject().getTitle()
-                                + " (" + examStudents + " students)";
+                        String examDisplay = exam.getSubject().getTitle() + " (" + examStudents + " students)";
                         DefaultMutableTreeNode examNode = new DefaultMutableTreeNode(examDisplay);
                         examsNode.add(examNode);
                         examNodeMap.put(examNode, exam);
@@ -375,37 +327,33 @@ public class ExamBlockView implements ModelObserver {
                         java.util.List<Desk> examDesks = new java.util.ArrayList<>();
 
                         if (session.desks != null && session.getVenue() != null) {
-
                             int rows = session.getVenue().getRows();
                             int columns = session.getVenue().getColumns();
 
                             for (int row = 0; row < rows; row++) {
                                 for (int col = 0; col < columns; col++) {
-                                    if (session.desks[row][col] != null
-                                            && session.desks[row][col].deskFamilyName() != null
-                                            && !session.desks[row][col].deskFamilyName()
-                                            .trim().isEmpty()) {
+                                    if (session.desks[row][col] != null &&
+                                            session.desks[row][col].deskFamilyName() != null &&
+                                            !session.desks[row][col].deskFamilyName().trim().isEmpty()) {
 
                                         String deskExam = session.desks[row][col].deskExam();
-                                        if (deskExam != null && deskExam.equals(
-                                                exam.getShortTitle())) {
+                                        if (deskExam != null && deskExam.equals(exam.getShortTitle())) {
                                             examDesks.add(session.desks[row][col]);
                                             isSessionFinalised = true;
                                         }
                                     }
                                 }
                             }
-                            examDesks.sort((d1, d2) ->
-                                            Integer.compare(d1.deskNumber(), d2.deskNumber()));
+                            examDesks.sort((d1, d2) -> Integer.compare(d1.deskNumber(), d2.deskNumber()));
                         }
+
                         if (isSessionFinalised) {
                             for (Desk desk : examDesks) {
-                                String deskDisplay = "Desk " + desk.deskNumber() + " "
-                                        + desk.deskLui() + " "
-                                        + desk.deskFamilyName() + ", "
-                                        + desk.deskGivenAndInit();
-                                DefaultMutableTreeNode deskNode
-                                        = new DefaultMutableTreeNode(deskDisplay);
+                                String deskDisplay = "Desk " + desk.deskNumber() + " " +
+                                        desk.deskLui() + " " +
+                                        desk.deskFamilyName() + ", " +
+                                        desk.deskGivenAndInit();
+                                DefaultMutableTreeNode deskNode = new DefaultMutableTreeNode(deskDisplay);
                                 examNode.add(deskNode);
                             }
                         }
@@ -417,7 +365,11 @@ public class ExamBlockView implements ModelObserver {
         if (venues != null) {
             for (int i = 0; i < venues.size(); i++) {
                 Venue venue = venues.all().get(i);
-                DefaultMutableTreeNode venueNode = new DefaultMutableTreeNode(venue.toString());
+
+                String venueDisplay = venue.venueId() + " (" + venue.deskCount() +
+                        (venue.isAara() ? " AARA" : " Non-AARA") + " desks)";
+
+                DefaultMutableTreeNode venueNode = new DefaultMutableTreeNode(venueDisplay);
                 venueRoot.add(venueNode);
                 addVenueToVenueNodeMap(venueNode, venue);
             }
@@ -431,8 +383,10 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * new data for the Subjects page of the tabbed view
-     * @param subjects - new SubjectList
+     * Updates the subjects tab with current subject data.
+     * Refreshes table content with subject titles and descriptions.
+     *
+     * @param subjects new SubjectList to display
      */
     public void updateSubjectPage(SubjectList subjects) {
         JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(0);
@@ -449,9 +403,10 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * new data for this page of the tabbed view
-     * [9] Reflection usage for accessing private fields in Exam objects.
-     * @param exams - new List of data
+     * Updates the exams tab with comprehensive exam information.
+     * Uses reflection to access private exam fields for complete data display.
+     *
+     * @param exams new ExamList to display
      */
     public void updateExamPage(ExamList exams) {
         JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(1);
@@ -466,8 +421,7 @@ public class ExamBlockView implements ModelObserver {
                 String examType = "INTERNAL";
                 if (exam.getClass().getDeclaredFields().length > 0) {
                     try {
-                        java.lang.reflect.Field examTypeField
-                                = exam.getClass().getDeclaredField("examType");
+                        java.lang.reflect.Field examTypeField = exam.getClass().getDeclaredField("examType");
                         examTypeField.setAccessible(true);
                         Object examTypeObj = examTypeField.get(exam);
                         if (examTypeObj != null) {
@@ -492,8 +446,7 @@ public class ExamBlockView implements ModelObserver {
 
                 String subtitle = "";
                 try {
-                    java.lang.reflect.Field subtitleField
-                            = exam.getClass().getDeclaredField("subtitle");
+                    java.lang.reflect.Field subtitleField = exam.getClass().getDeclaredField("subtitle");
                     subtitleField.setAccessible(true);
                     Object subtitleObj = subtitleField.get(exam);
                     if (subtitleObj != null && !subtitleObj.toString().trim().isEmpty()) {
@@ -515,20 +468,24 @@ public class ExamBlockView implements ModelObserver {
                     unit = "";
                 }
 
-                model.addRow(
-                        new Object[]{exam.getSubject().getTitle(),
-                                     examType, paper, subtitle,
-                                     unit, exam.getDate().toString(),
-                                     exam.getTime().toString()}
-                );
+                model.addRow(new Object[]{
+                        exam.getSubject().getTitle(),
+                        examType,
+                        paper,
+                        subtitle,
+                        unit,
+                        exam.getDate().toString(),
+                        exam.getTime().toString()
+                });
             }
         }
     }
 
     /**
-     * new data for this page of the tabbed view
-     * [9] Reflection for accessing private Unit fields.
-     * @param units - new List of data
+     * Updates the units tab with unit information.
+     * Uses reflection to access private unit fields for detailed display.
+     *
+     * @param units new UnitList to display
      */
     public void updateUnitPage(UnitList units) {
         JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(2);
@@ -554,8 +511,7 @@ public class ExamBlockView implements ModelObserver {
 
                 String description = "";
                 try {
-                    java.lang.reflect.Field descField
-                            = unit.getClass().getDeclaredField("description");
+                    java.lang.reflect.Field descField = unit.getClass().getDeclaredField("description");
                     descField.setAccessible(true);
                     Object descObj = descField.get(unit);
                     if (descObj != null) {
@@ -565,26 +521,27 @@ public class ExamBlockView implements ModelObserver {
                     description = "";
                 }
 
-                model.addRow(
-                        new Object[]{unit.getSubject()
-                                     .getTitle(), unit.id().toString(),
-                                     unitTitle,
-                                     description}
-                );
+                model.addRow(new Object[]{
+                        unit.getSubject().getTitle(),
+                        unit.id().toString(),
+                        unitTitle,
+                        description
+                });
             }
         }
     }
 
     /**
-     * new data for this page of the tabbed view
-     * @param students - new List of data
+     * Updates the students tab with student information and subject enrollments.
+     * Displays formatted student names, AARA status, and enrolled subjects.
+     *
+     * @param students new StudentList to display
      */
     public void updateStudentPage(StudentList students) {
         JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(3);
         JTable table = (JTable) scrollPane.getViewport().getView();
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setColumnIdentifiers(
-                new String[]{"LUI", "Full Name", "AARA", "Date of Birth", "Subjects"});
+        model.setColumnIdentifiers(new String[]{"LUI", "Full Name", "AARA", "Date of Birth", "Subjects"});
 
         model.setRowCount(0);
         if (students != null) {
@@ -602,26 +559,27 @@ public class ExamBlockView implements ModelObserver {
                     }
                 }
 
-                String displayName = student.familyName().toUpperCase()
-                        + ", " + student.givenNames();
-
+                String displayName = student.familyName().toUpperCase() + ", " + student.givenNames();
                 String aaraDisplay = student.isAara() ? "Yes" : "";
 
-                model.addRow(new Object[]{student.getLui(),
-                                          displayName,
-                                          aaraDisplay,
-                                          student.getDob().toString(),
-                                          subjectsStr.toString()}
-                );
+                model.addRow(new Object[]{
+                        student.getLui(),
+                        displayName,
+                        aaraDisplay,
+                        student.getDob().toString(),
+                        subjectsStr.toString()
+                });
             }
         }
     }
 
     /**
-     * new data for this page of the tabbed view
-     * @param venues - new List of data
+     * Updates the venues tab with venue configuration and room details.
+     * Shows venue capacity, room assignments, and AARA suitability.
+     *
+     * @param venues new VenueList to display
      */
-    public void updateVenuPage(VenueList venues) {
+    public void updateVenuePage(VenueList venues) {
         JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(5);
         JTable table = (JTable) scrollPane.getViewport().getView();
         DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -654,8 +612,10 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * new data for this page of the tabbed view
-     * @param rooms - new List of data
+     * Updates the rooms tab with room identifier information.
+     * Displays simple room ID listing for reference.
+     *
+     * @param rooms new RoomList to display
      */
     public void updateRoomPage(RoomList rooms) {
         JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(4);
@@ -672,40 +632,45 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * Add a listener for the Finalise button
-     * @param listener - listener
+     * Registers an ActionListener for the finalise button.
+     *
+     * @param listener the ActionListener to handle finalise button clicks
      */
     public void addFinaliseButtonListener(ActionListener listener) {
         finaliseButton.addActionListener(listener);
     }
 
     /**
-     * Add a listener for the Add button
-     * @param listener - listener
+     * Registers an ActionListener for the add button.
+     *
+     * @param listener the ActionListener to handle add button clicks
      */
     public void addAddButtonListener(ActionListener listener) {
         addButton.addActionListener(listener);
     }
 
     /**
-     * Add a listener for the Clear button
-     * @param listener - listener
+     * Registers an ActionListener for the clear button.
+     *
+     * @param listener the ActionListener to handle clear button clicks
      */
     public void addClearButtonListener(ActionListener listener) {
         clearButton.addActionListener(listener);
     }
 
     /**
-     * set the new title
-     * @param title - title
+     * Updates the main window title.
+     *
+     * @param title the new window title
      */
     public void setTitle(String title) {
         frame.setTitle(title);
     }
 
     /**
-     * set the version to something new
-     * @param version - new version
+     * Updates the window title to include version information.
+     *
+     * @param version the current version number to display
      */
     public void setVersion(double version) {
         String currentTitle = frame.getTitle();
@@ -716,8 +681,10 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * return the selected exam rows. Since this is a single-select list ctrl, this is redundant
-     * @return the array of one object, or null is failure
+     * Gets the currently selected exam table rows.
+     * Since this uses single selection mode, returns array with one element or null.
+     *
+     * @return array containing selected row index, or null if no selection
      */
     public int[] getSelectedExamRows() {
         int selectedRow = examTable.getSelectedRow();
@@ -728,8 +695,9 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * get the node from the session tree
-     * @return the node
+     * Gets the currently selected tree node.
+     *
+     * @return the selected DefaultMutableTreeNode, or null if no selection
      */
     public DefaultMutableTreeNode getSelectedTreeNode() {
         TreePath selectionPath = tree.getSelectionPath();
@@ -740,7 +708,8 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * clear the selection of any control, as well as some cached values
+     * Clears all current selections in exam table and tree.
+     * Resets interface to unselected state.
      */
     public void removeAllSelections() {
         examTable.clearSelection();
@@ -748,16 +717,16 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * Checks if there are any un-finalized sessions in the JTree.
-     * A session is un-finalized if any Exam node has no Desk children.
-     * @return true if un-finalized sessions exist, false otherwise
+     * Checks for unfinalized sessions by examining tree structure.
+     * A session is unfinalized if any exam node has no desk assignment children.
+     *
+     * @return true if unfinalized sessions exist, false otherwise
      */
     public boolean hasUnfinalisedSessions() {
         for (int i = 0; i < sessionRoot.getChildCount(); i++) {
             DefaultMutableTreeNode sessionNode = (DefaultMutableTreeNode) sessionRoot.getChildAt(i);
             for (int j = 0; j < sessionNode.getChildCount(); j++) {
-                DefaultMutableTreeNode examNode
-                        = (DefaultMutableTreeNode) sessionNode.getChildAt(j);
+                DefaultMutableTreeNode examNode = (DefaultMutableTreeNode) sessionNode.getChildAt(j);
                 if (examNode.getChildCount() == 0) {
                     return true;
                 }
@@ -767,8 +736,10 @@ public class ExamBlockView implements ModelObserver {
     }
 
     /**
-     * here we receive the notifications that model sent us
-     * @param property - whatever it is
+     * Receives model change notifications and updates appropriate view components.
+     * Implements observer pattern for automatic view synchronization with model updates.
+     *
+     * @param property the name of the changed model property
      */
     public void modelChanged(String property) {
         if (model == null) {
@@ -789,7 +760,7 @@ public class ExamBlockView implements ModelObserver {
                 updateStudentPage(model.getStudents());
                 break;
             case "venues":
-                updateVenuPage(model.getVenues());
+                updateVenuePage(model.getVenues());
                 break;
             case "rooms":
                 updateRoomPage(model.getRooms());
@@ -798,14 +769,16 @@ public class ExamBlockView implements ModelObserver {
                 updateTree(model.getSessions(), model.getVenues());
                 break;
             case "finalised":
-
+                // Handled by controller - no direct view update needed
                 break;
         }
     }
 
     /**
-     * model initialisation
-     * @param model - rewference to the model
+     * Sets the model reference and registers this view as an observer.
+     * Establishes bidirectional communication between model and view.
+     *
+     * @param model the ExamBlockModel to observe
      */
     public void setModel(ExamBlockModel model) {
         this.model = model;
@@ -814,146 +787,212 @@ public class ExamBlockView implements ModelObserver {
         }
     }
 
+    // Accessor methods for controller integration
+
     /**
-     * get the top level window
-     * @return the frame handle
+     * Provides access to the main application frame.
+     *
+     * @return the main JFrame window
      */
     public JFrame getFrame() {
         return frame;
     }
 
     /**
-     * get the exam table
-     * @return the exam table
+     * Provides access to the exam selection table.
+     *
+     * @return the exam JTable component
      */
     public JTable getExamTable() {
         return examTable;
     }
 
     /**
-     * get thee session tree
-     * @return get thee session tree
+     * Provides access to the session/venue navigation tree.
+     *
+     * @return the session JTree component
      */
     public JTree getTree() {
         return tree;
     }
 
     /**
-     * get the notebook like tabbed window
-     * @return the window
+     * Provides access to the tabbed data interface.
+     *
+     * @return the main JTabbedPane component
      */
     public JTabbedPane getTabbedPane() {
         return tabbedPane;
     }
 
     /**
-     * the actual button
-     * @return the actual button
+     * Provides access to the finalise action button.
+     *
+     * @return the finalise JButton
      */
     public JButton getFinaliseButton() {
         return finaliseButton;
     }
 
     /**
-     * the actual button
-     * @return the actual button
+     * Provides access to the add action button.
+     *
+     * @return the add JButton
      */
     public JButton getAddButton() {
         return addButton;
     }
 
     /**
-     * the actual button
-     * @return the actual button
+     * Provides access to the clear action button.
+     *
+     * @return the clear JButton
      */
     public JButton getClearButton() {
         return clearButton;
     }
 
     /**
-     * return the Session root node
-     * @return the Session root node
+     * Provides access to the session root tree node.
+     *
+     * @return the session root DefaultMutableTreeNode
      */
     public DefaultMutableTreeNode getSessionRoot() {
         return sessionRoot;
     }
 
     /**
-     * return the Venue root node
-     * @return the Venue root node
+     * Provides access to the venue root tree node.
+     *
+     * @return the venue root DefaultMutableTreeNode
      */
     public DefaultMutableTreeNode getVenueRoot() {
         return venueRoot;
     }
 
     /**
-     * return the table model
-     * @return the table model
+     * Provides access to the exam table model for direct manipulation.
+     *
+     * @return the exam table's DefaultTableModel
      */
     public DefaultTableModel getExamTableModel() {
         return examTableModel;
     }
 
+    // Mapping management methods for node-to-object associations
+
     /**
-     * Add Session object to the SessionNode map
-     * @param sessionNode - tree node
-     * @param session - Session object
+     * Associates a tree node with its corresponding session object.
+     *
+     * @param sessionNode the tree node representing the session
+     * @param session     the Session object to associate
      */
     public void addSessionToSessionNodeMap(DefaultMutableTreeNode sessionNode, Session session) {
         sessionNodeMap.put(sessionNode, session);
     }
 
     /**
-     * return Session object from the SessionNode map
-     * @param sessionNode - tree node
-     * @return session Session object
+     * Retrieves the session object associated with a tree node.
+     *
+     * @param sessionNode the tree node to look up
+     * @return the associated Session object, or null if not found
      */
     public Session getSessionFromSessionNodeMap(DefaultMutableTreeNode sessionNode) {
         return sessionNodeMap.get(sessionNode);
     }
 
     /**
-     * Add Venue object to the VenueNode map
-     * @param venueNode - tree node
-     * @param venue - Venue object
+     * Associates a tree node with its corresponding venue object.
+     *
+     * @param venueNode the tree node representing the venue
+     * @param venue     the Venue object to associate
      */
     public void addVenueToVenueNodeMap(DefaultMutableTreeNode venueNode, Venue venue) {
         venueNodeMap.put(venueNode, venue);
     }
 
     /**
-     * Get Venue object from the VenueNode map
-     * @param venueNode - tree node
-     * @return venue Venue object
+     * Retrieves the venue object associated with a tree node.
+     *
+     * @param venueNode the tree node to look up
+     * @return the associated Venue object, or null if not found
      */
     public Venue getVenueFromVenueNodeMap(DefaultMutableTreeNode venueNode) {
         return venueNodeMap.get(venueNode);
     }
 
     /**
-     * Mapping from list item to the item represented
-     * @param examNode - the object being requested
-     * @return the item or null
+     * Retrieves the exam object associated with a tree node.
+     *
+     * @param examNode the tree node to look up
+     * @return the associated Exam object, or null if not found
      */
     public Exam getExamFromExamNodeMap(DefaultMutableTreeNode examNode) {
         return examNodeMap.get(examNode);
     }
 
     /**
-     * mapping from list to item represented
-     * @param index - in the list
-     * @param exam - what to place there
+     * Associates a table index with its corresponding exam object.
+     *
+     * @param index the table row index
+     * @param exam  the Exam object to associate
      */
     public void addExamToExamMap(int index, Exam exam) {
         examMap.put(index, exam);
     }
 
     /**
-     * get Exam stored for index index
-     * @param index - index
-     * @return item
+     * Retrieves the exam object associated with a table index.
+     *
+     * @param index the table row index to look up
+     * @return the associated Exam object, or null if not found
      */
     public Exam getExamFromExamMap(int index) {
         return examMap.get(index);
+    }
+
+    /**
+     * Document listener implementation for form field change detection.
+     * Provides simplified interface for monitoring text field modifications.
+     */
+    public abstract static class SimpleDocumentListener implements javax.swing.event.DocumentListener {
+
+        /**
+         * Called when text is inserted into the document.
+         *
+         * @param e the DocumentEvent describing the change
+         */
+        @Override
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            update(e);
+        }
+
+        /**
+         * Called when text is removed from the document.
+         *
+         * @param e the DocumentEvent describing the change
+         */
+        @Override
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            update(e);
+        }
+
+        /**
+         * Called when document attributes are changed.
+         *
+         * @param e the DocumentEvent describing the change
+         */
+        @Override
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            update(e);
+        }
+
+        /**
+         * Abstract method for handling any type of document change.
+         * Subclasses implement this to respond to text modifications.
+         *
+         * @param e the DocumentEvent describing the change
+         */
+        public abstract void update(javax.swing.event.DocumentEvent e);
     }
 }
